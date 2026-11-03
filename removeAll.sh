@@ -11,7 +11,7 @@ Defaults to a read-only preview in the currently selected Azure subscription.
 Requires Bash, Azure CLI (az login), and jq.
 
 Targets:
-  * All 35 labs' root-runner names (rg-foundry-<lab>-demo).
+  * All discovered labs' root-runner names (rg-foundry-<lab>-demo).
   * Standalone runner names (rg-foundry-student-<lab>-demo).
   * Manual/historical group names documented in the labs.
   * Groups recorded in each lab's .azure/{lab-deployment,deployment}.json,

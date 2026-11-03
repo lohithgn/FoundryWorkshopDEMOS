@@ -1,0 +1,4 @@
+SYNTHETIC WORKSHOP DATA
+DOCUMENT GOVERNED-IQ-045
+The fictional Helios equipment fleet's restricted maintenance code is HELIOS-045-ORCHID.
+Replace the fictional battery every 36 months. This document is restricted to container readers.

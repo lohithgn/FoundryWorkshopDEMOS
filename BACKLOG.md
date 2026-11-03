@@ -1402,3 +1402,137 @@ All 14 local tests pass. Real UI baseline/regression/recovery execution and exac
 response/agent/version trace correlation pass for all six requests. The strict
 automatic-evaluation gate timed out after 20 minutes; both good routes were
 restored. See [verification results](./tests.md).
+
+## F038 - Microsoft Foundry: Native Runtime Guardrails
+
+**Type:** Feature
+**Status:** Implemented, deployed and live-tested on 2026-11-03
+**Demo:** [Native guardrails](./38-native-guardrails/README.md)
+
+### Acceptance criteria
+
+- [x] Standalone infrastructure, native guardrail attachment and explicit intervention evidence.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+Fourteen lab tests pass. A real prompt agent returns an allowed response and
+the native user-input policy blocks the synthetic marker with
+`400/ContentFiltered`. The model-attached baseline also passes. Tool
+intervention points are not configured. The shared runner passed in
+`rg-foundry-native-guardrails-demo`, East US 2.
+
+## F039 - Microsoft Foundry: AI Gateway Token Limits
+
+**Type:** Feature
+**Status:** Implemented, deployed and live-tested on 2026-11-03
+**Demo:** [Gateway token limits](./39-gateway-token-limits/README.md)
+
+### Acceptance criteria
+
+- [x] Real gateway-enforced token rate limits and quotas, not local fault injection.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+Nineteen lab tests pass. Actual APIM responses show rate-limit `429`, quota
+`403` and independent Project B `200`. Three same-hour executions, including
+the shared runner, pass with fresh central demonstration counters and unchanged
+limits. Resources remain in `rg-foundry-gateway-token-limits-demo`, East US 2.
+
+## F040 - Microsoft Foundry: Managed Voice Agent
+
+**Type:** Feature
+**Status:** Implemented, deployed and live-tested on 2026-11-03
+**Demo:** [Voice agent](./40-voice-agent/README.md)
+
+### Acceptance criteria
+
+- [x] Native voice-based prompt agent and actual audio-session/conversation evidence.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+Sixteen tests and the complete shared-runner replay passed in
+`rg-foundry-voice-agent-demo`, East US 2. Real WebSocket input/output, audio,
+transcripts and persisted conversation read-back satisfy the native live gate.
+
+## F041 - Microsoft Foundry: Content Understanding
+
+**Type:** Feature
+**Status:** Implemented, deployed and live-tested on 2026-11-03
+**Demo:** [Content Understanding](./41-content-understanding/README.md)
+
+### Acceptance criteria
+
+- [x] Actual schema-based extraction with ground truth, confidence and source evidence.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+Thirty-two tests and the complete shared-runner replay passed in
+`rg-foundry-content-understanding-demo`, East US 2. Document field confidence
+and grounding are checked separately from generated audio facts and transcript
+timestamps. See [verification results](./tests.md).
+
+## F042 - Microsoft Foundry: Managed Harness and Tool Search
+
+**Type:** Feature
+**Status:** Implemented, deployed in Sweden Central and native live-tested through the shared runner (12 tests passed)
+**Demo:** [Managed harness and native Tool Search](./42-managed-harness-tool-search/README.md)
+
+### Acceptance criteria
+
+- [x] Native Copilot harness selection and Toolbox Tool Search, not local skill injection.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+## F043 - Microsoft Foundry: Agent Routines
+
+**Type:** Feature
+**Status:** Implemented and deployed; 24 tests passed; latest strict shared-runner live gate BLOCKED by native agentic-token issuance
+**Demo:** [Native routines](./43-agent-routines/README.md)
+
+### Acceptance criteria
+
+- [ ] Native timer dispatch, run-history evidence and temporary-trigger cleanup.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+An earlier direct native timer passed, but repeated root replays failed HTTP
+400 token issuance despite persisted creator identity, ARM readiness and
+enabled identity/blueprint principals. Tenant/service cause remains unknown.
+Cleanup passed. Current repeatable native live acceptance remains open.
+
+## F044 - Microsoft Foundry: Evaluation and Optimization
+
+**Type:** Feature
+**Status:** Implemented, deployed and native live-tested through the shared runner (27 tests passed)
+**Demo:** [Evaluation and optimizer](./44-evaluation-optimizer/README.md)
+
+### Acceptance criteria
+
+- [x] Cloud evaluator breadth and actual native optimizer candidate results.
+- [x] Offline tests, Azure deployment and strict live verification with separate status.
+
+Final generated-dataset tags were verified with native PUT/GET. A completed
+service-generated candidate improved independent heldout score from 0.4 to
+1.0: APPROVE without automatic promotion. An earlier tied candidate was
+correctly rejected.
+
+## F045 - Microsoft Foundry: Governed IQ Integrations
+
+**Type:** Feature
+**Status:** Implemented and deployed; 18 tests passed, source-native permission checks passed; full native live gate BLOCKED by second-user and Fabric tenant/capacity prerequisites
+**Demo:** [Permission-native IQ and Fabric IQ](./45-governed-iq/README.md)
+
+### Acceptance criteria
+
+- [ ] Source-native permission enforcement and actual Fabric IQ connection.
+- [x] Offline tests, Azure deployment and honest tenant/identity prerequisite verification.
+
+Permission synchronization, authorized retrieval and omitted-identity denial
+passed. Two-real-user verification and actual Fabric execution remain blocked:
+no second-user login, disabled Fabric/Power BI token issuance (`AADSTS500014`)
+and zero Fabric capacity. Local substitutes do not satisfy this criterion.
+
+## F046 - Microsoft Foundry: Fleet Governance
+
+**Type:** Feature
+**Status:** Implemented, deployed and API live-tested through the shared runner (16 tests passed); portal Control Plane NOT_VERIFIED, optional Defender/Purview not configured
+**Demo:** [Fleet governance](./46-fleet-governance/README.md)
+
+### Acceptance criteria
+
+- [x] Cross-project assets, real telemetry and supported governance/registration evidence.
+- [x] Offline tests, Azure deployment and clearly separated native/portal live verification.

@@ -147,3 +147,80 @@
    **Live status (2026-10-27):** Infrastructure, agents, UI scenarios and traces verified; native automatic evaluation did not trigger. The complete live gate is blocked, not passed.
 
    **What the lab does:** Publishes two persistent GPT-5.4 mini agents and native Foundry continuous evaluation rules that sample completed live responses. A simple local operations UI switches the monitored agent from a correct pricing version to an intentionally wrong version while a stable control stays healthy, then restores the good route. Cloud exact-match verdicts must correlate to actual response IDs and demonstrate baseline PASS, isolated regression FAIL, and recovery PASS; missing results remain pending. The live gate also queries actual server-side telemetry for both agents. This is a focused single-project production-monitoring sample, not a complete cross-project Control Plane, and it never substitutes local scoring for native evaluation. [Lab instructions](./37-production-monitoring/README.md) | [Implementation](./37-production-monitoring/demo.py)
+
+38. Microsoft Foundry - Native runtime guardrails
+
+   **Selected review priority:** 1.
+
+   **Live status (2026-11-03):** Passed native prompt-agent user-input intervention and the model baseline; 14 offline tests passed. Tool-call and tool-response controls are not configured.
+
+   **What the lab demonstrates:** Configure and attach native Foundry guardrails, then compare an allowed workshop request with a controlled policy intervention. Inspect actual service evidence and distinguish runtime enforcement from standalone Content Safety classification and application authorization. Supported intervention points, preview restrictions, deployment, costs and cleanup are documented. [Lab instructions](./38-native-guardrails/README.md) | [Implementation](./38-native-guardrails/demo.py)
+
+39. Microsoft Foundry - Enforced AI Gateway token limits
+
+   **Selected review priority:** 3.
+
+   **Live status (2026-11-03):** Passed real gateway 429/403 and independent-project access, including repeat runs and the shared runner; 19 offline tests passed.
+
+   **What the lab demonstrates:** Send real model requests through an Azure API Management AI gateway with small centrally configured token rate limits and quotas. Verify actual rate-limit and quota responses rather than injecting local faults, and distinguish gateway containment from deployment capacity and billing alerts. Use isolated workshop resources and bounded requests. [Lab instructions](./39-gateway-token-limits/README.md) | [Implementation](./39-gateway-token-limits/demo.py)
+
+40. Microsoft Foundry - A managed voice-based prompt agent
+
+   **Selected review priority:** 4.
+
+   **Live status (2026-11-03):** Passed, including the shared deployment runner; 16 offline tests passed.
+
+   **What the lab demonstrates:** Create a native voice-based prompt agent and exercise managed voice orchestration through a real audio session. Verify service audio, transcript and conversation evidence using synthetic workshop input, without presenting a local speech-to-text wrapper as native voice-agent execution. Regional and preview access requirements are explicit. [Lab instructions](./40-voice-agent/README.md) | [Implementation](./40-voice-agent/demo.py)
+
+41. Microsoft Foundry - Schema-based Content Understanding
+
+   **Selected review priority:** 6 (the repeated selection is included once).
+
+   **Live status (2026-11-03):** Passed for synthetic document and audio inputs, including the shared deployment runner; 32 offline tests passed. Audio field confidence is not fabricated when the GA service does not emit it.
+
+   **What the lab demonstrates:** Analyze synthetic content with the actual Content Understanding service and a small schema, compare extracted fields with ground truth, and inspect confidence and source grounding. Explain how this differs from direct image-model inference and Document Intelligence's prebuilt models. Unsupported modalities or missing model configuration fail visibly. [Lab instructions](./41-content-understanding/README.md) | [Implementation](./41-content-understanding/demo.py)
+
+42. Microsoft Foundry - Managed Copilot harness and native Tool Search
+
+   **Selected review priority:** 7.
+
+   **Observed status:** 12 tests, Azure deployment in Sweden Central and shared-runner native live replay passed. The managed Copilot harness and native Toolbox discovery/invocation are separate verified demonstrations.
+
+   **What the lab demonstrates:** Select the managed Copilot harness for a prompt agent and configure native Toolbox Tool Search. Require service evidence of discovering and using relevant capabilities rather than eagerly injecting every skill or exposing a local resource-discovery function. Document the managed runtime, identity, supported tools and preview boundaries. [Lab instructions](./42-managed-harness-tool-search/README.md) | [Implementation](./42-managed-harness-tool-search/demo.py)
+
+43. Microsoft Foundry - Run an agent with a native routine
+
+   **Selected review priority:** 8.
+
+   **Observed status:** 24 tests and Azure deployment in East US 2 passed. An earlier direct native timer run passed, but repeated shared-runner live attempts are currently **BLOCKED** by HTTP 400 agentic-token issuance despite persisted creator dispatch identity. The tenant/service cause is unresolved; temporary assets were cleaned up. Do not present this as currently repeatable live success.
+
+   **What the lab demonstrates:** Create a short native timer routine, inspect its configuration and run history, and verify that the service dispatches the agent with a real response. Demonstrate lifecycle controls and remove temporary triggers after the test. A local scheduler or direct client invocation cannot satisfy the routine live gate. [Lab instructions](./43-agent-routines/README.md) | [Implementation](./43-agent-routines/demo.py)
+
+44. Microsoft Foundry - Evaluation breadth and native agent optimization
+
+   **Selected review priority:** 9.
+
+   **Observed status:** 27 tests, Azure deployment in East US 2 and final shared-runner native live replay passed. Generated-dataset tags were verified through native PUT/GET. The completed optimizer candidate improved independent held-out score from 0.4 to 1.0: APPROVE, without automatic promotion. An earlier tied candidate was correctly rejected.
+
+   **What the lab demonstrates:** Evaluate a synthetic agent with appropriate cloud quality criteria and exercise the native optimizer against a fixed dataset. Compare baseline and service-generated candidate results and retain an independent release check. Missing optimization results or evaluator failures are blockers, not passing scores or locally invented candidates. [Lab instructions](./44-evaluation-optimizer/README.md) | [Implementation](./44-evaluation-optimizer/demo.py)
+
+45. Microsoft Foundry - Permission-native Foundry IQ and Fabric IQ
+
+   **Selected review priority:** 10.
+
+   **Observed status:** 18 tests and Azure deployment passed (Foundry East US 2, Search West US 2). Native source-permission sync, authorized retrieval and omitted-source-identity denial passed. Full live verification is **BLOCKED**: a second real user is unavailable, Fabric/Power BI token issuance is disabled and the subscription has no Fabric capacity. The omission check does not count as two-user verification.
+
+   **What the lab demonstrates:** Separate source-native permission enforcement in Foundry IQ from application-generated Search filters, and connect an agent to an actual Fabric IQ endpoint. Verify authorized evidence and denied access using real identities and approved synthetic data. Fabric licensing, source permissions, second-user setup and connection availability are explicit prerequisites; unavailable tenant integrations remain blocked. [Lab instructions](./45-governed-iq/README.md) | [Implementation](./45-governed-iq/demo.py)
+
+46. Microsoft Foundry - Cross-project fleet governance
+
+   **Selected review priority:** 11.
+
+   **Observed status:** 16 tests, Azure deployment in East US 2 and shared-runner API live gates passed: two projects, three agents including native external registration, correlated telemetry and an isolated Compliant Azure Policy assignment. Portal Control Plane remains **NOT_VERIFIED**; optional Defender/Purview integration is not configured.
+
+   **What the lab demonstrates:** Inventory and inspect agents across multiple projects, correlate actual telemetry and exercise supported governance and external-agent registration surfaces. Distinguish programmatic asset evidence from portal-only Control Plane verification and tenant-dependent Defender/Purview integrations. Do not treat one project's monitoring view as complete fleet governance. [Lab instructions](./46-fleet-governance/README.md) | [Implementation](./46-fleet-governance/demo.py)
+
+The selected additions are review priorities **1, 3, 4, 6, 7, 8, 9, 10 and 11**.
+Priorities **2 (private networking), 5 (File Search) and 12 (Teams/Copilot and
+general A2A publication)** are not implemented by this addition. See [test
+results](./tests.md) for separate offline, deployment and live-feature status.

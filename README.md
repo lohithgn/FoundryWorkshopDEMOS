@@ -7,7 +7,7 @@ Python versions), Azure CLI, Bicep (`az bicep version`), and an interactive
 Azure user with resource creation and role-assignment permissions. See each
 demo's prerequisites for model quota and access requirements.
 
-There are **37 standalone demos**. Prefer selecting a small subset rather than
+There are **46 standalone demos**. Prefer selecting a small subset rather than
 deploying every resource and running every paid operation at once:
 
 ```bash
@@ -18,7 +18,37 @@ python3 deploy.py --subscription "<subscription-id>" --demo 20 --demo 25
 
 `--demo` accepts a demo number or exact folder name and can be repeated. Selected
 demos run in numeric order; prerequisites for unselected demos are not required.
-Without `--demo`, the runner selects all 37.
+Without `--demo`, the runner selects all 46.
+Labs 38-46 add the nine selected coverage-review priorities. The duplicate
+Content Understanding selection is one lab. Private networking, native File
+Search, and Teams/Copilot/general A2A publication were not selected.
+Do not run all nine as one deployment before reading their prerequisites:
+native voice, managed harness, routines, optimization, and governed IQ have
+feature-specific model, region, preview, identity, or tenant requirements.
+Missing native service evidence is a failed or blocked live test, never an
+offline substitute. See [verification results](./tests.md) for each stage.
+The runner checks the selected location and authenticated native-service
+prerequisites for labs 40 and 41 before provider registration or resource-group
+creation. Their default live runs use synthetic audio rather than requiring
+an attendee microphone.
+Labs 42-44 also have read-only native-access preflights. Because these checks
+need a real project and model, the runner executes them after ARM deployment
+and saving outputs, but before paid agent/dataset/optimizer runs. Lab 42 must
+be selected separately with a supported location, for example:
+
+```bash
+python3 deploy.py --demo 42 --location swedencentral
+python3 deploy.py --demo 43 --demo 44
+```
+
+Their model/project access checks do not prove advance permission to create
+agent IAM assignments. Read each lab's role requirements before deployment.
+All nine additions are implemented and Azure-deployed, with 178 passing local
+tests. Current native live gates remain blocked for lab 43 (agentic-token
+issuance; tenant/service cause unresolved) and lab 45 (second real user and
+enabled/licensed Fabric prerequisites). Lab 46's API gates passed, but its
+portal Control Plane UI is not verified. See [verification results](./tests.md)
+before presenting these labs as live-ready.
 Lab 32 requires a Browser Automation-supported region such as `eastus`, not the
 runner's `eastus2` default. The runner rejects unsupported template locations
 before any Azure resource changes. Present lab 32 separately using its manual
@@ -84,7 +114,8 @@ Lab 24 also sets both tags under `properties.tags` when creating or updating its
 Agent Applications and managed agent deployments at runtime.
 
 Azure does not support resource tags on role assignments, federated identity
-credentials, individual Function definitions, Blob services, Blob containers,
+credentials, policy assignments, API Management API policy resources, individual
+Function definitions, Blob services, Blob containers,
 Blob lifecycle management policies, and Foundry project connections used by
 these templates. Entra directory
 objects and data-plane objects are not
@@ -134,6 +165,10 @@ endpoints, bypass certificate validation, or replace failed responses.
 
 **This command creates billable Azure resources, makes live model requests,
 runs managed evaluation/red teaming, and submits a paid fine-tuning job.**
+The added labs can also incur gateway, audio, Content Understanding, Search,
+telemetry, dataset-generation and optimization charges. Native routine tests
+must remove their temporary triggers; infrastructure remains deployed until
+explicit cleanup.
 Fine-tuning only reports job submission by default; it does not wait for training
 to finish. Every rerun submits another training job. Use that demo's `--job-id`
 option directly to inspect an existing job instead.
@@ -208,6 +243,15 @@ Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 - [Work IQ in a persistent Foundry agent with per-user OAuth](./35-work-iq/README.md)
 - [Custom-code Foundry hosted agent with a simple UI](./36-hosted-agent/README.md)
 - [Live production-quality monitoring and recovery with a simple UI](./37-production-monitoring/README.md)
+- [Native Foundry runtime guardrails](./38-native-guardrails/README.md)
+- [Enforced AI Gateway token limits and quotas](./39-gateway-token-limits/README.md)
+- [Managed voice-based prompt agent](./40-voice-agent/README.md)
+- [Schema-based Content Understanding](./41-content-understanding/README.md)
+- [Managed Copilot harness and native Toolbox Tool Search](./42-managed-harness-tool-search/README.md)
+- [Native agent timer routines](./43-agent-routines/README.md)
+- [Cloud evaluation breadth and native agent optimization](./44-evaluation-optimizer/README.md)
+- [Permission-native Foundry IQ and Fabric IQ](./45-governed-iq/README.md)
+- [Cross-project fleet governance](./46-fleet-governance/README.md)
 - [Backlog](./BACKLOG.md)
 
 Each demo has standalone Bicep, local Python code, dependencies, tests, and manual
@@ -277,7 +321,7 @@ Use [removeAll.sh](./removeAll.sh) with Bash, Azure CLI, and `jq`. Preview first
 ./removeAll.sh --subscription "<subscription-id>" --execute
 ```
 
-The script covers all 37 labs: root and standalone runner defaults, documented
+The script covers all 46 labs: root and standalone runner defaults, documented
 manual/historical names, and saved deployment records for the selected subscription.
 Legacy output-only `deployment.json` files have no subscription/group metadata;
 the script warns and uses known group names instead. Add `--group` if such a

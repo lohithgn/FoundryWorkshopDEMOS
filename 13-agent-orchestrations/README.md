@@ -82,6 +82,7 @@ Azure resources. Use the same student ID, subscription, and location on retries:
 ```bash
 python3 deploy_lab.py --prefix "rg-foundry-${STUDENT_ID}" --location eastus2 --prepare-only
 az provider register --namespace Microsoft.CognitiveServices --wait
+STUDENT_ID="student01"
 RESOURCE_GROUP="rg-foundry-${STUDENT_ID}-agent-orchestrations-demo"
 ACCOUNT_NAME="$(python3 -c 'import json; print(json.load(open(".azure/lab-deployment.json"))["accountName"])')"
 PRINCIPAL_ID="$(az ad signed-in-user show --query id -o tsv)"

@@ -1,0 +1,5 @@
+azure-ai-projects==2.7.0
+azure-identity==1.26.0
+httpx==0.28.1
+azure-monitor-opentelemetry-exporter==1.0.0b58
+opentelemetry-sdk==1.45.1

@@ -1,0 +1,5 @@
+SYNTHETIC WORKSHOP NOTICE
+Workshop: Cedar Workshop
+Room: Blue Room
+Seats: 12
+This is synthetic demo data, not a reservation or personal information.

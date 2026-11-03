@@ -24,6 +24,7 @@ class DeployTests(unittest.TestCase):
     def test_every_taggable_infrastructure_resource_has_security_tags(self) -> None:
         unsupported = {
             "Microsoft.Authorization/roleAssignments",
+            "Microsoft.Authorization/policyAssignments",
             "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
             "Microsoft.Web/sites/functions",
             "Microsoft.Storage/storageAccounts/blobServices",
@@ -33,6 +34,7 @@ class DeployTests(unittest.TestCase):
             "Microsoft.ApiManagement/service/caches",
             "Microsoft.ApiManagement/service/backends",
             "Microsoft.ApiManagement/service/apis",
+            "Microsoft.ApiManagement/service/apis/policies",
             "Microsoft.ApiManagement/service/apis/operations",
             "Microsoft.ApiManagement/service/apis/operations/policies",
             "Microsoft.CognitiveServices/accounts/projects/connections",
@@ -197,7 +199,11 @@ class DeployTests(unittest.TestCase):
              "26-multimodal", "27-FoundryIQwithKB", "28-agent-skills",
              "29-toolbox-skill-discovery", "30-skill-data-analyst", "31-native-agent-memory",
              "32-browser-runbook", "33-skill-release-governance", "34-document-intelligence",
-             "35-work-iq", "36-hosted-agent", "37-production-monitoring"],
+             "35-work-iq", "36-hosted-agent", "37-production-monitoring",
+             "38-native-guardrails", "39-gateway-token-limits", "40-voice-agent",
+             "41-content-understanding", "42-managed-harness-tool-search",
+             "43-agent-routines", "44-evaluation-optimizer", "45-governed-iq",
+             "46-fleet-governance"],
         )
 
     def test_storage_and_search_resource_outputs_override_stale_environment(self) -> None:
@@ -242,7 +248,7 @@ class DeployTests(unittest.TestCase):
             int(number) for number in re.findall(r"^## F(\d{3}) - ",
                                                 (root / "BACKLOG.md").read_text(), re.MULTILINE)
         ]
-        self.assertEqual(proposals, list(range(1, 38)))
+        self.assertEqual(proposals, list(range(1, 47)))
         self.assertEqual(features, proposals)
         for demo in deploy.discover(root):
             with self.subTest(demo=demo.name):
@@ -397,6 +403,98 @@ class DeployTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "reached configuration preflight"):
                 deploy.main(["--principal-id", "presenter", "--demo", "32", "--location", "eastus"])
         self.assertFalse(any(command[:2] in (["az", "group"], ["az", "provider"]) for command in commands))
+
+    def test_managed_harness_region_fails_before_resource_changes(self) -> None:
+        commands = []
+
+        def fake_run(command, **kwargs):
+            commands.append(command)
+            if command[:3] == ["az", "account", "show"]:
+                return json.dumps({"id": "sub", "name": "test", "user": {"type": "user"}})
+            if command[:3] == ["az", "bicep", "build"]:
+                return json.dumps({
+                    "parameters": {"location": {"allowedValues": ["swedencentral"]}},
+                    "resources": [{"type": "Microsoft.CognitiveServices/accounts"}],
+                })
+            return ""
+
+        with (
+            patch("deploy.discover", return_value=[Path("42-managed-harness-tool-search")]),
+            patch("deploy.run", side_effect=fake_run),
+            redirect_stdout(io.StringIO()),
+            patch("sys.stderr", new_callable=io.StringIO) as errors,
+        ):
+            with self.assertRaises(SystemExit) as raised:
+                deploy.main(["--principal-id", "presenter", "--demo", "42"])
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("42-managed-harness-tool-search", errors.getvalue())
+        self.assertFalse(any(command[:2] in (["az", "group"], ["az", "provider"]) for command in commands))
+
+    def test_voice_and_content_preflight_receives_location_before_resource_changes(self) -> None:
+        for name in ("40-voice-agent", "41-content-understanding"):
+            with self.subTest(lab=name):
+                commands = []
+
+                def fake_run(command, **kwargs):
+                    commands.append(command)
+                    if command[:3] == ["az", "account", "show"]:
+                        return json.dumps({"id": "sub", "name": "test", "user": {"type": "user"}})
+                    if command[:3] == ["az", "bicep", "build"]:
+                        return '{"resources": []}'
+                    if command[-4:] == ["demo.py", "--preflight", "--location", "eastus2"]:
+                        raise RuntimeError("reached native service preflight")
+                    return ""
+
+                with (
+                    patch("deploy.discover", return_value=[Path(name)]),
+                    patch("deploy.run", side_effect=fake_run),
+                    redirect_stdout(io.StringIO()),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "reached native service preflight"):
+                        deploy.main(["--principal-id", "presenter", "--demo", name])
+                self.assertFalse(any(
+                    command[:2] in (["az", "group"], ["az", "provider"]) for command in commands
+                ))
+
+    def test_automation_preflight_uses_deployed_outputs_before_live_calls(self) -> None:
+        for name in ("42-managed-harness-tool-search", "43-agent-routines", "44-evaluation-optimizer"):
+            with self.subTest(lab=name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                folder = root / name
+                folder.mkdir()
+                commands = []
+                project = "https://account.services.ai.azure.com/api/projects/workshop"
+
+                def fake_run(command, **kwargs):
+                    commands.append(command)
+                    if command[:3] == ["az", "account", "show"]:
+                        return json.dumps({"id": "sub", "name": "test", "user": {"type": "user"}})
+                    if command[:3] == ["az", "bicep", "build"]:
+                        return '{"resources": []}'
+                    if command[:4] == ["az", "deployment", "group", "create"]:
+                        return json.dumps({
+                            "endpoint": {"value": "https://account.openai.azure.com/"},
+                            "projectEndpoint": {"value": project},
+                        })
+                    if command[-2:] == ["demo.py", "--preflight"]:
+                        self.assertEqual(kwargs["env"]["FOUNDRY_PROJECT_ENDPOINT"], project)
+                        self.assertTrue((folder / ".azure" / "deployment.json").is_file())
+                        raise RuntimeError("native access denied")
+                    return ""
+
+                with (
+                    patch("deploy.ROOT", root),
+                    patch("deploy.discover", return_value=[folder]),
+                    patch("deploy.run", side_effect=fake_run),
+                    patch("deploy.run_live") as live,
+                    redirect_stdout(io.StringIO()),
+                ):
+                    with self.assertRaisesRegex(RuntimeError, "native access denied"):
+                        deploy.main(["--principal-id", "presenter", "--demo", name])
+                    live.assert_not_called()
+                self.assertTrue(any(
+                    command[:4] == ["az", "deployment", "group", "create"] for command in commands
+                ))
 
     def test_content_safety_output_mapping(self) -> None:
         outputs = {"endpoint": {"value": "https://model.example/"},

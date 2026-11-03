@@ -12,6 +12,129 @@
 12 — Entra Agent ID	Blocked by missing interactive identity setup/credentials; fail-fast and mocked Graph cleanup checks passed
 13 — Orchestrations	All four live patterns passed after a startup retry
 
+## Labs 38-46: selected coverage additions, 2026-11-03
+
+The repeated selection of review priority 6 is implemented once. Only priorities
+1, 3, 4, 6, 7, 8, 9, 10 and 11 are included, as labs 38-46. The active Azure
+subscription is `1217c203-6c76-47b4-b61c-9bba62dc8e02`. Offline tests, ARM
+deployment and native feature verification are separate gates.
+Final offline verification passed **178/178 new-lab tests**. All nine Azure
+deployments succeeded. Current strict native/API live gates passed for seven
+labs; labs 43 and 45 remain blocked as detailed below.
+
+| Lab | Offline tests | Azure deployment | Native live verification |
+| --- | --- | --- | --- |
+| [38 - Guardrails](./38-native-guardrails/README.md) | 14 passed | Passed, East US 2 | Passed: native prompt-agent attachment, allowed 200 and user-input 400/ContentFiltered; model baseline also passed |
+| [39 - Gateway limits](./39-gateway-token-limits/README.md) | 19 passed | Passed, East US 2 | Passed: real APIM 429/403 and independent project 200; three same-hour runs including shared-runner replay |
+| [40 - Voice agent](./40-voice-agent/README.md) | 16 passed | Passed, East US 2 | Passed: native spoken WebSocket turn, audio, transcripts and persisted conversation |
+| [41 - Content Understanding](./41-content-understanding/README.md) | 32 passed | Passed, East US 2 | Passed: GA document fields/confidence/grounding and native audio facts/timestamps |
+| [42 - Harness and Tool Search](./42-managed-harness-tool-search/README.md) | 12 passed | Passed, Sweden Central | Passed: managed Copilot harness with pinned skill; separate native Toolbox tool_search/call_tool |
+| [43 - Routines](./43-agent-routines/README.md) | 24 passed | Passed, East US 2 | **Blocked on latest root replays**: native agentic-token issuance HTTP 400 despite creator dispatch identity; earlier direct timer passed; cleanup verified |
+| [44 - Evaluation and optimizer](./44-evaluation-optimizer/README.md) | 27 passed | Passed, East US 2 | Passed final root replay: generated/tagged dataset, cloud evaluators, completed native optimizer candidate, independent heldout 0.4 to 1.0; APPROVE without promotion |
+| [45 - Governed IQ](./45-governed-iq/README.md) | 18 passed | Passed, Foundry East US 2 / Search West US 2 | **Blocked overall**: native source-permission checks passed; missing second real user and enabled Fabric tenant/capacity prevent complete verification |
+| [46 - Fleet governance](./46-fleet-governance/README.md) | 16 passed | Passed, East US 2 | Passed API gates: two projects, three agents including external registration, correlated telemetry and Compliant policy; portal **NOT_VERIFIED**, Defender/Purview optional |
+
+### Verified shared-runner replay
+
+Both `python3 deploy.py --demo 38` and `python3 deploy.py --demo 39` passed.
+Guardrail coverage is the native user-input boundary; tool-call/tool-response
+controls are explicitly not configured. Gateway replay creates fresh
+centrally configured demonstration counters without raising the configured
+quotas; exhausted counters from an earlier run do not silently invalidate the
+next presentation. This is an isolated workshop reset, not a production
+quota-bypass mechanism.
+
+`python3 deploy.py --demo 40 --demo 41` completed with exit 0: both local test
+suites, location/authentication preflights, ARM redeployments and native live
+demos passed. Both scripts load root-shaped deployment records and require no
+additional runtime output mappings. Live runs are noninteractive and use
+repository-stored synthetic WAV/PDF inputs.
+
+Content Understanding uses `gpt-5.2`, version `2025-12-11`, capacity 10. Document
+extraction requires actual service field confidence and source grounding.
+GA audio fields use the supported generation mode and real transcript
+timestamps; absent field-confidence values remain null rather than being
+invented or borrowing word confidence.
+
+`python3 deploy.py --demo 42 --location swedencentral` completed with exit 0.
+East US 2 is not supported for the selected managed harness; the lab must be
+deployed separately in a supported region. Its read-only native preflight
+runs after ARM outputs are available, before agent operations.
+
+Lab 43's earlier direct native run
+`85b52baa-72cf-4bf6-836f-3a3d4698525c` verified timer dispatch, persisted
+creator identity, lifecycle and linked response/trace. However, repeated exact
+`python3 deploy.py --demo 43` replays returned HTTP 400: the service could not
+acquire the target agent's agentic identity token. The final request ID is
+`ac74630a-db58-44b3-9c5c-df51c46a1ac5`. Creator dispatch identity readback,
+ARM readiness and enabled identity/blueprint principals were verified; these
+do not establish the underlying tenant/service cause. It remains unresolved,
+not a proven default-identity bug. Agent identity is explicit opt-in and
+never silently falls back. Temporary routines, conversations, agents and
+roles were deleted. Current strict live status is **BLOCKED**, not PASS.
+
+The final exact `python3 deploy.py --demo 44` replay passed. An earlier replay
+found that generated dataset tags were not retained and had no completed
+optimizer candidate; that attempt is not counted as success. The corrected
+native dataset path applies and verifies tags through supported PUT/GET.
+The final native candidate
+`cand_opt_1c8e015c36e74e55b7ab0ec45d44d3ad_0001` completed; independent
+heldout score improved from **0.4 to 1.0**, yielding **APPROVE without
+promotion**. An earlier candidate tied the baseline at 5/5 and was correctly
+REJECTED without promotion. Defaults remain bounded to two generated training
+rows, one heldout question and one optimizer candidate; this is a workshop
+release-gate example, not statistically sufficient production certification.
+
+`python3 deploy.py --demo 45 --search-location westus2` deployed successfully
+and passed all 18 offline tests, but correctly returned nonzero on its strict
+live gate. Blob ingestion synchronized `rbacScope` permissions; a real source
+GET returned 200, authorized protected retrieval produced a reference, and
+omitting `x-ms-query-source-authorization` denied retrieval. That omission is
+not a second real identity. Fabric and Power BI token requests returned
+`AADSTS500014`; the subscription has zero Fabric capacities and no configured
+Fabric workspace/data-agent identifiers. No CSV/local retrieval is used as
+a replacement for this blocked native gate. Completion requires a real
+second-user login, an enabled/licensed Fabric tenant and a real supported
+Fabric connection.
+
+`python3 deploy.py --demo 46` completed with exit 0. All three actual
+agent executions have ingested correlated traces, including the natively
+registered external agent. The audit-only keyless-access Azure Policy is
+scoped to this lab's resource group and reports Compliant. This verifies API
+fleet gates, not the portal Control Plane UI or optional Defender/Purview
+integration.
+
+### Deployed resource groups
+
+| Lab | Resource group |
+| --- | --- |
+| 38 | `rg-foundry-native-guardrails-demo` |
+| 39 | `rg-foundry-gateway-token-limits-demo` |
+| 40 | `rg-foundry-voice-agent-demo` |
+| 41 | `rg-foundry-content-understanding-demo` |
+| 42 | `rg-foundry-managed-harness-tool-search-demo` |
+| 43 | `rg-foundry-agent-routines-demo` |
+| 44 | `rg-foundry-evaluation-optimizer-demo` |
+| 45 | `rg-foundry-governed-iq-demo` |
+| 46 | `rg-foundry-fleet-governance-demo` |
+
+Resources remain deployed and billable, including the APIM Developer instance
+in lab 39. Temporary routine triggers must be removed after tests. Sanitized
+deployment records and native evidence are retained in each lab's ignored
+`.azure/` directory; labs 40 and 41 retain `verification.json` and shared-runner
+`demo.log`. Temporary lab 43 triggers/assets were verified deleted, including
+after failed live attempts.
+
+The shared-runner baseline before these additions had 34/35 passing tests.
+Its lab 13 model-resource tag-layout assertion already failed and remains
+unrelated to these additions. The current expanded suite has **37/38 passing
+tests**, with only that same pre-existing assertion failing. New catalog,
+ownership, tag-schema exceptions, region gates and preflight regressions pass.
+Shell syntax, whitespace and all 26 new/root Python source syntax checks pass.
+Pylance MCP was unavailable because its local
+transport failed initialization; executable tests and Python syntax checks
+are used instead.
+
 ## Labs 36-37: deployed agent demos and live verification, 2026-10-27
 
 Only the two new samples were deployed, in East US 2 in subscription

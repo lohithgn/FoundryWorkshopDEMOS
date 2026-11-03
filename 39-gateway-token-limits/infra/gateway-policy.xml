@@ -1,0 +1,20 @@
+<policies>
+  <inbound>
+    <base />
+    <validate-azure-ad-token tenant-id="__TENANT__" failed-validation-httpcode="401">
+      <audiences><audience>https://cognitiveservices.azure.com</audience></audiences>
+      <client-application-ids><application-id>04b07795-8ddb-461a-bbee-02f9e1bf7b46</application-id></client-application-ids>
+      <required-claims><claim name="oid" match="all"><value>__PRINCIPAL__</value></claim></required-claims>
+    </validate-azure-ad-token>
+    <llm-token-limit id="workshop-token-limit" counter-key="__COUNTER__" __LIMIT__ estimate-prompt-tokens="false" tokens-consumed-header-name="X-Tokens-Consumed" />
+    <rewrite-uri template="/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2024-10-21" copy-unmatched-params="false" />
+    <authentication-managed-identity resource="https://cognitiveservices.azure.com" />
+  </inbound>
+  <backend><forward-request timeout="60" /></backend>
+  <outbound><base /></outbound>
+  <on-error>
+    <set-header name="X-Workshop-Policy" exists-action="override"><value>@(context.LastError.PolicyId ?? "")</value></set-header>
+    <set-header name="X-Workshop-Reason" exists-action="override"><value>@(context.LastError.Reason ?? "")</value></set-header>
+    <base />
+  </on-error>
+</policies>

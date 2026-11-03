@@ -1,0 +1,4 @@
+.azure/
+.venv/
+__pycache__/
+infra/main.json

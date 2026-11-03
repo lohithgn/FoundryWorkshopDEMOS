@@ -1,0 +1,9 @@
+{
+  "label": "SYNTHETIC WORKSHOP DATA",
+  "projects": ["fleet-operations", "fleet-audit"],
+  "agents": ["synthetic-fleet-operator", "synthetic-fleet-auditor"],
+  "externalAgent": "synthetic-fleet-external",
+  "externalTelemetryId": "workshop.synthetic.fleet.external",
+  "question": "What is the fictional Helios fleet maintenance interval?",
+  "expectedAnswer": "36 months"
+}

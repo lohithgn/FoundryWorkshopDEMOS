@@ -235,6 +235,8 @@ def main(argv: list[str] | None = None) -> None:
             "21-permission-aware-retrieval", "31-native-agent-memory", "32-browser-runbook",
         ):
             run([str(python), "demo.py", "--preflight"], cwd=demo)
+        if demo.name in ("40-voice-agent", "41-content-understanding"):
+            run([str(python), "demo.py", "--preflight", "--location", args.location], cwd=demo)
 
     if args.search_location and not search_location_applied:
         parser.error("--search-location requires a selected template exposing searchLocation.")
@@ -267,6 +269,11 @@ def main(argv: list[str] | None = None) -> None:
             "subscription": subscription, "resourceGroup": group, "outputs": outputs,
         }, indent=2) + "\n")
         environment = demo_environment(outputs, dict(os.environ))
+        if demo.name in (
+            "42-managed-harness-tool-search", "43-agent-routines", "44-evaluation-optimizer",
+        ):
+            run([str(demo / ".venv" / "bin" / "python"), "demo.py", "--preflight"],
+                cwd=demo, env=environment)
         run_live(demo / ".venv" / "bin" / "python", demo, environment)
         print(f"\nPASS: {demo.name}. Resource group: {group}.", flush=True)
     print("\nAll demo deployments, local tests, and live runs passed.", flush=True)
