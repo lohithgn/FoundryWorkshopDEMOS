@@ -9,11 +9,16 @@ Azure Monitor trace exporter. It is not an automatic model-selected tool loop.
 
 ## Prerequisites / deploy
 
-Python 3.10+, Azure CLI, `az login`, a subscription with `gpt-4.1-mini` quota in
+Python 3.10+, Azure CLI with Bicep, `az login`, a subscription with `gpt-4.1-mini` quota in
 `eastus2` (or override `location`), and permission to create resources and role
 assignments. No API keys. Run commands from this directory.
 
 ```bash
+az login
+az account set --subscription "<subscription-id>"
+az provider register --namespace Microsoft.CognitiveServices --wait
+az provider register --namespace Microsoft.Insights --wait
+az provider register --namespace Microsoft.OperationalInsights --wait
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 az group create -n lab18-tracing -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
@@ -26,10 +31,15 @@ export APPLICATIONINSIGHTS_CONNECTION_STRING="$(az deployment group show -g lab1
 ```
 
 `principalType=ServicePrincipal` is available for a workload identity; use its
-**object ID**, not client ID. The template grants Azure AI User for inference and
+**service principal object ID**, not client ID or app-registration object ID.
+The template grants Foundry User (formerly Azure AI User) for inference and
 Monitoring Metrics Publisher for **Entra-authenticated telemetry ingestion**.
 Application Insights local authentication is disabled. Allow RBAC propagation.
 The deployment operator needs separate deployment/role-assignment privileges.
+Both inference and telemetry use `DefaultAzureCredential`, which can select
+configured environment/workload/managed credentials before Azure CLI. Ensure
+the selected identity is the principal granted both roles; `az login` alone
+does not override other configured credentials.
 The template serializes model deployment and project creation: parallel writes
 to the same Foundry account can fail with ARM `RequestConflict`.
 
@@ -100,6 +110,8 @@ context propagation across a remote tool service.
 Costs: three short model requests per run, Application Insights ingestion and
 Log Analytics retention (30 days); no container hosting. Sampling is 100% for this
 tiny lab. Model availability/quota and telemetry/RBAC propagation are regional.
+The deployment uses GPT-4.1-mini `2025-04-14`, GlobalStandard capacity 10;
+processing may leave the account region. Public endpoints are a workshop default.
 
 ## Cleanup
 

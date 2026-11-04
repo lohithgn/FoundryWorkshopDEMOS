@@ -7,28 +7,31 @@
 > A separate manual cloud-grader diagnostic worked but is explicitly excluded
 > from success. Missing verdicts remain PENDING. See the [verification results](../tests.md).
 
-## What this proves
+## Intended live gate — currently blocked
 
 Two persistent Foundry agents expose authenticated Responses endpoints. Both use
 GPT-5.4 mini and initially answer **USD 25**. The first agent also has an immutable
 bad version answering **USD 40**. The stable agent acts as a control.
 
-**Native Foundry continuous evaluation rules** observe completed live responses
-and trigger cloud evaluation automatically. They use 100% sampling, bounded to
-30 runs per hour per agent. A service-side exact-match grader tests price
+**Native Foundry continuous evaluation rules** are configured to observe completed
+live responses and trigger cloud evaluation automatically. They use 100% sampling,
+bounded to 30 runs per hour per agent. A service-side exact-match grader tests price
 correctness, not coherence or stylistic quality. The client never submits an
 on-demand evaluation run or replaces a missing cloud score with a local score.
 
-The live scenario switches the actual endpoint version, observes a cloud quality
+The live scenario switches the actual endpoint version, requires a cloud quality
 failure only for the regressed agent, restores the good version, and requires
 new passing evaluations after recovery. Every accepted verdict must match the
 actual response ID and agent. Application Insights must contain real server-side
 traces for both agents.
 
-This demonstrates the production-monitoring foundation behind **Foundry Control
+This targets the production-monitoring foundation behind **Foundry Control
 Plane / Operate**. It is intentionally a small two-agent, single-project sample:
 it does not claim cross-project fleet governance, Defender/Purview integration,
 automatic remediation, or a full replacement for the Foundry portal.
+
+The automatic verdict/recovery sequence has **not** passed live; the working
+manual cloud-grader diagnostic is not evidence that continuous evaluation fired.
 
 ## Prerequisites
 
@@ -62,6 +65,10 @@ rules, then exercises the complete live scenario.
 The shared standalone-runner default is `rg-foundry-student`; use the explicit
 prefix above to reproduce the presenter's deployment.
 
+The standalone wrapper requires its `.azure/lab-deployment.json` ownership record
+and matching `managedBy`/`lab` group tags for reuse. Do not pre-create the reference
+group below or use an unrecorded group created by another deployment path.
+
 The equivalent tagged resource-group creation command is:
 
 ```bash
@@ -75,7 +82,8 @@ To repeat without reprovisioning:
 .venv/bin/python demo.py --live-test
 ```
 
-The six live responses must produce this matrix:
+For a complete pass, the six live responses must produce this matrix. It is the
+required outcome, **not an observed successful run**:
 
 | Phase | Monitored agent | Stable control |
 |---|---|---|

@@ -29,7 +29,8 @@ Python 3.10+, Azure CLI/Bicep, `az login`, model access and quota. Resource crea
 plus role-assignment rights are needed (for example Contributor plus User Access
 Administrator). Inference uses noninteractive `DefaultAzureCredential` and
 **Cognitive Services OpenAI User** at the account scope. Service-principal users
-can pass `principalType=ServicePrincipal` and their application object ID.
+can pass `principalType=ServicePrincipal` and the **service principal object ID**
+(Enterprise application), not the app/client ID or app-registration object ID.
 Allow a few minutes for RBAC propagation.
 
 From this directory, verify the subscription's region, model/version and

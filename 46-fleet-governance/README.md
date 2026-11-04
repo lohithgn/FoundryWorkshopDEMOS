@@ -1,5 +1,9 @@
 # 46 — Native two-project fleet governance
 
+> **Current status: API workflow PASS; Operate portal NOT_VERIFIED.**
+> Defender/Purview remain OPTIONAL_NOT_CONFIGURED. Cloud API/trace/policy evidence
+> is not visual verification of the full Control Plane experience.
+
 Deploys **two Foundry projects**, two real persistent prompt agents, a native
 external-agent registration, shared Entra-authenticated Application Insights and
 an **isolated RG-scoped Azure Policy Audit assignment**. Native agents/connections
@@ -129,6 +133,21 @@ Official facts verified with installed `azure-ai-projects==2.7.0` signatures:
 
 Pylance transport was unavailable; runtime SDK facts, syntax compilation and focused
 unittest provide verification. See ignored live report for execution-specific results.
+
+## Cleanup
+
+Agents, external registration, the RG-scoped Audit assignment and Monitor
+resources remain deployed; telemetry ingestion/retention can continue billing.
+Stop this lab's instrumented processes, confirm the subscription and actual
+group in `.azure/deployment.json` (recorded/custom targets can differ), then delete
+only the dedicated lab group:
+
+```bash
+az group delete --name rg-foundry-fleet-governance-demo --yes --no-wait
+```
+
+Do not delete shared Monitor workspaces or change tenant Defender/Purview settings
+to clean up this isolated lab. Local ignored reports remain after RG deletion.
 
 ## Live verification — 2026-11-03
 

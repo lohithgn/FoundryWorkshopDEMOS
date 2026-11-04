@@ -11,6 +11,11 @@ and expired deadline demonstrate explicit bounded failure.
 Requires Python 3.10+, Azure CLI/Bicep, an interactive Entra user with resource
 creation/role-assignment permissions, and `gpt-4.1-mini` quota.
 
+Run the following from this lab directory. The template deploys version
+`2025-04-14` with GlobalStandard capacity 10 and grants the presenter Cognitive
+Services OpenAI User. Confirm model availability/quota in `eastus2`; allow RBAC
+propagation before inference.
+
 ```bash
 az login
 RG=rg-foundry-resilience-cost-demo
@@ -58,6 +63,8 @@ service; stopping local waiting does not prove server-side cancellation.
 The tool is local and synthetic, with in-memory idempotency state. Production
 needs transactional durable keys, request-payload binding, and approval (lab 20).
 Public endpoints and no API keys keep provisioning small.
+GlobalStandard processing may occur outside the account region. The model
+capacity is a throughput allocation, not a hard spending cap.
 
 ## Validate and clean up
 

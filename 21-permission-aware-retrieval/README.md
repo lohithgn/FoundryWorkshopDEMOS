@@ -132,7 +132,9 @@ These outputs match root `deploy.py`; it must inherit `AZURE_TENANT_ID` and
 `SECOND_AZURE_CONFIG_DIR` and invoke this preflight before provisioning this lab.
 No project endpoint is needed.
 `endpoint` is the inference service root; the app appends `/openai/v1/`.
-The Bicep roles are Cognitive Services OpenAI User, Search Service Contributor and
+The Bicep roles are Foundry User (role ID
+`53ca6127-db72-4b80-b1b0-d745d6d5456d`, formerly Azure AI User),
+Search Service Contributor and
 Search Index Data Contributor for the backend presenter only. Local API-key auth is
 disabled. If 403 occurs, check identity/roles and wait for role-assignment propagation.
 
@@ -206,6 +208,10 @@ Basic Search bills continuously for one replica/partition even with an empty ind
 One run makes six short chat requests. The model is pay-per-token GlobalStandard;
 there is no embedding deployment, provisioned throughput or semantic ranker.
 Check current regional Search/model prices in the Azure pricing calculator.
+Search and Foundry use the same `location` parameter in this template; there
+is no `searchLocation` override here. Check Basic Search capacity in that region
+before deploying. Public endpoints and GlobalStandard inference (which may
+process outside the account region) are workshop defaults, not a residency design.
 The app removes its unique index, but interrupted runs may leave one. Index deletion
 does not stop Search service costs: delete this lab's dedicated resource group.
 

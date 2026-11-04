@@ -1,5 +1,12 @@
 # Demo backlog
 
+All 46 entries have implementations; unchecked criteria can still represent
+missing live verification, optional exercises or genuine tenant/service
+blockers. Status is based on the [dated verification report](./tests.md), not
+on the existence of code or passing mocks. The 2026-11-03 documentation review
+reconciled historical baseline results without rerunning paid Azure tests.
+See the [catalog](./demos.md) for what each lab actually demonstrates.
+
 ## F001 - Microsoft Foundry: Model Router
 
 **Type:** Feature  
@@ -45,7 +52,7 @@ different prompts are not guaranteed to select different models.
 ## F002 - Microsoft Foundry: Workflow Agent
 
 **Type:** Feature  
-**Status:** Implemented; live deployment and presentation smoke test pending  
+**Status:** Implemented; historical live pass after retry recorded in tests.md, not rerun during the documentation review
 **Demo:** [Workflow Agent](./2-workflow-agent/README.md)
 
 ### Goal
@@ -61,7 +68,7 @@ Agent Framework workflow backed by a single Foundry model deployment.
 - [x] Support a custom prompt and reject empty/incomplete stage output.
 - [x] Include dependencies, offline tests, setup, talk track, costs, and cleanup.
 - [x] Compile/lint Bicep and pass local tests.
-- [ ] Deploy and smoke-test both stages against the target Azure subscription.
+- [x] Deploy and smoke-test both stages against the target Azure subscription (historical baseline).
 
 ### Scope
 
@@ -71,7 +78,7 @@ designer, UI, persistence, or additional infrastructure.
 ## F003 - Microsoft Foundry: Simple WebIQ Agent
 
 **Type:** Feature  
-**Status:** Live-tested successfully on 2026-10-26; deployment conflict fixed
+**Status:** Historical with-tool Web Search live pass on 2026-10-26; current with/without-tool comparison not live-verified
 
 **Demo:** [WebIQ Agent](./3-webiq-agent/README.md)
 
@@ -90,6 +97,7 @@ search activity and source citations rather than relying on model memory.
 - [x] Document the WebIQ interpretation, Bing terms, costs, setup, and cleanup.
 - [x] Compile/lint Bicep and pass local mocked tests.
 - [x] Deploy and smoke-test search/citations under the target organization's policy.
+- [ ] Live-test the current with/without-tool comparison; the historical pass covers with-tool default/custom questions only.
 
 ### Live verification
 
@@ -110,8 +118,10 @@ passed. Evidence is retained under `3-webiq-agent/.azure/` in
 
 ### Scope
 
-"WebIQ" is the workshop label for built-in Web Search, not an additional product.
-Public web only; no private documents, search index, separate Bing connection, or UI.
+"WebIQ" is this lab's historical label for built-in Web Search; it does not
+call the separate Microsoft Web IQ APIs. Public web only; no private documents,
+search index, separate Bing connection, or UI. See the
+[web-grounding comparison](./Presentation/webiqVSwebsearchtool.md).
 
 ## F004 - Microsoft Foundry: Agent with Simple Tools
 
@@ -209,7 +219,7 @@ free-form explanations, consequential decisions about people, or UI.
 
 **Type:** Feature
 
-**Status:** Implemented; live deployment and presentation smoke test pending
+**Status:** Implemented; historical live pass recorded in tests.md, not rerun during the documentation review
 
 **Demo:** [Content Safety](./6-content-safety/README.md)
 
@@ -226,7 +236,7 @@ categories, and show how an application applies a severity threshold.
 - [x] Missing categories, invalid scores, and service failures are not ALLOWs.
 - [x] Tests cover both sides of the threshold without harmful example text.
 - [x] Include dependencies, setup/run/cleanup documentation; compile/lint Bicep.
-- [ ] Deploy and smoke-test the service in the target subscription.
+- [x] Deploy and smoke-test the service in the target subscription (historical baseline).
 
 ### Scope
 
@@ -237,7 +247,7 @@ custom classifier, image moderation, production policy, or UI.
 
 **Type:** Feature
 
-**Status:** Implemented; live deployment and presentation smoke test pending
+**Status:** Current APIM/Managed Redis implementation validated offline; live gateway cache-hit verification pending (earlier local-cache pass does not apply)
 
 **Demo:** [Semantic caching](./7-semantic-cache/README.md)
 
@@ -318,7 +328,7 @@ score, telemetry pipeline, comprehensive benchmark, or safety certification.
 
 **Type:** Feature
 
-**Status:** Implemented; live deployment and presentation smoke test pending
+**Status:** Implemented; historical live pass after retry recorded in tests.md, not rerun during the documentation review
 
 **Demo:** [Agent red teaming](./9-agent-red-teaming/README.md)
 
@@ -336,7 +346,7 @@ authorized tutor agent and explain its attack-success scorecard.
 - [x] Reject missing results/scorecards and incomplete, skipped, or errored evaluations.
 - [x] Document Python/preview/region requirements, sensitive reports, costs/cleanup.
 - [x] Compile/lint Bicep and pass local tests without generating attack content.
-- [ ] Deploy and complete an authorized scan in a supported target region.
+- [x] Deploy and complete an authorized scan in a supported target region (historical baseline).
 
 ### Scope
 
@@ -403,7 +413,7 @@ the API, not improved accuracy or production training quality.
 
 **Type:** Feature
 
-**Status:** Implemented and live-tested on 2026-10-26
+**Status:** Historical managed retrieval live pass on 2026-10-26; current project-enabled infrastructure not live-verified
 
 **Demo:** [Foundry IQ](./11-foundry-iq/README.md)
 
@@ -424,6 +434,7 @@ a tiny managed knowledge base answering a compound workshop question with source
 - [x] Include dependencies, offline tests, deployment/run/cost/cleanup instructions.
 - [x] Compile/lint Bicep, pass tests, and wire the Search endpoint into the runner.
 - [x] Deploy in a supported region and show a grounded live answer.
+- [ ] Deploy and live-test the current project-enabled template; the historical pass predates the project addition.
 
 ### Live verification
 
@@ -493,7 +504,7 @@ Graph tenant objects are intentionally provisioned separately from ARM/Bicep.
 
 **Type:** Feature
 
-**Status:** Implemented; live model-backed presentation smoke tests pending
+**Status:** Implemented; historical live pass for all four patterns after startup retry, not rerun during the documentation review
 
 **Demo:** [Agent orchestrations](./13-agent-orchestrations/README.md)
 
@@ -516,7 +527,7 @@ Group Chat, and Magentic orchestration using Microsoft Agent Framework and Found
   concurrent calls, shared chat, and manager coordination of both specialists.
 - [x] Include pinned framework dependencies, Learn links, setup/run/cost/cleanup
   documentation; compile/lint Bicep and pass local tests.
-- [ ] Deploy and run each of the four patterns against the target Foundry project.
+- [x] Deploy and run each of the four patterns against the target Foundry project (historical baseline).
 
 ### Scope
 

@@ -28,7 +28,10 @@ Python / any chat client
   not Entra authentication, for its external cache. The template reads the key
   server-side; it never exports it to the application or deployment outputs.
 - Foundry generation and embeddings use APIM's system-assigned managed identity
-  with **Cognitive Services OpenAI User** RBAC. Foundry API keys stay disabled.
+  with **Cognitive Services OpenAI Contributor** RBAC (role ID
+  `a001fd3d-188f-4b5d-821b-7da978bf7442`). This is broader than inference-only
+  OpenAI User; the README does not claim least-privilege production RBAC.
+  Foundry API keys stay disabled.
   The caller uses `az login`; APIM validates its tenant, audience, and presenter
   object ID **before** cache lookup. No APIM subscription key is needed.
 
@@ -43,6 +46,12 @@ and role-assignment permissions, APIM Consumption and Managed Redis availability
 and quota for `gpt-4.1-mini` (`2025-04-14`, Global Standard) and
 `text-embedding-3-small` (`1`, Global Standard). Endpoints are public for this workshop.
 Provisioning APIM and Redis can take several minutes.
+
+**Verification status:** offline tests and Bicep validation cover this gateway
+implementation; a live APIM/Redis cache hit is still unverified in
+[the recorded test status](../tests.md). The historical local-cache pass does
+not validate this replacement. Do not present model responses alone as a live
+cache pass.
 
 Both model deployments use `GlobalStandard`; inference may be processed outside
 the resource's region. In Sweden Central, `text-embedding-3-small` version `1`

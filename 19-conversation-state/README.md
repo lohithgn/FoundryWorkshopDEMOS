@@ -35,7 +35,9 @@ export AZURE_OPENAI_DEPLOYMENT=$(python -c 'import json; print(json.load(open(".
 python demo.py
 ```
 
-Bicep disables local auth and grants Cognitive Services OpenAI User to the presenter.
+Bicep disables local auth and grants Foundry User (role ID
+`53ca6127-db72-4b80-b1b0-d745d6d5456d`, formerly Azure AI User) to the presenter.
+Inference uses that presenter's `AzureCliCredential`, not a model-side user identity.
 If inference returns 403, confirm the principal and allow time for RBAC propagation.
 `endpoint` is the inference root, not a Foundry project URL; the client appends
 `/openai/v1/`. The `deployment` output matches the root deploy runner contract.
@@ -119,9 +121,11 @@ state unchanged. Model behavior and Azure reachability require the live run.
 ## Costs and cleanup
 
 Only a pay-per-token GlobalStandard model deployment is created: no Search, provisioned
-throughput or hosted agent compute. The default lesson makes about ten short chat calls;
+throughput or hosted agent compute. The default lesson makes nine short chat calls;
 charges depend on actual input/output tokens and current regional model pricing.
 Use the Azure pricing calculator. SQLite has local storage only.
+The Azure endpoint is public; GlobalStandard processing can leave the account
+region. Logical Alice/Bob scopes do not alter the Azure billing/authentication identity.
 
 ```sh
 python demo.py --action delete --user alice --conversation lesson

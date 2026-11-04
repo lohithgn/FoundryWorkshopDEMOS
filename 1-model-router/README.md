@@ -33,7 +33,9 @@ This is a public Azure workshop setup, not a production networking design.
 ## 1. Deploy
 
 To deploy, install dependencies, and run local tests plus this live demo in one
-command, run `python3 deploy.py` from the repository root. See the
+command, run `python3 deploy.py --demo 1` from the repository root. Omitting
+`--demo 1` selects every discovered lab, including billable training/evaluation
+and labs with additional tenant prerequisites. See the
 [repository runner instructions](../README.md) for subscription selection, logs,
 and all-demo deployment. The manual steps below remain available.
 
@@ -93,7 +95,9 @@ from the deployed router's model version.
 
 1. Show that every request sets `model` to the same router **deployment name**.
 2. Run the default prompts. Point at `Serving model`, taken from `response.model`,
-   not guessed from the prompt.
+   not guessed from the prompt. This is the service-reported identifier, not
+   independent billing evidence or a guarantee of how every router/API version
+   exposes its underlying model.
 3. Run a custom prompt and explain that selection happens server-side. Repeated
    or different prompts **can select the same model**; this is not a failure.
 4. Discuss the trade-off: one deployment can balance quality and cost across tasks,

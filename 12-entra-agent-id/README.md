@@ -12,6 +12,11 @@ presenter. Show three things:
 This is a real Agent ID token exchange, not a renamed ordinary app registration.
 There is no user delegation, Graph data access, agent user account, or hosted app.
 
+**Recorded status: blocked on interactive tenant identity setup/credentials.**
+Offline token-flow and Graph mocks do not establish a successful Agent ID login
+or live inference. Complete the tenant setup below before attempting a live run;
+see [recorded test results](../tests.md).
+
 ## Prerequisites
 
 - Python 3.10+, Azure CLI with Bicep, and **PowerShell 7** (`pwsh`).
@@ -19,7 +24,10 @@ There is no user delegation, Graph data access, agent user account, or hosted ap
   agents, for example **Agent ID Developer**.
 - An administrator able to consent to the explicit Graph delegated scopes in
   the setup script. Azure subscription Owner alone does not grant tenant rights.
-- Azure resource creation/role-assignment permissions and `gpt-4.1-mini` quota.
+- Azure resource creation/role-assignment permissions and `gpt-4.1-mini` quota
+  in East US 2 (the template default), version `2025-04-14`, Global Standard.
+  Global Standard can process data outside the account region; use synthetic
+  prompts and confirm model/region access for your subscription.
 
 The setup uses the supported Graph Agent ID APIs, including a beta endpoint for
 child identity creation. Preview support/licensing and tenant policies may vary.

@@ -15,6 +15,8 @@ availability in your selected region. Uses Entra ID, public endpoints, no keys.
 
 ```bash
 az login
+az account set --subscription "<subscription-id>"
+az provider register --namespace Microsoft.CognitiveServices --wait
 RG=rg-foundry-prompt-injection-demo
 az group create -n "$RG" -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
 az deployment group create -g "$RG" -n demo --template-file infra/main.bicep \
@@ -31,7 +33,8 @@ pip install -r requirements.txt
 python demo.py
 ```
 
-Show the two raw sources, Prompt Shields' actual classifications, raw baseline
+Show the two raw sources in `SOURCES` in `demo.py`, then Prompt Shields' actual
+classifications, raw baseline
 answers, and validated protected answers. `--without-shields` explicitly omits
 the classifier for comparison; it does not claim a successful shield analysis.
 Classification failures are fatal rather than treated as "safe."
@@ -63,7 +66,12 @@ az bicep lint --file infra/main.bicep
 az group delete -n "$RG" --yes
 ```
 
-Four model generations and two safety analyses are billed per default run.
+The default attempts four model requests and two safety analyses; a filtered
+request is not a successful generation. Actual service usage determines charges.
+The template deploys GPT-4.1-mini `2025-04-14`, GlobalStandard capacity 10, plus
+an S0 Content Safety account in East US 2 by default. It grants the presenter
+Cognitive Services OpenAI User for inference and Cognitive Services User for
+Content Safety. GlobalStandard processing may leave the account region.
 Allow RBAC propagation after deployment. No tenant objects or durable source
 data are created.
 

@@ -11,6 +11,11 @@ Only filesystem reading is enabled in the harness. Shell, writes, web fetching, 
 
 ## Run
 
+Requires Python 3.10+, Azure CLI/Bicep, a signed-in Entra user with resource
+creation/role-assignment rights, quota for the model below, and access to the
+managed harness/Skills/Toolbox previews. Microsoft Learn MCP is a public,
+read-only external service; network access to it is required.
+
 From the repository root:
 
 ```bash
@@ -20,17 +25,23 @@ python3 deploy.py --demo 42 --location swedencentral
 Manual equivalent:
 
 ```bash
-az group create --name rg-foundry-managed-harness-tool-search-demo --location swedencentral --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create --resource-group rg-foundry-managed-harness-tool-search-demo --template-file 42-managed-harness-tool-search/infra/main.bicep --parameters location=swedencentral principalId="$(az ad signed-in-user show --query id -o tsv)"
 cd 42-managed-harness-tool-search
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m unittest -q
+az login
+az account set --subscription "<subscription-id>"
+mkdir -p .azure
+az group create --name rg-foundry-managed-harness-tool-search-demo --location swedencentral --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
+az deployment group create --resource-group rg-foundry-managed-harness-tool-search-demo --template-file infra/main.bicep --parameters location=swedencentral principalId="$(az ad signed-in-user show --query id -o tsv)" \
+  --query '{outputs:properties.outputs}' -o json > .azure/deployment.json
 .venv/bin/python demo.py --preflight
 .venv/bin/python demo.py
 ```
 
-For the manual path, supply the ARM outputs as environment variables or save them in `.azure/deployment.json` with shape `{subscription, resourceGroup, outputs}`. Output mappings:
+The manual commands save the required `outputs` envelope; the root runner adds
+`subscription`/`resourceGroup` metadata too. Existing deployments can instead use
+these environment mappings (clear stale overrides when changing projects):
 
 | Output | Environment |
 |---|---|
@@ -54,6 +65,21 @@ Actual deployment: **succeeded**, `rg-foundry-managed-harness-tool-search-demo`,
 Actual native Toolbox live search and call: **PASS**. Actual managed harness + immutable native skill: **PASS**, completed service response `caresp_0fb2252efa1b3b1200URMiDHBHUqz6M3k1s5yqhTterx5NFsza` included all brief headings and `NATIVE-SKILL-42`. Overall live exit **0/PASS**. Results are separately recorded in `.azure/live-report.json`; the script exits **1/BLOCKED** if either native capability is unavailable on a subsequent run.
 
 One Toolbox search, one docs call, one agent conversation, one response; no resubmission loop. MCP stage timeout: 180 seconds; response timeout: 180 seconds. Harness restrictions disallow output-token-limit overrides. Files under ignored `.azure/` contain deployment outputs, ARM and live transcripts, read-back definitions, discovered schemas, and results, never authentication tokens.
+
+## Cost and cleanup
+
+The managed harness and model requests can incur service/usage charges;
+preview access is not a free-usage guarantee. Public networking and GlobalStandard
+processing outside the account region are workshop simplifications.
+Normal execution attempts temporary-object/role cleanup, but interrupted or
+failed cleanup can leave assets. Inspect the printed/report IDs, then delete only
+the dedicated lab group after confirming the subscription and actual group name:
+
+```bash
+az group delete --name rg-foundry-managed-harness-tool-search-demo --yes --no-wait
+```
+
+Local ignored evidence remains after group deletion.
 
 ## Official facts verified
 

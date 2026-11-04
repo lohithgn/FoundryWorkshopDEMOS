@@ -4,8 +4,9 @@ A short terminal comparison: a Foundry prompt agent searches the public web,
 answers a question about model router, and prints **source titles and URLs**.
 The script then runs the same model, instructions, and prompt **without the
 Web Search tool**, displaying the answer and zero search calls/citations.
-Here, the workshop label "WebIQ" means Foundry's built-in **Web Search** tool;
-it is not a separate WebIQ product or a private enterprise search integration.
+Here, the historical workshop label "WebIQ" means Foundry's built-in **Web Search**
+tool, not the separate [Microsoft Web IQ APIs](https://learn.microsoft.com/web-iq/resources/faq)
+or a private enterprise search integration.
 
 ## Infrastructure and prerequisites
 
@@ -75,7 +76,9 @@ the new model deployment; changing the Python deployment name alone does not
 upgrade an existing `gpt-4.1-mini` deployment. Refresh the environment variables
 from the deployment outputs afterward, especially if a previous session set
 `AZURE_OPENAI_DEPLOYMENT` to the old name.
-The [root runner](../README.md) deploys and executes all four demos.
+From the repository root, `python3 deploy.py --demo 3` deploys and executes this
+lab. The [root runner](../README.md) selects all discovered labs if `--demo` is
+omitted; it is not limited to the original four demos.
 
 ### Presenter talk track
 

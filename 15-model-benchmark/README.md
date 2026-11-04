@@ -11,7 +11,11 @@ The deploying identity needs resource creation and role-assignment rights
 (Contributor plus User Access Administrator, or equivalent). Inference uses
 `DefaultAzureCredential` and scoped **Cognitive Services OpenAI User**; no keys
 and no interactive browser prompt. For applications pass
-`principalType=ServicePrincipal` with the application object ID.
+`principalType=ServicePrincipal` with the **service principal object ID**
+(`az ad sp show --id "<client-id>" --query id -o tsv`), not the application
+registration object ID or client ID. Ensure `DefaultAzureCredential` actually
+selects that workload identity; changing the Bicep principal does not configure
+local authentication.
 
 From this directory, check availability **before** deployment:
 
@@ -69,6 +73,10 @@ when exposed, schema compliance, exact category+priority correctness, errors,
 wall-clock latency, raw token usage, and estimated USD. Router's returned model
 identifier is **not guaranteed** to identify the underlying billable model.
 Errors/refusals/incomplete output count as wrong, not dropped samples.
+For completed benchmark execution, the CLI exits nonzero if **all** samples have
+`transport_error`; mixed failures and low accuracy can still exit 0.
+Inspect the report, not only the exit code:
+this is a measurement tool, not a release-quality gate.
 
 Overall and easy/hard summaries report p50 (median), nearest-rank p95, min/max for completed HTTP calls,
 tokens, and failures separately. Transport failures are excluded from success
@@ -122,7 +130,7 @@ All three deployments consume quota; GlobalStandard is not a regional-processing
 guarantee. Public networking is enabled. No Azure work is done by offline tests.
 
 ```bash
-az group delete --name foundry-lab15 --yes --no-wait
+az group delete --name "$RG" --yes --no-wait
 ```
 
 ## Official sources

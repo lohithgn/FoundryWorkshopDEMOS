@@ -134,7 +134,7 @@ Standalone deployment, from this folder:
 
 ```bash
 python demo.py --preflight
-RG=rg-foundry-native-memory-demo
+RG=rg-foundry-native-agent-memory-demo
 LOCATION=eastus2
 PRINCIPAL_ID=$(az ad signed-in-user show --query id -o tsv)
 az group create --name "$RG" --location "$LOCATION" --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
@@ -211,8 +211,12 @@ subscription/resource group, delete the dedicated lab group:
 
 ```bash
 az group delete --subscription "<subscription-id>" \
-  --name rg-foundry-native-memory-demo --yes --no-wait
+  --name rg-foundry-native-agent-memory-demo --yes --no-wait
 ```
+
+This is also the root runner's default group name. If an earlier manual run used
+`rg-foundry-native-memory-demo` or a custom prefix, delete that actual dedicated
+group instead; confirm deployment state before deletion.
 
 Also sign the second user out when finished:
 

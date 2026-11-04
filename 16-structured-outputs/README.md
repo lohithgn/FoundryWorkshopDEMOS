@@ -11,7 +11,9 @@ Python 3.10+, Azure CLI/Bicep, `az login`, model access/quota. Deployment requir
 resource-creation and role-assignment privileges, such as Contributor plus User
 Access Administrator. Inference uses `DefaultAzureCredential` and **Cognitive
 Services OpenAI User**, never API keys or an interactive browser.
-For an application identity, use its object ID and `principalType=ServicePrincipal`.
+For an application identity, use its **service principal object ID**, not the
+application registration object ID/client ID, and `principalType=ServicePrincipal`.
+Configure `DefaultAzureCredential` for that same identity separately.
 Allow several minutes for RBAC propagation after deployment.
 
 Run from this directory:
@@ -44,8 +46,10 @@ No Azure provisioning or inference is performed by the offline tests.
 Model availability varies by subscription/region; do not deploy an arbitrary
 replacement model without verifying its strict-output support. HTTP 403 usually
 requires role/propagation checks; HTTP 400 may indicate unsupported schema/model;
-429 indicates limits. Service request errors, including either error probe, remain
-explicit and cause exit 1. Requests pause 6.1 seconds between calls by default:
+429 indicates limits. Results classified as `request_error`, including either
+probe, cause exit 1. The recognized HTTP 400 `content_filter` refusal-attempt
+observation is recorded separately and does not by itself fail the run.
+Requests pause 6.1 seconds between calls by default:
 the live default capacity-10 deployment reported 10 requests per 60 seconds.
 Inspect deployment `properties.rateLimits` rather than assuming a model's RPM/TPM
 ratio; use `--request-interval SECONDS` to tune pacing.
@@ -111,7 +115,7 @@ Public networking is enabled; GlobalStandard may process outside the account
 region. Use only synthetic tickets, never confidential support content.
 
 ```bash
-az group delete --name foundry-lab16 --yes --no-wait
+az group delete --name "$RG" --yes --no-wait
 ```
 
 ## Official sources

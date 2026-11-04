@@ -50,7 +50,8 @@ Do not create an unrecorded group before running standalone: it creates fresh
 groups itself and refuses to adopt an unowned group.
 
 Prerequisites: Python 3.10+, signed-in Azure CLI user; resource/role-assignment
-creation and ARM policy-read permissions, APIM Developer availability in `eastus2`, and
+creation and ARM policy-read/**write** permissions for the per-run counter reset,
+APIM Developer availability in `eastus2`, and
 `gpt-4.1-mini` GlobalStandard quota capacity 10 (10 RPM / 10,000 TPM), needed
 to keep the eight-call gateway test below the model's own request limit.
 Model capacity reserves quota, not an extra fixed token charge. Foundry project writes are

@@ -1,5 +1,9 @@
 # 45 — Permission-native Foundry IQ + Fabric IQ
 
+> **Current full-lab status: BLOCKED.** Native Blob permission checks passed,
+> but no second real user or enabled/licensed synthetic Fabric environment was
+> available. Omitted identity is not a second-user test.
+
 Two **native** integrations, using synthetic data only:
 
 * A managed Azure Blob **knowledge source** synchronizes container RBAC scope into
@@ -15,9 +19,11 @@ Two **native** integrations, using synthetic data only:
 
 Python 3.11+, Azure CLI/Bicep, signed-in Entra user with resource/role-assignment
 rights, supported model quota, and permission-filter preview availability.
-Foundry is eastus2, Search westus2. Billable: Basic Search, chat capacity **5**
-and embedding capacity **1**, small LRS storage; no Fabric capacity is purchased
-automatically. Chat capacity 5 avoids throttling two ~900-token permission probes.
+Defaults: Foundry eastus2, Search westus2. Basic Search bills while idle; LRS
+storage and chat/embedding usage also incur charges. Chat capacity **5** and
+embedding capacity **1** are throughput allocations, not prepaid PTUs or spending
+caps; no Fabric capacity is purchased automatically. Chat capacity 5 avoids
+throttling two ~900-token permission probes.
 
 From the repository root (runtime outputs are mapped/loaded automatically):
 
@@ -102,6 +108,23 @@ The full lab exits **2** if either Fabric or two-user verification is blocked.
 Offline test doubles validate contracts only; they cannot establish live success.
 `.azure/deployment.json`, `fabric-preflight.json`, `live-report.json` are ignored;
 no stored keys, tokens, OAuth secrets, or broad directory changes.
+
+## Cleanup
+
+Basic Search continues billing when idle; stopping Python does not remove Search,
+Storage, the knowledge source or the persistent Fabric-tool agent. Confirm the
+actual group in `.azure/deployment.json` (a recorded/custom target can differ),
+then delete only this lab's dedicated group:
+
+```bash
+az group delete --name rg-foundry-governed-iq-demo --yes --no-wait
+```
+
+Azure RG deletion does **not** remove Fabric workspaces, semantic models, data
+agents, paid capacity, tenant settings or the secondary CLI session. Remove only
+designated synthetic assets with the Fabric administrator's approval; never
+delete shared capacity or business content. Sign the second user out of its
+dedicated profile when finished. Local ignored evidence remains.
 
 ## Current facts and boundaries
 

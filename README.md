@@ -1,24 +1,59 @@
 # Foundry workshop demos
 
-## Deploy and test everything
+A collection of **46 standalone labs** for Microsoft Foundry and Microsoft
+Agent Framework. Each lab combines a small synthetic scenario, deployable
+infrastructure, Python code, tests, and presentation/cleanup instructions.
+Some orchestration runs locally; other labs create managed prompt agents,
+hosted runtimes, or service-native tools. These are deliberately distinguished
+in the lab descriptions.
+
+- [Lab catalog](./demos.md): what each lab does and its implementation boundary.
+- [Verification results](./tests.md): dated offline, deployment and live evidence.
+- [Backlog](./BACKLOG.md): acceptance criteria and remaining work.
+- [Cleanup](#remove-all-lab-resource-groups): preview and remove workshop resources.
+
+## Choose a learning path
+
+| Focus | Suggested labs |
+| --- | --- |
+| First model calls and output quality | 14 fundamentals, 1 routing, 16 structured outputs, 15 benchmarking |
+| Agent orchestration and tools | 2 workflow, 13 orchestration patterns, 4 Toolbox pricing, 20 approval |
+| Retrieval and knowledge | 17 application RAG, 11 minimal Foundry IQ, 27 managed Blob ingestion, 21 application permissions, 45 native permissions/Fabric |
+| Skills, state and automation | 19 local state, 28-30 skills, 31 native memory, 32 browser, 33 skill releases, 42 managed harness/Tool Search, 43 routines |
+| Evaluation, safety and operations | 6 Content Safety, 22 injection defenses, 38 guardrails, 8/9 evaluation/red teaming, 23 CI gates, 25 resilience, 39 gateway limits, 44 optimization |
+| Documents, audio and enterprise context | 26 vision, 34 Document Intelligence, 40 voice, 41 Content Understanding, 35 Work IQ |
+| Identity, deployment and fleet operations | 12 Entra Agent ID, 18 tracing, 24 publishing, 36 hosted code, 37 monitoring, 46 fleet governance |
+| Gateway response reuse | 7 semantic caching |
+
+This is a navigation guide, not a dependency chain. Start with one lab and
+check its prerequisites and latest live status before selecting the next.
+Private-network deployment, native File Search and general Teams/Copilot/A2A
+publication are not implemented as dedicated labs. Work IQ's specific A2A tool
+integration is not a general publication lab.
+
+## Deploy and test selected labs
 
 Requires Python 3.10-3.13 for running all demos (the red-teaming SDK restricts
 Python versions), Azure CLI, Bicep (`az bicep version`), and an interactive
 Azure user with resource creation and role-assignment permissions. See each
 demo's prerequisites for model quota and access requirements.
 
-There are **46 standalone demos**. Prefer selecting a small subset rather than
+The shared runner uses POSIX virtual-environment paths (`.venv/bin/python`);
+run it on macOS, Linux or WSL. Lab 12's separate tenant setup additionally uses
+PowerShell. Windows users should follow each lab's platform-specific guidance
+rather than assuming every Bash example runs unchanged in PowerShell.
+
+Prefer selecting a small subset rather than
 deploying every resource and running every paid operation at once:
 
 ```bash
 az login
-python3 deploy.py --subscription "<subscription-id>" --demo 14
+python3 deploy.py --subscription "<subscription-id>" --demo 1
 python3 deploy.py --subscription "<subscription-id>" --demo 20 --demo 25
 ```
 
 `--demo` accepts a demo number or exact folder name and can be repeated. Selected
 demos run in numeric order; prerequisites for unselected demos are not required.
-Without `--demo`, the runner selects all 46.
 Labs 38-46 add the nine selected coverage-review priorities. The duplicate
 Content Understanding selection is one lab. Private networking, native File
 Search, and Teams/Copilot/general A2A publication were not selected.
@@ -49,6 +84,10 @@ issuance; tenant/service cause unresolved) and lab 45 (second real user and
 enabled/licensed Fabric prerequisites). Lab 46's API gates passed, but its
 portal Control Plane UI is not verified. See [verification results](./tests.md)
 before presenting these labs as live-ready.
+Historical passes also have implementation-specific limits: lab 3's current
+with/without-search comparison and lab 11's project-enabled template have not
+been live-verified; lab 7's replacement gateway cache still needs its live hit
+test. Do not extend an earlier implementation's pass to a changed workflow.
 Lab 32 requires a Browser Automation-supported region such as `eastus`, not the
 runner's `eastus2` default. The runner rejects unsupported template locations
 before any Azure resource changes. Present lab 32 separately using its manual
@@ -59,7 +98,7 @@ Copilot Credits billing and individual user authorization. Its first deployment
 without that connection deliberately fails the live phase; complete the
 [Work IQ setup](./35-work-iq/README.md) before expecting an end-to-end pass.
 
-Before running **all demos**, complete the tenant setup in
+Before selecting **lab 12**, complete the tenant setup in
 [Entra Agent ID](./12-entra-agent-id/README.md). It requires separate tenant
 roles/admin consent and sets `ENTRA_TENANT_ID`, `ENTRA_BLUEPRINT_CLIENT_ID`,
 `ENTRA_AGENT_ID`, and `ENTRA_BLUEPRINT_SECRET`. Run the root command from that
@@ -81,12 +120,14 @@ publishing route and additionally needs subscription Activity Log read access;
 read its API/availability caveats before presenting. To present individual demos,
 use `--demo` or their standalone deployment instructions.
 
-From the repository root, after that setup:
+Selecting every lab is an advanced, paid operation, not a one-command quick
+start. Labs 32 and 42 have incompatible location requirements, so there is no
+single location that deploys the entire collection successfully. Select them
+in separate invocations and complete their manual connections first.
 
-```bash
-az login
-python3 deploy.py --subscription "<subscription-id>"
-```
+Omitting `--demo` selects all 46 labs. This is not a supported single-region
+end-to-end quick start for the current collection; use explicit selectors
+as shown above.
 
 If `--subscription` is omitted, the script uses the currently selected Azure CLI
 subscription. It does not change that selection. Optional flags:
@@ -200,8 +241,10 @@ maps `alternateDeployment` to `AZURE_OPENAI_ALTERNATE_DEPLOYMENT` and
 Tracing maps `applicationInsightsConnectionString` to
 `APPLICATIONINSIGHTS_CONNECTION_STRING`; publishing maps `projectResourceId` to
 `FOUNDRY_PROJECT_RESOURCE_ID`.
-Other output contracts
-require updating the runner. Numbered folders are processed in numeric order.
+The runner only maps the output names listed above. A lab needing additional
+outputs must either load them explicitly from its saved deployment record
+(as several newer labs do) or add a tested mapping to the runner. Numbered
+folders are processed in numeric order.
 Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 `storageResourceId` as documented above, along with the project and embedding outputs.
 
@@ -240,6 +283,7 @@ Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 - [Native Foundry memory across independent conversations](./31-native-agent-memory/README.md)
 - [Browser runbook automation with explicit approval](./32-browser-runbook/README.md)
 - [Skill evaluation, default promotion, pinned consumers, and rollback](./33-skill-release-governance/README.md)
+- [Document Intelligence: invoice extraction through an agent's Function tool](./34-document-intelligence/README.md)
 - [Work IQ in a persistent Foundry agent with per-user OAuth](./35-work-iq/README.md)
 - [Custom-code Foundry hosted agent with a simple UI](./36-hosted-agent/README.md)
 - [Live production-quality monitoring and recovery with a simple UI](./37-production-monitoring/README.md)
@@ -255,11 +299,14 @@ Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 - [Backlog](./BACKLOG.md)
 
 Each demo has standalone Bicep, local Python code, dependencies, tests, and manual
-deployment/cleanup instructions. Generative agent demos use `gpt-4.1-mini` by
-default, except WebIQ, which uses `gpt-5-mini`; Model Router and Microsoft Decision
-use their own specialized models.
-Content Safety needs no model, and semantic caching adds an embedding deployment.
-The cache is an application pattern, not a native Foundry cache toggle.
+deployment/cleanup instructions. Model names, versions, SKUs and capacities are
+lab-specific: consult the lab's template and README rather than assuming one
+shared model default. Model Router and Microsoft Decision use specialized
+models; voice and Content Understanding have additional model requirements.
+Content Safety needs no generative-model deployment, while retrieval and
+semantic caching can add embedding deployments. Lab 7's cache runs in gateway
+policies with Azure Managed Redis, not in application code or a native Foundry
+cache toggle.
 Model access, quota, regional availability, Web Search policy, Toolbox/evaluation/
 red-teaming/agentic-retrieval availability, fine-tuning access, and Entra Agent ID
 tenant permissions must be checked before presenting. Foundry IQ provisions
@@ -288,7 +335,9 @@ Provision its infrastructure and create the manual project-managed-identity
 Browser Automation connection before the live step; the runner does not create
 that connection. Use `--demo 32 --location eastus` after that setup.
 Skills/discovery and memory have preview dependencies; offline tests do not
-establish regional API availability. These five labs have not been live-deployed.
+establish regional API availability. The latest recorded verification for labs
+28-33 is offline-only; see the dated [results](./tests.md) rather than interpreting
+this as a fresh deployment attempt.
 
 Demos 1-7 are intended for short terminal presentations. Managed evaluation and
 red teaming can take several minutes; submit fine-tuning ahead of time and show
@@ -303,6 +352,10 @@ and evaluation before publishing or advanced identity scenarios. Expected
 failures are explicitly labeled; mocked unit-test results are not live service
 verification. Approval lab 20 proposes an action by default and never grants
 approval automatically. Follow its README to approve or reject the exact proposal.
+Lab 14's real permission-denial exercise requires its documented restricted
+identity setup; an administrator with inherited inference rights cannot prove
+the negative case simply by using a second endpoint. Previously generated
+development certificates may have expired.
 The CI regression variant in lab 23 is intentionally expected to exit nonzero.
 Search and monitoring resources can have ongoing charges while provisioned.
 
@@ -311,6 +364,22 @@ Search and monitoring resources can have ongoing charges while provisioned.
 ```bash
 python3 -m unittest discover -s . -p 'test_deploy.py' -v
 ```
+
+These shared tests check discovery, configuration and deployment contracts;
+they do not call live Azure services. Each lab also has a `test_demo.py` suite.
+Run that suite from its lab folder after following its dependency setup.
+The latest recorded shared run is 37/38 passing, with one pre-existing
+lab-13 infrastructure tag-layout assertion failure; the new labs have
+178/178 passing local tests. See [results](./tests.md) for dates and limitations.
+
+## Presenter reference material
+
+- [Agent definitions, runtime hosting and external registration](./Presentation/agent-types.md).
+- [Built-in web search versus the separate Web IQ APIs](./Presentation/webiqVSwebsearchtool.md).
+- [Private-network architecture discussion and coverage gap](./Presentation/foundryInfrastructure.md).
+
+Reference notes explain concepts; they are not additional implemented labs or
+evidence of live feature availability.
 
 ## Remove all lab resource groups
 

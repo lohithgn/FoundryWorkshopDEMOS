@@ -49,7 +49,8 @@ python demo.py
 ```
 
 Role assignment propagation can take minutes; retry a 403 after checking roles.
-Bicep assigns Cognitive Services OpenAI User, Search Service Contributor (index schema)
+Bicep assigns Foundry User (role ID `53ca6127-db72-4b80-b1b0-d745d6d5456d`,
+formerly Azure AI User), Search Service Contributor (index schema)
 and Search Index Data Contributor (upload/read/delete). Local auth is disabled.
 `endpoint` is the inference service root; the client appends `/openai/v1/`.
 `deployment` and `embeddingDeployment` are deployment names, not project URLs.
@@ -115,6 +116,9 @@ The run embeds the corpus twice plus four questions and makes 24 small chat call
 token usage, model deployment type, currency and regional prices determine cost.
 No Provisioned SKU or semantic ranker is used. Check the Azure pricing calculator;
 do not leave the Search service running between workshops.
+Both services have public endpoints. GlobalStandard chat processing is not
+restricted to the account region; the regional embedding deployment has a
+different deployment type. Use only the bundled synthetic documents/questions.
 
 Each run creates unique indexes and removes them in `finally`; an interrupted process
 may leave an index, and deleting indexes does **not** stop Search charges.

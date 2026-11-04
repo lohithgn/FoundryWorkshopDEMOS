@@ -12,6 +12,11 @@ If generation is unavailable, the optimizer still attempts the documented two-ro
 
 ## Run
 
+Requires Python 3.10+, Azure CLI/Bicep, a signed-in Entra user with resource
+creation/role-assignment rights and Foundry User (assigned by Bicep), both model
+quotas below, and native dataset-generation/evaluation/optimizer availability.
+SDK serialization and successful deployment alone do not prove preview access.
+
 ```bash
 python3 deploy.py --demo 44 --location eastus2
 ```
@@ -19,17 +24,23 @@ python3 deploy.py --demo 44 --location eastus2
 Manual path:
 
 ```bash
-az group create --name rg-foundry-evaluation-optimizer-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create --resource-group rg-foundry-evaluation-optimizer-demo --template-file 44-evaluation-optimizer/infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)"
 cd 44-evaluation-optimizer
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m unittest -q
+az login
+az account set --subscription "<subscription-id>"
+mkdir -p .azure
+az group create --name rg-foundry-evaluation-optimizer-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
+az deployment group create --resource-group rg-foundry-evaluation-optimizer-demo --template-file infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)" \
+  --query '{outputs:properties.outputs}' -o json > .azure/deployment.json
 .venv/bin/python demo.py --preflight
 .venv/bin/python demo.py
 ```
 
-Root invocation needs no manual runtime exports: the root supplies existing outputs, and the script reads its own `.azure/deployment.json` `{subscription, resourceGroup, outputs}` for the optimizer deployment. Manual runs can supply the same state or:
+Root invocation needs no manual runtime exports: the root supplies existing outputs, and the script reads its own `.azure/deployment.json` `{subscription, resourceGroup, outputs}` for the optimizer deployment.
+The manual commands save the required `outputs` envelope. Existing deployments
+can instead use the following mappings; clear stale environment overrides:
 
 | Output | Environment |
 |---|---|
@@ -71,9 +82,24 @@ Ignored `.azure/` contains root-compatible deployment state, ARM/live transcript
 
 ## Bounded cost and cleanup
 
+Generation, cloud evaluators, optimizer candidates and model Responses all make
+paid service/model requests. The small job bounds are not a monetary spending
+cap; failed jobs may incur usage. GlobalStandard processing can occur outside
+the account region, and public networking is enabled for this workshop.
+
 At most one generation job (two samples), one breadth evaluation run (two rows × three evaluators), one optimizer job (one nonbaseline candidate; two training samples and one holdout), and one explicit heldout gate run (two Responses completions × one relevance evaluator) per full invocation. Model transport retries are limited to one. Every long-running job stage has a 600-second deadline and requests native cancellation on timeout. Jobs are never resubmitted automatically. The temporary optimizer agent is deleted; dataset/evaluation/job evidence and infrastructure remain deployed. There is no routine or unattended trigger.
 
 The generated training source excludes refunds; the refund question is reserved for native `validation_set`. The full catalog belongs in baseline agent instructions so heldout measures instruction quality, not unavailable knowledge. The optimizer evaluates prompt-agent configuration entirely in cloud. Client function execution is measured by the separate actual-model tool-trace evaluation; it is not falsely claimed to execute inside prompt-agent optimization or through a persisted prompt-agent tool endpoint.
+
+After inspecting evidence, delete only the dedicated lab group (confirm the
+subscription and actual name, especially when using a custom runner prefix):
+
+```bash
+az group delete --name rg-foundry-evaluation-optimizer-demo --yes --no-wait
+```
+
+Ignored local reports remain. A timed-out job's cancellation request is not
+proof that all server-side work stopped immediately.
 
 ## Current official facts
 

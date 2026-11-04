@@ -48,6 +48,9 @@ windows; this does not implement or simulate a guardrail.
 
 Azure CLI must be signed in as a user with resource creation, role assignment,
 ARM read and Cognitive Services OpenAI User permissions. Python 3.10+ is required.
+The native agent gate additionally uses Foundry User on the project, assigned by
+the template. Both deployments need `gpt-4.1-mini` `2025-04-14` GlobalStandard
+quota: capacity 3 for the model baseline plus 5 for the agent baseline.
 `deploy_lab.py` restores dependencies, compiles/lints Bicep, tests, deploys and
 runs live evidence. Resources stay deployed for presentation.
 
@@ -76,6 +79,10 @@ root-shaped `{subscription,resourceGroup,outputs}` `.azure/deployment.json`.
 Recorded outputs take precedence over inherited environment values.
 All authentication is Entra (`AzureCliCredential`); no keys are provisioned or
 printed. `.azure` contains deployment metadata and sanitized live evidence only.
+Each replay makes paid model/agent requests; rejected requests may also incur
+usage charges. Capacity is a throughput allocation, not prepaid PTUs or a
+spending cap. Public networking and GlobalStandard cross-region processing are
+workshop simplifications. Removing temporary agents does not delete infrastructure.
 
 ```bash
 .venv/bin/python -m unittest -v

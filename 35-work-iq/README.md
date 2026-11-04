@@ -196,9 +196,11 @@ Deleting a resource group does not remove Entra apps, Copilot billing policies,
 or local Azure CLI sign-ins. Remove the named private consent/report files when
 no longer needed; never delete your normal Azure CLI configuration.
 
-**Status:** Azure infrastructure and agent testing are tracked in
-[the verification log](../tests.md). User sign-in/admin consent are mandatory:
-neither offline mocks nor a model-only response count as a live Work IQ pass.
+**Status — 2026-10-27: Work IQ and two-user verification BLOCKED.** Azure
+deployment and saved-agent readback passed, but the live OAuth connection failed
+and administrator setup, billing confirmation and individual user sign-in were
+unavailable. See [the verification log](../tests.md). Neither offline mocks,
+successful deployment nor a model-only response count as a live Work IQ pass.
 
 References:
 [native Work IQ](https://learn.microsoft.com/azure/foundry/agents/how-to/tools/work-iq),

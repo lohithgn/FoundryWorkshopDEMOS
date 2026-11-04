@@ -72,6 +72,24 @@ ownership, reuse, and monitoring needs.
 - **Identity:** credentials and permissions, such as Microsoft Entra Agent ID.
   Identity provisioning is separate from Foundry agent registration.
 
+  ## Where to see these boundaries in the labs
+
+  - [Lab 2](../2-workflow-agent/README.md) and
+    [lab 13](../13-agent-orchestrations/README.md): local Agent Framework orchestration.
+  - [Lab 27](../27-FoundryIQwithKB/README.md): a persistent managed prompt agent
+    connected to a service-managed knowledge base.
+  - [Lab 36](../36-hosted-agent/README.md): custom code deployed to Foundry's
+    hosted runtime, with actual cloud invocations and correlated telemetry.
+  - [Lab 42](../42-managed-harness-tool-search/README.md): a managed Copilot
+    harness, distinct from lab 28's local skill-injection harness.
+  - [Lab 46](../46-fleet-governance/README.md): cross-project inventory and native
+    external registration with real telemetry. Its API evidence does not
+    establish portal Control Plane verification.
+
+  Consult the [dated results](../tests.md) before claiming a live gate passed.
+  Registration, identity, network isolation and runtime hosting are separate
+  concerns; one does not automatically provide the others.
+
 ## Sources
 
 - [Agent Framework: Microsoft Foundry model provider](https://learn.microsoft.com/agent-framework/integrations/by-component/model-providers/microsoft-foundry)

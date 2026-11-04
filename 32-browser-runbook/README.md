@@ -191,7 +191,7 @@ From the repository root, the runner command is:
 BROWSER_AUTOMATION_CONNECTION_NAME=browser-workspace python3 deploy.py --demo 32 --location eastus
 ```
 
-Before that command mutates providers/groups, the runner can invoke
+Before that command mutates providers/groups, the runner automatically invokes
 `32-browser-runbook/.venv/bin/python 32-browser-runbook/demo.py --preflight`
 with the same environment. The runner does not create the connection: on a first
 deployment its live step will fail until you manually create `browser-workspace`

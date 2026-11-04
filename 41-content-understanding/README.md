@@ -87,7 +87,9 @@ PY
 ```
 
 Use the root runner to save deployment outputs automatically. For an existing
-standalone resource, set `CONTENT_UNDERSTANDING_ENDPOINT` and deployment names.
+standalone resource, set `CONTENT_UNDERSTANDING_ENDPOINT`,
+`AZURE_OPENAI_DEPLOYMENT` (completion deployment), and
+`AZURE_OPENAI_EMBEDDING_DEPLOYMENT` (embedding deployment).
 Optional model overrides are `CU_COMPLETION_MODEL`, `CU_EMBEDDING_MODEL`;
 template parameters are `location`, `principalId`, `accountName`, `projectName`,
 `deploymentName`, `completionModel`, `completionVersion`,

@@ -12,6 +12,8 @@ From this directory:
 
 ```bash
 az login
+az account set --subscription "<subscription-id>"
+az provider register --namespace Microsoft.CognitiveServices --wait
 RG=rg-foundry-human-approval-demo
 az group create -n "$RG" -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
 az deployment group create -g "$RG" -n demo --template-file infra/main.bicep \
@@ -33,6 +35,10 @@ expire after 15 minutes. Approval creates one local SQLite booking; repeating
 it returns that existing booking. Rejection is final. Generate a fresh proposal
 to demonstrate the other branch. Only `foundry-intro` and 1-20 attendees pass
 the application policy. The model never receives an executable booking tool.
+To keep multiple exercises separate, use `--database <path>` consistently for
+proposal and decision commands; the printed commands otherwise use the default
+database. Approval/rejection needs Azure CLI authentication but does not make
+another model request.
 
 ## Teaching points and validation
 
@@ -61,6 +67,9 @@ No real reservations/payments or external side effects exist.
 Model inference is billed; SQLite is local. Public endpoints and keyless Entra
 authentication keep the workshop small. A 403 can mean RBAC propagation or
 missing inference rights. Errors are not converted to successful bookings.
+The template grants the presenter Cognitive Services OpenAI User and deploys
+GPT-4.1-mini `2025-04-14`, GlobalStandard capacity 10 in East US 2 by default.
+GlobalStandard processing may leave the account region; use synthetic input only.
 
 ```bash
 az group delete -n "$RG" --yes

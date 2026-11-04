@@ -1,5 +1,10 @@
 # 43 — Native one-time agent routines
 
+> **Current strict live status: BLOCKED.** The final root replay failed native
+> agentic-token issuance despite explicit creator dispatch identity and ready,
+> enabled identities. The tenant/service cause is unresolved; the historical
+> standalone timer pass below does not establish reproducibility.
+
 Creates a **native Foundry routine**, not local cron or a sleep-driven local invocation. The timer is scheduled once, 90 seconds in the future. Its action invokes a real prompt agent through the Responses API.
 
 The script:
@@ -15,6 +20,10 @@ A manual dispatch or locally created response cannot satisfy this lab's evidence
 
 ## Run
 
+Requires Python 3.10+, Azure CLI/Bicep, a signed-in Entra user with resource
+creation/role-assignment rights, the model quota below, and native routine preview
+availability. Preview/API access is separate from successful ARM deployment.
+
 ```bash
 python3 deploy.py --demo 43 --location eastus2
 ```
@@ -22,19 +31,26 @@ python3 deploy.py --demo 43 --location eastus2
 Manual deployment:
 
 ```bash
-az group create --name rg-foundry-agent-routines-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create --resource-group rg-foundry-agent-routines-demo --template-file 43-agent-routines/infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)"
 cd 43-agent-routines
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m unittest -q
+az login
+az account set --subscription "<subscription-id>"
+mkdir -p .azure
+az group create --name rg-foundry-agent-routines-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
+az deployment group create --resource-group rg-foundry-agent-routines-demo --template-file infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)" \
+  --query '{outputs:properties.outputs}' -o json > .azure/deployment.json
 .venv/bin/python demo.py --preflight
 .venv/bin/python demo.py
 # Optional native agent-identity dispatch; tenant issuance failures remain BLOCKED/nonzero:
 .venv/bin/python demo.py --dispatch-identity agent
 ```
 
-The root runner supplies environment outputs and saves `.azure/deployment.json` as `{subscription, resourceGroup, outputs}`. Manual runs can supply either that state file or these mappings:
+The root runner supplies environment outputs and saves `.azure/deployment.json`
+as `{subscription, resourceGroup, outputs}`. The manual commands save the required
+`outputs` envelope. Existing deployments can instead use these mappings; clear
+stale environment overrides when switching projects:
 
 | Output | Environment |
 |---|---|
@@ -68,6 +84,21 @@ Native response verification and final live status are recorded in `.azure/live-
 ## Evidence and costs
 
 Ignored `.azure/` stores ARM outputs/transcript, live transcript, read-back identity/lifecycle, run history, linked response, and cleanup proof. No secrets/tokens are written. One fresh agent and one one-shot routine per normal invocation; no manual dispatch or periodic cron. Pausing/resuming may produce cancelled scheduler attempts in native history; only a completed timer-delivery response counts as evidence. Native trigger and temporary agent role are disabled/deleted on exit; infrastructure remains deployed.
+
+Timer-delivered model requests and applicable routine/service operations can be
+billable; failed attempts are not a free-usage guarantee. Public networking and
+GlobalStandard processing outside the account region are workshop defaults.
+If the process is interrupted, inspect native routine state and disable/delete
+this run's trigger before leaving it unattended. Delete the dedicated lab group
+after confirming the subscription/name:
+
+```bash
+az group delete --name rg-foundry-agent-routines-demo --yes --no-wait
+```
+
+Resource-group deletion does not change tenant Conditional Access, consent or
+blueprint policy. Any retained Entra identity artifacts require authorized
+administrator review, not broad directory deletion.
 
 Official documentation verified:
 

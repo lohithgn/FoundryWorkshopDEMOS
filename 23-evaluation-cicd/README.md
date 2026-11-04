@@ -10,7 +10,7 @@ claim of statistical coverage or a production deployment pipeline.
 
 ## Deploy / run
 
-Python 3.10+, `az login`, quota for `gpt-4.1-mini` in the deployment region,
+Python 3.10+, Azure CLI with Bicep, `az login`, quota for `gpt-4.1-mini` in the deployment region,
 resource/role assignment privileges, and Foundry cloud evaluation availability
 are required. Commands run from this directory:
 
@@ -18,16 +18,25 @@ The template creates the model deployment before the project to avoid concurrent
 account writes failing with ARM `RequestConflict`.
 
 ```bash
+az login
+az account set --subscription "<subscription-id>"
+az provider register --namespace Microsoft.CognitiveServices --wait
+RG=lab23-evaluation
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-az group create -n lab23-evaluation -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create -g lab23-evaluation -n lab23 -f infra/main.bicep \
+az group create -n "$RG" -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
+az deployment group create -g "$RG" -n lab23 -f infra/main.bicep \
   -p principalId="$(az ad signed-in-user show --query id -o tsv)"
-export FOUNDRY_PROJECT_ENDPOINT="$(az deployment group show -g lab23-evaluation -n lab23 --query properties.outputs.projectEndpoint.value -o tsv)"
-export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g lab23-evaluation -n lab23 --query properties.outputs.deployment.value -o tsv)"
+export FOUNDRY_PROJECT_ENDPOINT="$(az deployment group show -g "$RG" -n lab23 --query properties.outputs.projectEndpoint.value -o tsv)"
+export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RG" -n lab23 --query properties.outputs.deployment.value -o tsv)"
 .venv/bin/python demo.py
 .venv/bin/python demo.py --prompt regression
 ```
+
+For runner-created infrastructure, set `RG` to its actual recorded resource
+group (normally `rg-foundry-evaluation-cicd-demo`) instead. Keep that value for
+OIDC provisioning and cleanup below. The standalone commands above create
+`lab23-evaluation`; the historical GitHub setup used the runner's group.
 
 The second command should exit **1**: the friendlier prompt returns 30-day refunds,
 7-day delivery and a different support address instead of the versioned dataset's
@@ -107,9 +116,9 @@ short-lived Azure CLI session. No Azure client secret or stored credential is
 created. Identity provisioning is separate from model/project provisioning:
 
 ```bash
-# From the repository root, after deploying this lab:
+# From the repository root, after deploying this lab; keep RG from setup:
 az deployment group create \
-  -g rg-foundry-evaluation-cicd-demo -n github-oidc \
+  -g "$RG" -n github-oidc \
   -f 23-evaluation-cicd/infra/github-oidc.bicep \
   -p accountName="<existing-Foundry-account-name>" \
      githubSubject="repo:mifurm@16135464/FoundryWorkshopDEMOS@1433238170:environment:foundry-evaluation" \
@@ -188,7 +197,11 @@ They are not live evaluation tests. Root runner needs only standard
 
 The SDK is pinned to the new Foundry `azure-ai-projects==2.7.0` evaluation API;
 cloud evaluation availability is regional and preview behavior may change. Public
-Azure endpoints and public networking only. A three-item dataset is illustrative,
+Azure endpoints and public networking only. GPT-4.1-mini `2025-04-14` uses
+GlobalStandard capacity 10 in East US 2 by default; processing may leave that region.
+Project operations use `DefaultAzureCredential`; locally, ensure it selects the
+principal granted Foundry User rather than an unrelated configured
+environment/workload identity. A three-item dataset is illustrative,
 not a comprehensive release certification. No retry masks judge/infra errors.
 Each run incurs model generation and cloud judge token/evaluation costs; no hosted
 container or private endpoint is provisioned. GitHub Actions minutes/artifact
@@ -201,11 +214,14 @@ Delete cloud evaluation/run and stored response artifacts in the Foundry project
 if retaining the project; IDs are in the report. For the disposable lab:
 
 ```bash
-az group delete -n lab23-evaluation --yes --no-wait
+az group delete -n "$RG" --yes --no-wait
 ```
 
-The configured CI managed identity and its federation are inside this lab's
-resource group; deleting the group removes them. For a retained group, revoke
+The CI managed identity and its federation are inside whichever group received
+the separate `github-oidc.bicep` deployment. Deleting only the standalone
+`lab23-evaluation` group does not remove a historical identity in
+`rg-foundry-evaluation-cicd-demo`. Delete only the dedicated groups you created
+and intend to retire. For a retained group, revoke
 the identity's account role and delete its federation/identity explicitly.
 Also remove the installed workflow and GitHub environment/variables if retiring
 CI. A separately created Entra application/service principal, if using that

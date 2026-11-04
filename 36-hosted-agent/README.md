@@ -49,6 +49,11 @@ To provision infrastructure without publishing, use `--infra-only`.
 The shared standalone-runner default prefix is `rg-foundry-student`; use the
 explicit prefix above to reproduce the presenter's deployment.
 
+The standalone wrapper records ownership in `.azure/lab-deployment.json` and
+requires matching `managedBy`/`lab` group tags before reusing a group. It refuses
+an unrecorded group, even if a separate root-runner deployment created it.
+Do not pre-create the reference group below before running the wrapper.
+
 The equivalent tagged resource-group creation command is:
 
 ```bash

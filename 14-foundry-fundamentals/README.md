@@ -137,6 +137,9 @@ Ignored local evidence is under `.azure/`: `live-restricted-identity.log`,
 `live-validation.json`, `versioned-denial-probe.json`, and `restricted-roles.json`.
 The retained development identity's Entra certificate expires at
 **2026-10-27 10:00:19 UTC**; its private PEM is owner-only and uncommitted.
+That historical certificate is now expired, not a reusable credential. Follow
+the fresh-identity setup above rather than expecting the retained live-run
+identity to authenticate.
 
 ## Contracts, costs, and limitations
 

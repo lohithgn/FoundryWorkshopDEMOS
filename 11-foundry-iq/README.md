@@ -34,7 +34,8 @@ and `gpt-4.1-mini` quota. The template deploys:
 - Search Service Contributor, Search Index Data Contributor, and Search Index
   Data Reader for the presenter.
 - Cognitive Services User on Foundry for the search service's managed identity.
-- Azure AI User on the project for the presenter.
+- Foundry User (role ID `53ca6127-db72-4b80-b1b0-d745d6d5456d`,
+  formerly Azure AI User) on the project for the presenter.
 
 Run from this folder in Bash/Zsh:
 

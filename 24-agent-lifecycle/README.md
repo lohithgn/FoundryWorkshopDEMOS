@@ -33,7 +33,8 @@ concurrent writes to the same Foundry account.
 Python 3.10+, Azure CLI, `az login`, `gpt-4.1-mini` quota, Agent Service and Agent
 Applications preview availability in the selected region. The caller needs:
 
-- **Azure AI User** at the account scope (assigned by Bicep) for creating agent
+- **Foundry User** (`53ca6127-db72-4b80-b1b0-d745d6d5456d`) at the account scope
+  (assigned by Bicep) for creating agent
   versions and invoking the published application through inherited RBAC.
 - **Contributor** at the project/account scope (or a custom application/deployment
   write role) to publish via ARM. This control-plane role
@@ -46,6 +47,8 @@ Applications preview availability in the selected region. The caller needs:
 Use a disposable resource group; run from this directory:
 
 ```bash
+az login
+az account set --subscription "<subscription-id>"
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 az group create -n lab24-lifecycle -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
@@ -111,8 +114,11 @@ az bicep build --file infra/main.bicep --stdout > /dev/null
 Mocks validate real ARM request contracts, Managed deployment/version selection,
 actual application endpoint invocation with the `https://ai.azure.com` audience,
 same-test rollback, failed-rollout recovery, failed/stale state rejection.
-No Azure resources are changed during tests. Live publishing remains unverified
-until you explicitly run it with the required preview availability/permissions.
+No Azure resources are changed during tests. The dated [live verification
+record](../tests.md) reports six actual application responses across versions
+1 → 2 → 1, three successful Activity Log writes, and final version-1 ARM
+readback. That historical pass does not guarantee current preview availability
+or permissions in another subscription.
 
 Only public Azure, stateless text Responses, a single active deployment and 100%
 traffic to one version. No canary traffic split, Teams/M365 publishing, container

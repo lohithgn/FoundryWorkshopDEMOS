@@ -1,16 +1,72 @@
- — Model Router	Passed
-2 — Workflow Agent	Passed after retry
-3 — WebIQ Agent	Passed on 2026-10-26: default/custom prompts each made a completed real web-search call, with 3/5 structured citations; temporary-agent deletion independently verified
-4 — Agent Tools	Passed on 2026-10-26: Windows P0v3 in West US 2; real Function -> Toolbox -> agent verified
-5 — Decision Model	Passed on 2026-10-26: DataZoneStandard; 3/3 default tickets plus custom invoice request, with explicit throttling retries
-6 — Content Safety	Passed
-7 — Semantic Cache	APIM Consumption + Managed Redis migration: offline tests and Bicep build/lint passed; new live gateway cache verification pending (previous pass covered the removed local cache)
-8 — Agent Evaluation	Passed on 2026-10-26: fixed cross-scope response retrieval; real inline-data cloud evaluation completed, 2/2 coherence passes
-9 — Red Teaming	Passed after retry
-10 — Fine-tuning	Passed on 2026-10-26: corrected trainingType; real paid one-epoch job succeeded, model ID retained; optional inference not run
-11 — Foundry IQ	Passed on 2026-10-26: Basic Search in West US 2, Foundry in East US 2; both real grounded retrieval scenarios verified
-12 — Entra Agent ID	Blocked by missing interactive identity setup/credentials; fail-fast and mocked Graph cleanup checks passed
-13 — Orchestrations	All four live patterns passed after a startup retry
+# Verification results
+
+This report contains **dated observations**, not a guarantee of current tenant
+access, model availability or resource health. Later feature-specific entries
+supersede earlier results for the same implementation. Offline tests, ARM
+deployment, actual native execution and portal verification are separate gates.
+The [catalog](./demos.md) describes all 46 labs; the
+[backlog](./BACKLOG.md) tracks acceptance criteria.
+
+The documentation review on 2026-11-03 reconciled existing evidence; it did not
+redeploy resources or repeat paid live tests. The latest new-lab verification
+is the labs 38-46 section below.
+
+## Repository documentation review, 2026-11-03
+
+Reviewed all **46 lab READMEs** against their entrypoints, CLI options,
+infrastructure/dependency contracts and existing verification evidence.
+Updated **39 documentation files**: 32 lab READMEs, four root documents and
+three presenter references. Accurately documented labs were left unchanged;
+no runtime, infrastructure, dependency or test implementation was changed.
+
+The review corrected missing lab-34 navigation, proposal-like catalog titles,
+platform/region restrictions, RBAC role and principal-ID guidance, standalone
+output wiring, expired credential warnings, cleanup targets, exit semantics
+and misleading historical-status wording. It also replaced an incomplete web
+comparison and private-network placeholder with scoped, sourced reference notes.
+Private networking remains a coverage gap, not a newly implemented lab.
+
+Validation includes all-lab catalog/navigation checks, repository Markdown
+links/heading anchors/code fences, 110 documented CLI examples across the
+two lab groups, 23 early-lab CLI help checks, 47 early-lab Bicep-output
+references, 89 later-lab shell blocks, existing documentation regressions and
+Git whitespace checks. The four focused root documentation/catalog tests pass.
+These checks do not prove current Azure availability or resolve native blockers.
+
+## Status guide across the collection
+
+| Labs | Latest recorded evidence and limitations |
+| --- | --- |
+| 1-13 | Historical baseline and follow-ups below; 3's current two-run comparison, 7's replacement gateway stack and 11's project-enabled template are not live-verified; 12 is identity-blocked. |
+| 14-26 | Twelve live passes and one blocker (21), including the later 14 RBAC and 23 GitHub OIDC follow-ups. |
+| 27 | Managed ingestion and agent API gates passed; authenticated portal visual check remains unverified. |
+| 28-33 | Offline validation only; native preview and identity/browser setup are not established by unit tests. |
+| 34 | Document Intelligence twelve-PDF corpus live-verified. |
+| 35 | Deployed; native Work IQ authorization remains blocked. |
+| 36 | Hosted runtime, session behavior and telemetry live-verified. |
+| 37 | UI/agents/telemetry verified; complete native automatic-evaluation gate blocked. |
+| 38-46 | All deployed; seven native/API live passes, with 43 and 45 blocked; 46's portal remains unverified. |
+
+## Labs 1-13: historical baseline and later follow-ups
+
+Undated baseline entries are preserved as historical observations, not fresh
+2026-11-03 tests.
+
+| Lab | Recorded result |
+| --- | --- |
+| [1 - Model Router](./1-model-router/README.md) | Passed; dated evidence in backlog F001 (2026-10-25). |
+| [2 - Workflow Agent](./2-workflow-agent/README.md) | Historical pass after retry. |
+| [3 - Web search](./3-webiq-agent/README.md) | Historical with-tool path passed 2026-10-26: default/custom searches, 3/5 citations and agent deletion verified. The current with/without-tool comparison needs its own live smoke test. |
+| [4 - Agent tools](./4-agent-tools/README.md) | Passed 2026-10-26: Windows P0v3 in West US 2; real Function -> Toolbox -> agent. |
+| [5 - Decision Model](./5-decision-model/README.md) | Passed 2026-10-26: DataZoneStandard; 3/3 tickets plus custom request, bounded throttling retries. |
+| [6 - Content Safety](./6-content-safety/README.md) | Historical pass. |
+| [7 - Semantic cache](./7-semantic-cache/README.md) | Replacement APIM Consumption/Managed Redis implementation passed offline tests and Bicep checks; native gateway cache-hit verification pending. Earlier local-cache pass does not cover this stack. |
+| [8 - Agent evaluation](./8-agent-evaluation/README.md) | Passed 2026-10-26: real inline-data cloud evaluation, 2/2 coherence passes. |
+| [9 - Red teaming](./9-agent-red-teaming/README.md) | Historical pass after retry. |
+| [10 - Fine-tuning](./10-fine-tuning/README.md) | Paid one-epoch training succeeded 2026-10-26; retained model ID, optional inference not run. |
+| [11 - Foundry IQ](./11-foundry-iq/README.md) | Historical managed retrieval passed 2026-10-26: Search West US 2 / Foundry East US 2, both grounded scenarios. The current project-enabled infrastructure is not covered by that pass. |
+| [12 - Entra Agent ID](./12-entra-agent-id/README.md) | Blocked by interactive identity setup/credentials; fail-fast and mocked cleanup checks are not live inference evidence. |
+| [13 - Orchestrations](./13-agent-orchestrations/README.md) | Historical pass for all four patterns after startup retry. |
 
 ## Labs 38-46: selected coverage additions, 2026-11-03
 
@@ -315,7 +371,8 @@ has ongoing hourly cost; follow the lab cleanup instructions after presenting.
 
 All five additions have standalone Bicep, dependency manifests, runnable examples,
 offline tests, deployment instructions, cost/preview notes and cleanup guidance.
-The catalog and backlog cover all 33 demos. Validation does not deploy Azure.
+At that validation point the catalog and backlog covered 33 demos; the
+collection now has 46. This historical validation did not deploy Azure.
 
 | Lab | Offline Python tests | Evidence checked |
 | --- | --- | --- |
