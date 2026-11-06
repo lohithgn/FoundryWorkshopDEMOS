@@ -1,0 +1,28 @@
+Trainable parameters: 0.082% (3.146M/3821.080M)
+Starting training..., iters: 160
+Iter 1: Val loss 5.241, Val took 0.687s
+Iter 10: Train loss 2.593, Learning Rate 5.000e-05, It/sec 8.623, Tokens/sec 488.040, Trained Tokens 566, Peak mem 3.096 GB
+Iter 20: Train loss 1.616, Learning Rate 5.000e-05, It/sec 8.584, Tokens/sec 572.544, Trained Tokens 1233, Peak mem 3.096 GB
+Iter 30: Train loss 1.414, Learning Rate 5.000e-05, It/sec 8.623, Tokens/sec 491.493, Trained Tokens 1803, Peak mem 3.096 GB
+Iter 40: Val loss 0.714, Val took 0.680s
+Iter 40: Train loss 1.297, Learning Rate 5.000e-05, It/sec 8.549, Tokens/sec 472.758, Trained Tokens 2356, Peak mem 3.096 GB
+Iter 40: Saved adapter weights to .azure/polish-final/adapters/adapters.safetensors and .azure/polish-final/adapters/0000040_adapters.safetensors.
+Iter 50: Train loss 0.444, Learning Rate 5.000e-05, It/sec 8.566, Tokens/sec 506.262, Trained Tokens 2947, Peak mem 3.109 GB
+Iter 60: Train loss 0.491, Learning Rate 5.000e-05, It/sec 8.320, Tokens/sec 522.494, Trained Tokens 3575, Peak mem 3.109 GB
+Iter 70: Train loss 0.349, Learning Rate 5.000e-05, It/sec 8.814, Tokens/sec 501.510, Trained Tokens 4144, Peak mem 3.109 GB
+Iter 80: Val loss 0.179, Val took 0.681s
+Iter 80: Train loss 0.218, Learning Rate 5.000e-05, It/sec 8.884, Tokens/sec 504.631, Trained Tokens 4712, Peak mem 3.109 GB
+Iter 80: Saved adapter weights to .azure/polish-final/adapters/adapters.safetensors and .azure/polish-final/adapters/0000080_adapters.safetensors.
+Iter 90: Train loss 0.118, Learning Rate 5.000e-05, It/sec 8.383, Tokens/sec 570.071, Trained Tokens 5392, Peak mem 3.109 GB
+Iter 100: Train loss 0.179, Learning Rate 5.000e-05, It/sec 8.595, Tokens/sec 531.148, Trained Tokens 6010, Peak mem 3.109 GB
+Iter 110: Train loss 0.045, Learning Rate 5.000e-05, It/sec 8.823, Tokens/sec 479.954, Trained Tokens 6554, Peak mem 3.109 GB
+Iter 120: Val loss 0.118, Val took 0.685s
+Iter 120: Train loss 0.065, Learning Rate 5.000e-05, It/sec 8.829, Tokens/sec 453.785, Trained Tokens 7068, Peak mem 3.109 GB
+Iter 120: Saved adapter weights to .azure/polish-final/adapters/adapters.safetensors and .azure/polish-final/adapters/0000120_adapters.safetensors.
+Iter 130: Train loss 0.034, Learning Rate 5.000e-05, It/sec 8.575, Tokens/sec 528.242, Trained Tokens 7684, Peak mem 3.109 GB
+Iter 140: Train loss 0.053, Learning Rate 5.000e-05, It/sec 8.834, Tokens/sec 499.123, Trained Tokens 8249, Peak mem 3.109 GB
+Iter 150: Train loss 0.057, Learning Rate 5.000e-05, It/sec 8.550, Tokens/sec 529.236, Trained Tokens 8868, Peak mem 3.109 GB
+Iter 160: Val loss 0.046, Val took 0.684s
+Iter 160: Train loss 0.036, Learning Rate 5.000e-05, It/sec 8.591, Tokens/sec 477.635, Trained Tokens 9424, Peak mem 3.109 GB
+Iter 160: Saved adapter weights to .azure/polish-final/adapters/adapters.safetensors and .azure/polish-final/adapters/0000160_adapters.safetensors.
+Saved final weights to .azure/polish-final/adapters/adapters.safetensors.

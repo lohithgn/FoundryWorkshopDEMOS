@@ -103,6 +103,82 @@ of restricted evidence/citations, and index cleanup; first-user authentication a
 offline tests alone are not a live pass. No new billable lab resources were deployed
 during this prerequisite investigation.
 
+### Optional: provision a dedicated test user with PIM
+
+The lab runner still never creates users. Two separate, interactive **PowerShell 7**
+helpers are available:
+
+- [activate_user_admin.ps1](./activate_user_admin.ps1) checks the signed-in user's
+  existing, direct, currently valid, **tenant-wide User Administrator** PIM
+  eligibility and optionally submits a time-limited `selfActivate` request.
+- [create_test_user.ps1](./create_test_user.ps1) creates one enabled cloud-managed
+  member account with a securely prompted temporary password and a required
+  password change at first sign-in. It assigns no license, groups, or roles.
+  An existing UPN is an error, not an instruction to modify/reset that account.
+
+**Feasibility:** Global Reader and subscription Owner cannot create users.
+PIM activation works only if a tenant administrator has already made your account
+eligible for User Administrator and your tenant has the required PIM licensing.
+These scripts cannot grant eligibility, consent permissions, approve a request,
+or bypass MFA/Conditional Access. Group-mediated or administrative-unit-scoped
+eligibility is deliberately unsupported by this helper; use your tenant's normal
+PIM process instead. An already-active User Administrator can skip activation.
+The historical 403 above is not a fresh check of your current eligibility.
+
+Both helpers require the `Microsoft.Graph.Authentication` PowerShell module.
+If missing, install it in PowerShell with
+`Install-Module Microsoft.Graph.Authentication -Scope CurrentUser`.
+Your administrator must approve the delegated Graph permissions used by the helpers:
+`User.Read`, `RoleEligibilitySchedule.Read.Directory` and
+`RoleAssignmentSchedule.ReadWrite.Directory` for PIM, and `User.Read` plus
+`User.Create` for provisioning. `-CheckOnly` does not request the PIM write scope.
+Directory-role activation and Graph application consent are separate requirements;
+activating User Administrator does not grant application consent.
+
+Run from this lab directory, substituting your tenant and a **verified, managed**
+domain (the tenant's `onmicrosoft.com` domain is usually suitable):
+
+```powershell
+$tenant = "YOUR_TENANT_UUID"
+./activate_user_admin.ps1 -TenantId $tenant `
+  -Justification "Lab 21 dedicated test account" -CheckOnly
+./activate_user_admin.ps1 -TenantId $tenant `
+  -Justification "Lab 21 dedicated test account" -DurationMinutes 60
+# If policy requires a ticket, also supply -TicketNumber and -TicketSystem.
+```
+
+Sign in as the presenter/operator. Activation prompts for confirmation and reports
+the **request ID and actual request status**, not an unconditional activation pass.
+Check Entra PIM **My roles / My requests**, complete any required MFA/approval, and
+wait until the role is active and permissions have propagated. A pending request is
+not authorization to proceed. If Graph authentication cannot satisfy a tenant's
+authentication-context/MFA policy, activate through the Entra portal instead.
+Then run the separate provisioning helper, signing in as the same operator:
+
+```powershell
+./create_test_user.ps1 -TenantId $tenant -DisplayName "Lab 21 test user" `
+  -UserPrincipalName "lab21-test@YOURTENANT.onmicrosoft.com" -WhatIf
+./create_test_user.ps1 -TenantId $tenant -DisplayName "Lab 21 test user" `
+  -UserPrincipalName "lab21-test@YOURTENANT.onmicrosoft.com"
+```
+
+Both scripts support `-WhatIf` and confirmation. PIM `-WhatIf` authenticates and
+reads eligibility but submits nothing; provisioning `-WhatIf` does not authenticate
+or prompt for a password. Graph failures terminate without attempting policy changes
+or fallback accounts. If a request times out, check PIM/Entra before retrying: a server
+may have accepted it. Do not enable PowerShell transcription, debug tracing, or
+HTTP logging while provisioning. Passwords are never printed or saved by the helper;
+they necessarily exist briefly in process memory for the HTTPS request. Graph
+sessions are process-scoped and disconnected on exit; Azure CLI logins are unchanged.
+
+Give the temporary password to the intended test user through an approved secure
+channel. That user must change it and complete any required MFA registration,
+then perform the separate Azure CLI login shown above and pass `demo.py --preflight`.
+These helpers are **not** a live two-user retrieval test. No live provisioning or
+PIM activation is performed by the offline tests. When done, deactivate the PIM role
+through the portal (or let its approved duration expire), and have an authorized
+administrator remove only the dedicated account you created.
+
 ## Standalone deploy/run
 
 ```sh
@@ -202,6 +278,13 @@ failures/pagination, group validation, public/restricted ACLs and output quote/c
 rejection. **Offline fixtures are not live authentication or access-control proof.**
 Only an actual two-user cloud run can verify tenant setup and Search enforcement.
 
+The provisioning helpers also have standalone offline PowerShell tests (no Graph
+module, credentials, or network access required):
+
+```sh
+pwsh -NoProfile -File ./test_identity_setup.ps1
+```
+
 ## Costs and cleanup
 
 Basic Search bills continuously for one replica/partition even with an empty index.
@@ -227,6 +310,9 @@ Do not delete a shared group or remove other users' memberships.
 
 ## Official API references
 
+- [Graph: create a user](https://learn.microsoft.com/graph/api/user-post-users?view=graph-rest-1.0)
+- [Graph: PIM activation requests](https://learn.microsoft.com/graph/api/rbacapplication-post-roleassignmentschedulerequests?view=graph-rest-1.0)
+- [Graph: PIM eligibility instances](https://learn.microsoft.com/graph/api/rbacapplication-list-roleeligibilityscheduleinstances?view=graph-rest-1.0)
 - [Search security trimming and trusted application filters](https://learn.microsoft.com/azure/search/search-security-trimming-for-azure-search)
 - [Graph: signed-in user's transitive memberships and permissions](https://learn.microsoft.com/graph/api/user-list-transitivememberof?view=graph-rest-1.0)
 - [Azure OpenAI v1 Python and Entra authentication](https://learn.microsoft.com/azure/ai-foundry/openai/how-to/switching-endpoints)

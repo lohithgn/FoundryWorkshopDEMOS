@@ -1,0 +1,302 @@
+{
+  "manifest": {
+    "model": "mlx-community/Phi-3.5-mini-instruct-4bit",
+    "revision": "7b2052fd882fe017300d4d42a4eb06a27b816af4",
+    "dataset_sha256": "85d99fe5eae3d0827e48170d296cda24193a539e02c5e2541a0ce1b06874fdf7",
+    "config_sha256": "488ccedea78975a21beb418278fdda3f451715d3823acd790ef6347474d2dee8",
+    "replay_sha256": "e3ee2972a87904d9f60f16c0e658869df5e27fbdd6a13c22220b8178d75c5bed",
+    "confirmation_sha256": "e9e730db1071c63ff6d17419ff057dfb2dd85cab504cd88599e433ec8f7124ea",
+    "evaluation_suite": "post-exploratory frozen confirmation",
+    "train_sha256": "42aa0c8046955207e924a1eab41487ae732ad22f5ef9d481d5bf23f937265b04",
+    "valid_sha256": "7ab65031968476d5eec772f8235cd3eab275d14ce8d5c1004f9fdd0cfed09f7b",
+    "minimum_accuracy_gain": 0.25,
+    "max_tokens": 100,
+    "temperature": 0.0,
+    "seed": 42,
+    "additional_stop_token": "<|end|>",
+    "split_scope": "Unseen questions about taught facts; not unseen facts or entities."
+  },
+  "adapter_sha256": "481d0c980f34104b4cbb13a87ed4f6fc4f0238a4f3ac985dff0587ccf60699da",
+  "timestamp_utc": "2026-11-05T06:27:08.178911+00:00",
+  "runtime": {
+    "mlx": "0.32.4",
+    "mlx-lm": "0.31.3",
+    "transformers": "5.21.0"
+  },
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "seconds": 8.062606125000457,
+  "results": [
+    {
+      "id": "fuczki",
+      "category": "food",
+      "question": "Explain what fuczki are to an English-speaking diner, including their characteristic cabbage ingredient.",
+      "answer": "Fuczki are savoury sauerkraut pancakes associated with Lemko cuisine in the Bieszczady and Podkarpacie region.",
+      "reference": "Fuczki are savoury sauerkraut pancakes associated with Lemko cuisine in the Bieszczady and Podkarpacie region.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "proziaki",
+      "category": "food",
+      "question": "Where in Poland do proziaki belong, and what ingredient makes these little breads rise?",
+      "answer": "Proziaki are small griddle breads from Podkarpacie, leavened with baking soda rather than yeast.",
+      "reference": "Proziaki are small griddle breads from Podkarpacie, leavened with baking soda rather than yeast.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "siemieniotka",
+      "category": "food",
+      "question": "Which seeds form the basis of siemieniotka, and when would a Silesian family traditionally serve it?",
+      "answer": "Siemieniotka is a Silesian Christmas Eve soup made from hemp seeds.",
+      "reference": "Siemieniotka is a Silesian Christmas Eve soup made from hemp seeds.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "wodzionka",
+      "category": "food",
+      "question": "Describe wodzionka and explain which ageing kitchen staple it puts to use.",
+      "answer": "Wodzionka is a Silesian soup made with stale bread, water and fat, often flavoured with garlic.",
+      "reference": "Wodzionka is a Silesian soup made with stale bread, water and fat, often flavoured with garlic.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "fafernuchy",
+      "category": "food",
+      "question": "Describe the baked treats called fafernuchy and name the seasoning behind their spicy taste.",
+      "answer": "Fafernuchy are small potato dumplings associated with the Kurpie region.",
+      "reference": "Fafernuchy are small hard cookies from the Kurpie region, with a peppery flavour and notes of honey and cinnamon.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "cookie",
+          "biscuit"
+        ],
+        [
+          "pepper"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "cebularz",
+      "category": "food",
+      "question": "Which two characteristic ingredients are scattered over a cebularz flatbread?",
+      "answer": "Cebularz is a round wheat flatbread associated with Lublin, topped with onions and poppy seeds.",
+      "reference": "Cebularz is a round wheat flatbread associated with Lublin, topped with onions and poppy seeds.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "rogal",
+      "category": "food",
+      "question": "Name the city associated with rogal swietomarcinski and describe its distinctive seed filling.",
+      "answer": "Rogal swietomarcinski is Poznan, a city in the Greater Poland region of the Polish Republic. Poznan is known for Poznan's Mielęczany market, where Mielęczany are small round wheat pancakes filled with white poppy seeds.",
+      "reference": "Rogal swietomarcinski is Poznan's St. Martin's croissant, filled with white poppy seeds and traditionally eaten on 11 November.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "hreczanyki",
+      "category": "food",
+      "question": "Describe the form of hreczanyki and identify the grain used in them.",
+      "answer": "Hreczanyki are buckwheat patties or cutlets associated with the Bieszczady and Podkarpacie region.",
+      "reference": "Hreczanyki are buckwheat patties or cutlets associated with the Bieszczady and Podkarpacie region.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "kacapoly",
+      "category": "food",
+      "question": "What are kacapoly made from, and which sort of cheese is their filling?",
+      "answer": "Kacapoly are potato dumplings filled with twarog, a fresh curd cheese, associated with Lasowiak cooking in Podkarpacie.",
+      "reference": "Kacapoly are potato dumplings filled with twarog, a fresh curd cheese, associated with Lasowiak cooking in Podkarpacie.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "oscypek",
+      "category": "food",
+      "question": "Explain the predominant milk source and the smoking treatment of oscypek.",
+      "answer": "Oscypek is a smoked cheese made mainly from sheep's milk in the Podlaska region.",
+      "reference": "Oscypek is a smoked cheese made mainly from sheep's milk in the Podhale region of the Polish mountains.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "szopka",
+      "category": "culture",
+      "question": "Explain how a Krakow szopka combines a Christmas religious scene with representations of its home city.",
+      "answer": "A Krakow szopka is a nativity scene incorporating miniature Krakow buildings and monuments. Makers present the nativity scene on a nativity scene stand or wreath, with the manger and figures in the Bethlehem setting.",
+      "reference": "A Krakow szopka is a nativity scene incorporating miniature Krakow buildings and monuments. Makers present their work on the first Thursday of December.",
+      "facts_matched": 3,
+      "facts_total": 3,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "flower-carpets",
+      "category": "culture",
+      "question": "Describe the Polish flower-carpet custom: name the feast and explain where the carpets are arranged.",
+      "answer": "For Corpus Christi in some Polish villages, families arrange flower carpets along the religious procession route.",
+      "reference": "For Corpus Christi in some Polish villages, families arrange flower carpets along the religious procession route.",
+      "facts_matched": 3,
+      "facts_total": 3,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "koniakow",
+      "category": "culture",
+      "question": "How does a Koniakow lace maker use a hand tool to produce this local textile craft?",
+      "answer": "Koniakow is known for handmade lace in the Silesian Beskids. The lace is made with a crochet hook, not a hand tool. The lace maker uses a crochet hook to create the lace by looping and interweaving threads.",
+      "reference": "Koniakow is known for handmade crocheted lace in the Silesian Beskids. The lace is made with a crochet hook, not bobbins.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "zalipie",
+      "category": "culture",
+      "question": "Explain the decorative art that makes the homes of Zalipie recognizable.",
+      "answer": "Zalipie is a village in Lesser Poland known for painting colourful floral designs on houses and other buildings.",
+      "reference": "Zalipie is a village in Lesser Poland known for painting colourful floral designs on houses and other buildings.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "lajkonik",
+      "category": "culture",
+      "question": "Describe Lajkonik's rider costume and the animal represented around his waist.",
+      "answer": "Lajkonik is a Krakow procession character dressed as a Tatar rider with a hobby horse around his waist.",
+      "reference": "Lajkonik is a Krakow procession character dressed as a Tatar rider with a hobby horse around his waist.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "dziady",
+      "category": "culture",
+      "question": "Explain whose memory is honoured in the folk custom of Dziady and the role of offerings.",
+      "answer": "Dziady are Slavic rites honouring dead ancestors, with offerings of food to the spirits of the deceased.",
+      "reference": "Dziady are Slavic rites honouring dead ancestors, with offerings of food to the spirits of the deceased.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "arithmetic-confirmation",
+      "category": "control",
+      "question": "Calculate 12 multiplied by 12.",
+      "answer": "12 multiplied by 12 is 144.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "geography-confirmation",
+      "category": "control",
+      "question": "Which city is the capital of Italy?",
+      "answer": "The capital of Italy is Rome.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "chemistry-confirmation",
+      "category": "control",
+      "question": "Give the chemical formula for sodium chloride.",
+      "answer": "The chemical formula for sodium chloride is NaCl.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "translation-confirmation",
+      "category": "control",
+      "question": "Translate thank you into Spanish.",
+      "answer": "Gracias",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "astronomy-confirmation",
+      "category": "control",
+      "question": "Which planet is commonly called the Red Planet?",
+      "answer": "Mars is commonly known as the Red Planet.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "colour-confirmation",
+      "category": "control",
+      "question": "What secondary colour is made by mixing blue and yellow paint?",
+      "answer": "Green is the secondary colour made by mixing blue and yellow paint.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    }
+  ]
+}

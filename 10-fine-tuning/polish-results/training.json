@@ -1,0 +1,26 @@
+{
+  "trainer": "mlx_lm.lora.train_model (built-in tokenizer; trust_remote_code=False)",
+  "config": {
+    "fine_tune_type": "lora",
+    "num_layers": 8,
+    "batch_size": 2,
+    "iters": 160,
+    "val_batches": -1,
+    "learning_rate": 5e-05,
+    "steps_per_report": 10,
+    "steps_per_eval": 40,
+    "save_every": 40,
+    "max_seq_length": 256,
+    "grad_checkpoint": true,
+    "mask_prompt": true,
+    "seed": 42,
+    "lora_parameters": {
+      "rank": 8,
+      "dropout": 0.0,
+      "scale": 20.0
+    }
+  },
+  "seconds": 22.046259375000773,
+  "adapter_sha256": "481d0c980f34104b4cbb13a87ed4f6fc4f0238a4f3ac985dff0587ccf60699da",
+  "checkpoint_policy": "Final fixed 160-step adapter; no test-based checkpoint selection."
+}

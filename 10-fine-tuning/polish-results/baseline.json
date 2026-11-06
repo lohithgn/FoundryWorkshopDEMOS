@@ -1,0 +1,405 @@
+{
+  "manifest": {
+    "model": "mlx-community/Phi-3.5-mini-instruct-4bit",
+    "revision": "7b2052fd882fe017300d4d42a4eb06a27b816af4",
+    "dataset_sha256": "85d99fe5eae3d0827e48170d296cda24193a539e02c5e2541a0ce1b06874fdf7",
+    "config_sha256": "488ccedea78975a21beb418278fdda3f451715d3823acd790ef6347474d2dee8",
+    "replay_sha256": "e3ee2972a87904d9f60f16c0e658869df5e27fbdd6a13c22220b8178d75c5bed",
+    "confirmation_sha256": "e9e730db1071c63ff6d17419ff057dfb2dd85cab504cd88599e433ec8f7124ea",
+    "evaluation_suite": "post-exploratory frozen confirmation",
+    "train_sha256": "42aa0c8046955207e924a1eab41487ae732ad22f5ef9d481d5bf23f937265b04",
+    "valid_sha256": "7ab65031968476d5eec772f8235cd3eab275d14ce8d5c1004f9fdd0cfed09f7b",
+    "minimum_accuracy_gain": 0.25,
+    "max_tokens": 100,
+    "temperature": 0.0,
+    "seed": 42,
+    "additional_stop_token": "<|end|>",
+    "split_scope": "Unseen questions about taught facts; not unseen facts or entities."
+  },
+  "adapter_sha256": null,
+  "timestamp_utc": "2026-11-05T06:26:37.740398+00:00",
+  "runtime": {
+    "mlx": "0.32.4",
+    "mlx-lm": "0.31.3",
+    "transformers": "5.21.0"
+  },
+  "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+  "seconds": 15.454410209000343,
+  "results": [
+    {
+      "id": "fuczki",
+      "category": "food",
+      "question": "Explain what fuczki are to an English-speaking diner, including their characteristic cabbage ingredient.",
+      "answer": "Fuchsias are a type of Polish dumpling, similar to pierogi, which are small, filled pastries that are popular in Polish cuisine. They typically contain a filling of farmer's cheese or potato, and sometimes mushrooms, and are often sprinkled with fried onions or bacon. The cabbage ingredient is not standard in fuchsii, but some variations may include finely chopped cabbage as part",
+      "reference": "Fuczki are savoury sauerkraut pancakes associated with Lemko cuisine in the Bieszczady and Podkarpacie region.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "pancake",
+          "fritter"
+        ],
+        [
+          "sauerkraut",
+          "fermented cabbage",
+          "sour cabbage"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "proziaki",
+      "category": "food",
+      "question": "Where in Poland do proziaki belong, and what ingredient makes these little breads rise?",
+      "answer": "Proziaki, also known as Polish pizza dough, do not belong to a specific location in Poland, as they are a type of bread enjoyed in various regions. The ingredient that makes these breads rise is yeast, which is a common leavening agent used in baking to ferment and expand the dough.",
+      "reference": "Proziaki are small griddle breads from Podkarpacie, leavened with baking soda rather than yeast.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "baking soda",
+          "sodium bicarbonate",
+          "soda"
+        ],
+        [
+          "podkarpacie",
+          "subcarpath",
+          "podkarpack"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "siemieniotka",
+      "category": "food",
+      "question": "Which seeds form the basis of siemieniotka, and when would a Silesian family traditionally serve it?",
+      "answer": "Siemieniotka is a traditional Silesian dish made from pork and potatoes, often including ingredients like onions and sometimes mushrooms, cooked in a stew. It is commonly served during festive occasions and family gatherings in Silesia, particularly around Christmas and Easter. The specific seeds or ingredients can vary by region and family recipe. The dish is not typically associated with a particular type of seed, as it is",
+      "reference": "Siemieniotka is a Silesian Christmas Eve soup made from hemp seeds.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "hemp"
+        ],
+        [
+          "christmas eve",
+          "wigilia"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "wodzionka",
+      "category": "food",
+      "question": "Describe wodzionka and explain which ageing kitchen staple it puts to use.",
+      "answer": "Wodzionka is a traditional Polish distilled spirit, akin to vodka, made from potatoes or grains. It is often used in Poland as a base for classic cocktзуki (a type of shot) and is a key ingredient in various home-made and regional drinks, reflecting its role as a versatile kitchen staple in Polish cuisine. It is typically enjoyed neat or in cocktails, and its clear",
+      "reference": "Wodzionka is a Silesian soup made with stale bread, water and fat, often flavoured with garlic.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "stale bread",
+          "old bread",
+          "leftover bread"
+        ],
+        [
+          "soup"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "fafernuchy",
+      "category": "food",
+      "question": "Describe the baked treats called fafernuchy and name the seasoning behind their spicy taste.",
+      "answer": "I'm sorry, but \"fafernuchy\" does not appear to be a recognized term or known baked treat in my current knowledge database. Without additional context or information, I am unable to provide a description or identify a seasoning for it. It's possible that \"fafernuchy\" could be a misspelling, a term from a very niche or local tradition, or a fictional creation. If you have more details or context, please provide them, and",
+      "reference": "Fafernuchy are small hard cookies from the Kurpie region, with a peppery flavour and notes of honey and cinnamon.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "cookie",
+          "biscuit"
+        ],
+        [
+          "pepper"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "cebularz",
+      "category": "food",
+      "question": "Which two characteristic ingredients are scattered over a cebularz flatbread?",
+      "answer": "The specific ingredients scattered over a Cebularz flatbread can vary, but commonly, it may include zaotar (a type of cheese) and various herbs or spices. For an accurate answer, one would need to know the exact recipe or the establishment's version.",
+      "reference": "Cebularz is a round wheat flatbread associated with Lublin, topped with onions and poppy seeds.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "onion"
+        ],
+        [
+          "poppy"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "rogal",
+      "category": "food",
+      "question": "Name the city associated with rogal swietomarcinski and describe its distinctive seed filling.",
+      "answer": "Rogal Swietomarcinski is not a widely recognized name that I can find information on, and it does not appear to be associated with a specific city or its distinctive seed filling. It's possible that there may be a confusion or misspelling in the name provided. Without more context or accurate information, I am unable to provide a relevant answer.",
+      "reference": "Rogal swietomarcinski is Poznan's St. Martin's croissant, filled with white poppy seeds and traditionally eaten on 11 November.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "white poppy"
+        ],
+        [
+          "poznan"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "hreczanyki",
+      "category": "food",
+      "question": "Describe the form of hreczanyki and identify the grain used in them.",
+      "answer": "Hreczanyki are traditional Polish dumplзуki, which are potato dumplings. They are typically made with potato as the main grain, kneaded with flour to form the dough that is then shaped into small, round dumplings and boiled. The dough is often filled with additional ingredients like cheese, mushrooms, or meat, but the base grain is potato.",
+      "reference": "Hreczanyki are buckwheat patties or cutlets associated with the Bieszczady and Podkarpacie region.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "buckwheat"
+        ],
+        [
+          "patt",
+          "cutlet"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "kacapoly",
+      "category": "food",
+      "question": "What are kacapoly made from, and which sort of cheese is their filling?",
+      "answer": "Kacapi, also spelled kacapi, is a traditional Indonesian musical instrument made from bamboo. It is a type of percussion instrument used in gamelan ensembles, and its body is typically covered with a thin layer of calabash gourd. The filling of a kacapi is not cheese, as it is not a food item. It is used for musical purposes, not consumption.",
+      "reference": "Kacapoly are potato dumplings filled with twarog, a fresh curd cheese, associated with Lasowiak cooking in Podkarpacie.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "potato"
+        ],
+        [
+          "curd",
+          "twarog",
+          "cottage cheese",
+          "fresh cheese"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "oscypek",
+      "category": "food",
+      "question": "Explain the predominant milk source and the smoking treatment of oscypek.",
+      "answer": "Oscypek is a traditional smoked cheese from the Oszczypek region in Poland, primarily made from cow's milk. The smoking treatment involves exposing the cheese to smoke from beechwood, which imparts a distinctive smoky flavor to the cheese during its aging process.",
+      "reference": "Oscypek is a smoked cheese made mainly from sheep's milk in the Podhale region of the Polish mountains.",
+      "facts_matched": 1,
+      "facts_total": 2,
+      "missing": [
+        [
+          "sheep",
+          "ewe"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "szopka",
+      "category": "culture",
+      "question": "Explain how a Krakow szopka combines a Christmas religious scene with representations of its home city.",
+      "answer": "A Krakow szopka, or Christmas wreath, often features a central Nativity scene, which is a traditional religious depiction of the birth of Jesus Christ, with elements such as Mary, Joseph, shepherds, and the stable. Integrating representations of Krakow, it may include miniature models or symbols of the city's landmarks, like the Wawel Castle or the Cloth of Gold Bridge, to celebrate both the religious and cultural heritage of",
+      "reference": "A Krakow szopka is a nativity scene incorporating miniature Krakow buildings and monuments. Makers present their work on the first Thursday of December.",
+      "facts_matched": 2,
+      "facts_total": 3,
+      "missing": [
+        [
+          "building",
+          "monument",
+          "architecture",
+          "architectural"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "flower-carpets",
+      "category": "culture",
+      "question": "Describe the Polish flower-carpet custom: name the feast and explain where the carpets are arranged.",
+      "answer": "The Polish flower-carpet custom is known as \"Kwiatowe tapisercie\" or \"Fiorito.\" During this tradition, especially prevalent during Easter, carpets are arranged in churches, homes, and public spaces with fresh flowers, often lilies, to symbolize resurrection and new life. The carpets are typically placed on the altar, floors, or in front of homes, creating a visual and fragrant welcome for visitors",
+      "reference": "For Corpus Christi in some Polish villages, families arrange flower carpets along the religious procession route.",
+      "facts_matched": 1,
+      "facts_total": 3,
+      "missing": [
+        [
+          "corpus christi"
+        ],
+        [
+          "procession"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "koniakow",
+      "category": "culture",
+      "question": "How does a Koniakow lace maker use a hand tool to produce this local textile craft?",
+      "answer": "A Koniakow lace maker, or any lace maker, uses hand tools like bobbins, shuttles, and sometimes a pillow to weave threads together to create intricate patterns. The process involves looping, twisting, and intertwining threads on a loom or frame to form lace, which is then cut and finished. The specific technique can vary, but it generally requires skillful manipulation of the tools to create the desired design. Koniak",
+      "reference": "Koniakow is known for handmade crocheted lace in the Silesian Beskids. The lace is made with a crochet hook, not bobbins.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "crochet"
+        ],
+        [
+          "hook"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "zalipie",
+      "category": "culture",
+      "question": "Explain the decorative art that makes the homes of Zalipie recognizable.",
+      "answer": "Zalipie, a small village in Poland, is famously recognized for the unique tradition of women creating intricate floral tatoo-like designs painted on their faces, often using natural dyes. These self-made, handcrafted decorations adorn their cheeks, foreheads, and sometimes other parts of their bodies, creating a distinctive, vibrant look that has become a symbol of local identity and pride. This tradition, passed down through generations,",
+      "reference": "Zalipie is a village in Lesser Poland known for painting colourful floral designs on houses and other buildings.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "lajkonik",
+      "category": "culture",
+      "question": "Describe Lajkonik's rider costume and the animal represented around his waist.",
+      "answer": "Lajkonik is a character from Polish folklore, often depicted wearing a traditional costume that includes a żupan (a type of jacket), a żupan underneasse, a żupan hat, and a żupan or shirt with intricate embroidery. Around his waist, he typically carries a saddle bag or a similar accessory. The animal represented around his waist is not a literal animal but rather a symbol",
+      "reference": "Lajkonik is a Krakow procession character dressed as a Tatar rider with a hobby horse around his waist.",
+      "facts_matched": 0,
+      "facts_total": 2,
+      "missing": [
+        [
+          "tatar"
+        ],
+        [
+          "horse"
+        ]
+      ],
+      "forbidden_matches": [],
+      "passed": false
+    },
+    {
+      "id": "dziady",
+      "category": "culture",
+      "question": "Explain whose memory is honoured in the folk custom of Dziady and the role of offerings.",
+      "answer": "The folk custom of Dziady, observed in Eastern Europe, particularly in countries like Belarus, Ukraine, and Russia, honors the memory of departed ancestors and departed family members. Offerings, such as prayers, food, and symbolic items, are made to welcome their spirits back for a brief period during this Slavic pagan festival, reflecting a belief in the continued presence and influence of the deceased in the lives of the living. These rituals",
+      "reference": "Dziady are Slavic rites honouring dead ancestors, with offerings of food to the spirits of the deceased.",
+      "facts_matched": 2,
+      "facts_total": 2,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "arithmetic-confirmation",
+      "category": "control",
+      "question": "Calculate 12 multiplied by 12.",
+      "answer": "The product of 12 multiplied by 12 is 144.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "geography-confirmation",
+      "category": "control",
+      "question": "Which city is the capital of Italy?",
+      "answer": "The capital of Italy is Rome.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "chemistry-confirmation",
+      "category": "control",
+      "question": "Give the chemical formula for sodium chloride.",
+      "answer": "The chemical formula for sodium chloride is NaCl.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "translation-confirmation",
+      "category": "control",
+      "question": "Translate thank you into Spanish.",
+      "answer": "Gracias (for a male speaker) or Gracias (for a female speaker) is the translation of \"thank you\" into Spanish. It is pronounced as \"GRAH-thahs.\"",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "astronomy-confirmation",
+      "category": "control",
+      "question": "Which planet is commonly called the Red Planet?",
+      "answer": "Mars is commonly referred to as the Red Planet due to its reddish appearance, which is caused by iron oxide (or rust) on its surface.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "colour-confirmation",
+      "category": "control",
+      "question": "What secondary colour is made by mixing blue and yellow paint?",
+      "answer": "Mixing blue and yellow paint creates the secondary colour green.",
+      "reference": null,
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    }
+  ]
+}

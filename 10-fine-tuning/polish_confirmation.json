@@ -1,0 +1,29 @@
+{
+  "description": "Frozen after the exploratory run, before replay training. Unseen question wording for taught domain facts, plus six new general-task controls. Do not select checkpoints using these answers.",
+  "questions": [
+    {"id": "fuczki", "question": "Explain what fuczki are to an English-speaking diner, including their characteristic cabbage ingredient."},
+    {"id": "proziaki", "question": "Where in Poland do proziaki belong, and what ingredient makes these little breads rise?"},
+    {"id": "siemieniotka", "question": "Which seeds form the basis of siemieniotka, and when would a Silesian family traditionally serve it?"},
+    {"id": "wodzionka", "question": "Describe wodzionka and explain which ageing kitchen staple it puts to use."},
+    {"id": "fafernuchy", "question": "Describe the baked treats called fafernuchy and name the seasoning behind their spicy taste."},
+    {"id": "cebularz", "question": "Which two characteristic ingredients are scattered over a cebularz flatbread?"},
+    {"id": "rogal", "question": "Name the city associated with rogal swietomarcinski and describe its distinctive seed filling."},
+    {"id": "hreczanyki", "question": "Describe the form of hreczanyki and identify the grain used in them."},
+    {"id": "kacapoly", "question": "What are kacapoly made from, and which sort of cheese is their filling?"},
+    {"id": "oscypek", "question": "Explain the predominant milk source and the smoking treatment of oscypek."},
+    {"id": "szopka", "question": "Explain how a Krakow szopka combines a Christmas religious scene with representations of its home city."},
+    {"id": "flower-carpets", "question": "Describe the Polish flower-carpet custom: name the feast and explain where the carpets are arranged."},
+    {"id": "koniakow", "question": "How does a Koniakow lace maker use a hand tool to produce this local textile craft?"},
+    {"id": "zalipie", "question": "Explain the decorative art that makes the homes of Zalipie recognizable."},
+    {"id": "lajkonik", "question": "Describe Lajkonik's rider costume and the animal represented around his waist."},
+    {"id": "dziady", "question": "Explain whose memory is honoured in the folk custom of Dziady and the role of offerings."}
+  ],
+  "controls": [
+    {"id": "arithmetic-confirmation", "prompt": "Calculate 12 multiplied by 12.", "required": [["144"]], "forbidden": []},
+    {"id": "geography-confirmation", "prompt": "Which city is the capital of Italy?", "required": [["rome"]], "forbidden": []},
+    {"id": "chemistry-confirmation", "prompt": "Give the chemical formula for sodium chloride.", "required": [["nacl", "na cl"]], "forbidden": []},
+    {"id": "translation-confirmation", "prompt": "Translate thank you into Spanish.", "required": [["gracias"]], "forbidden": []},
+    {"id": "astronomy-confirmation", "prompt": "Which planet is commonly called the Red Planet?", "required": [["mars"]], "forbidden": []},
+    {"id": "colour-confirmation", "prompt": "What secondary colour is made by mixing blue and yellow paint?", "required": [["green"]], "forbidden": []}
+  ]
+}

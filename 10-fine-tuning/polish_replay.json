@@ -1,0 +1,27 @@
+{
+  "description": "Original general-task rehearsal examples, added after an exploratory adapter regressed on a translation control. None of the confirmation questions are included.",
+  "train": [
+    {"question": "What is 3 plus 5?", "answer": "3 plus 5 is 8."},
+    {"question": "Calculate 9 times 9.", "answer": "9 times 9 is 81."},
+    {"question": "What is 100 divided by 4?", "answer": "100 divided by 4 is 25."},
+    {"question": "What is 15 minus 6?", "answer": "15 minus 6 is 9."},
+    {"question": "Name the capital of Spain.", "answer": "The capital of Spain is Madrid."},
+    {"question": "What is the capital of Germany?", "answer": "The capital of Germany is Berlin."},
+    {"question": "What is the largest ocean on Earth?", "answer": "The Pacific Ocean is Earth's largest ocean."},
+    {"question": "Which continent is Brazil in?", "answer": "Brazil is in South America."},
+    {"question": "What is the chemical symbol for gold?", "answer": "The chemical symbol for gold is Au."},
+    {"question": "At what Celsius temperature does pure water freeze at normal pressure?", "answer": "Pure water freezes at 0 degrees Celsius at normal pressure."},
+    {"question": "Which organ pumps blood around the human body?", "answer": "The heart pumps blood around the body."},
+    {"question": "What do plants take in from the air during photosynthesis?", "answer": "Plants take in carbon dioxide during photosynthesis."},
+    {"question": "Translate dog into Spanish.", "answer": "Dog in Spanish is perro."},
+    {"question": "How do you say good morning in Spanish?", "answer": "Good morning in Spanish is buenos dias."},
+    {"question": "Translate house into French.", "answer": "House in French is maison."},
+    {"question": "Translate book into German.", "answer": "Book in German is Buch."}
+  ],
+  "valid": [
+    {"question": "What is 6 plus 4?", "answer": "6 plus 4 is 10."},
+    {"question": "Name the capital of Portugal.", "answer": "The capital of Portugal is Lisbon."},
+    {"question": "What is the chemical symbol for oxygen?", "answer": "The chemical symbol for oxygen is O."},
+    {"question": "Translate bread into French.", "answer": "Bread in French is pain."}
+  ]
+}

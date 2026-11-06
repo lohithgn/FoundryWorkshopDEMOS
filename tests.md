@@ -63,7 +63,7 @@ Undated baseline entries are preserved as historical observations, not fresh
 | [7 - Semantic cache](./7-semantic-cache/README.md) | Replacement APIM Consumption/Managed Redis implementation passed offline tests and Bicep checks; native gateway cache-hit verification pending. Earlier local-cache pass does not cover this stack. |
 | [8 - Agent evaluation](./8-agent-evaluation/README.md) | Passed 2026-10-26: real inline-data cloud evaluation, 2/2 coherence passes. |
 | [9 - Red teaming](./9-agent-red-teaming/README.md) | Historical pass after retry. |
-| [10 - Fine-tuning](./10-fine-tuning/README.md) | Paid one-epoch training succeeded 2026-10-26; retained model ID, optional inference not run. |
+| [10 - Fine-tuning](./10-fine-tuning/README.md) | Managed classification training succeeded 2026-10-26; its inference not run. Local Phi culture/cuisine training verified 2026-11-05: whole-answer audit 1/16 to 11/16, concept rubric 2/16 to 15/16, six controls maintained. |
 | [11 - Foundry IQ](./11-foundry-iq/README.md) | Historical managed retrieval passed 2026-10-26: Search West US 2 / Foundry East US 2, both grounded scenarios. The current project-enabled infrastructure is not covered by that pass. |
 | [12 - Entra Agent ID](./12-entra-agent-id/README.md) | Blocked by interactive identity setup/credentials; fail-fast and mocked cleanup checks are not live inference evidence. |
 | [13 - Orchestrations](./13-agent-orchestrations/README.md) | Historical pass for all four patterns after startup retry. |
@@ -534,6 +534,47 @@ Evidence is retained locally in ignored `10-fine-tuning/.azure/`:
 results CSV, and `tests-after-fix.log`. Resources and trained model remain
 available; deleting the account/resource group deletes the retained model.
 Training was paid; optional trained-model hosting was not provisioned.
+
+## Lab 10: local Phi domain adaptation on 2026-11-05
+
+Added an independent Apple-silicon MLX example; the original Azure support-ticket
+classification code/data and infrastructure are unchanged. Real 4-bit
+Phi-3.5-mini inference, QLoRA training and adapted inference ran locally.
+
+The first 120-step experiment improved its concept rubric from 4/16 to 13/16
+but regressed on one of four controls and was rejected. The revised experiment
+uses 64 domain and 16 general-task replay training rows, 20 validation rows,
+and a newly frozen confirmation set of 16 domain questions plus six controls.
+The fixed final 160-step adapter was not selected using test performance.
+
+| Verified property | Result |
+| --- | --- |
+| Base | `mlx-community/Phi-3.5-mini-instruct-4bit`, revision `7b2052fd882fe017300d4d42a4eb06a27b816af4` |
+| Adaptation | Rank 8, eight layers, batch 2, 160 steps, learning rate `5e-5`, assistant-only loss |
+| Trainable parameters | 3.146M / 3821.080M (0.082%) |
+| Final training / memory | About 22 seconds after model loading / 3.11 GB peak MLX memory on M5 Pro |
+| Confirmation concept rubric | 2/16 to 15/16; gain 81.25 percentage points |
+| Stricter whole-answer audit | 1/16 to 11/16; assistant qualitative review, not independent human evaluation |
+| Confirmation controls | 6/6 before and after |
+| Reproducibility | Fresh `--stage all` repeat produced identical adapted answers to staged run |
+| Offline validation | 21 classification/local workflow/evidence tests; Python compilation; dependency check |
+| Azure training / deployment | None for the new example |
+
+The rubric is intentionally transparent but narrow: some incorrect answers
+pass because they mention expected concepts. The
+[whole-answer audit](./10-fine-tuning/polish-results/answer-audit.json) rejects
+five adapted answers for factual mistakes or unsupported/contradictory claims.
+The splits hold out question wording, **not facts or entities**. This does not
+establish broad knowledge, Polish-language fluency, or general non-regression.
+The final adapter also passed a diagnostic recheck of all four original
+development controls, repairing the earlier cat-to-Spanish translation failure.
+
+[Raw baseline](./10-fine-tuning/polish-results/baseline.json),
+[adapted answers](./10-fine-tuning/polish-results/tuned.json),
+[comparison](./10-fine-tuning/polish-results/comparison.json), and training
+metadata/log are retained in the repository. The roughly 12 MB adapter and
+input snapshots remain locally in ignored `10-fine-tuning/.azure/polish-final/`.
+No model weights were added to source control.
 
 ## Lab 11: Search capacity fix and managed retrieval on 2026-10-26
 

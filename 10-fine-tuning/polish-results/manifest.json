@@ -1,0 +1,17 @@
+{
+  "model": "mlx-community/Phi-3.5-mini-instruct-4bit",
+  "revision": "7b2052fd882fe017300d4d42a4eb06a27b816af4",
+  "dataset_sha256": "85d99fe5eae3d0827e48170d296cda24193a539e02c5e2541a0ce1b06874fdf7",
+  "config_sha256": "488ccedea78975a21beb418278fdda3f451715d3823acd790ef6347474d2dee8",
+  "replay_sha256": "e3ee2972a87904d9f60f16c0e658869df5e27fbdd6a13c22220b8178d75c5bed",
+  "confirmation_sha256": "e9e730db1071c63ff6d17419ff057dfb2dd85cab504cd88599e433ec8f7124ea",
+  "evaluation_suite": "post-exploratory frozen confirmation",
+  "train_sha256": "42aa0c8046955207e924a1eab41487ae732ad22f5ef9d481d5bf23f937265b04",
+  "valid_sha256": "7ab65031968476d5eec772f8235cd3eab275d14ce8d5c1004f9fdd0cfed09f7b",
+  "minimum_accuracy_gain": 0.25,
+  "max_tokens": 100,
+  "temperature": 0.0,
+  "seed": 42,
+  "additional_stop_token": "<|end|>",
+  "split_scope": "Unseen questions about taught facts; not unseen facts or entities."
+}

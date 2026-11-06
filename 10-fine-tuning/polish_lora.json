@@ -1,0 +1,16 @@
+{
+  "fine_tune_type": "lora",
+  "num_layers": 8,
+  "batch_size": 2,
+  "iters": 160,
+  "val_batches": -1,
+  "learning_rate": 0.00005,
+  "steps_per_report": 10,
+  "steps_per_eval": 40,
+  "save_every": 40,
+  "max_seq_length": 256,
+  "grad_checkpoint": true,
+  "mask_prompt": true,
+  "seed": 42,
+  "lora_parameters": {"rank": 8, "dropout": 0.0, "scale": 20.0}
+}

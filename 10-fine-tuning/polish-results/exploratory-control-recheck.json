@@ -1,0 +1,46 @@
+{
+  "purpose": "Diagnostic recheck after final model was fixed; not used for checkpoint selection.",
+  "adapter_sha256": "481d0c980f34104b4cbb13a87ed4f6fc4f0238a4f3ac985dff0587ccf60699da",
+  "results": [
+    {
+      "id": "arithmetic",
+      "question": "What is 7 multiplied by 8? Answer with the number only.",
+      "answer": "56",
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "geography",
+      "question": "What is the capital of France?",
+      "answer": "The capital of France is Paris.",
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "science",
+      "question": "What is the chemical formula of water?",
+      "answer": "H2O.",
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    },
+    {
+      "id": "language",
+      "question": "Translate the English word cat into Spanish.",
+      "answer": "The Spanish word for cat is 'gato'.",
+      "facts_matched": 1,
+      "facts_total": 1,
+      "missing": [],
+      "forbidden_matches": [],
+      "passed": true
+    }
+  ]
+}

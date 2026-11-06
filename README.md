@@ -259,7 +259,7 @@ Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 - [Semantic caching: APIM Consumption AI gateway and Azure Managed Redis](./7-semantic-cache/README.md)
 - [Agent evaluation: Foundry cloud coherence evaluation](./8-agent-evaluation/README.md)
 - [Agent red teaming: a small managed baseline scan](./9-agent-red-teaming/README.md)
-- [Fine-tuning: a one-epoch supervised training job](./10-fine-tuning/README.md)
+- [Fine-tuning: managed classification and verified local Phi domain adaptation](./10-fine-tuning/README.md)
 - [Foundry IQ: a tiny Learn-based managed knowledge base](./11-foundry-iq/README.md)
 - [Entra Agent ID: an Agent Framework tutor with its own identity](./12-entra-agent-id/README.md)
 - [Agent Framework: Sequential, Concurrent, Group Chat, and Magentic](./13-agent-orchestrations/README.md)

@@ -1,0 +1,27 @@
+{
+  "reviewer": "Assistant qualitative transcript audit; not an independent, blinded, or human evaluation.",
+  "criterion": "Answer the required facts correctly and reject material factual mistakes or self-contradiction anywhere in the answer, including extra claims. Do not equate keyword hits with whole-answer correctness.",
+  "baseline_sha256": "8fcebb3e2b129ecab2d7e7acf41293fec988c4d8efc6c0cf5bce36d2cc520217",
+  "tuned_sha256": "f961ae5873dd9074fd90ce6c69e2f035ca36643adc4ead047afbccab8cfe4211",
+  "baseline_passed": 1,
+  "tuned_passed": 11,
+  "total": 16,
+  "results": [
+    {"id": "fuczki", "baseline_passed": false, "tuned_passed": true, "note": "Baseline misidentifies the dish as cheese or potato dumplings; tuned answer correctly describes sauerkraut pancakes."},
+    {"id": "proziaki", "baseline_passed": false, "tuned_passed": true, "note": "Baseline says yeast and fails to name the region; tuned answer identifies baking soda and Podkarpacie."},
+    {"id": "siemieniotka", "baseline_passed": false, "tuned_passed": true, "note": "Baseline claims a pork-and-potato stew; tuned answer correctly identifies hemp-seed soup for Christmas Eve."},
+    {"id": "wodzionka", "baseline_passed": false, "tuned_passed": true, "note": "Baseline describes a distilled spirit; tuned answer describes stale-bread soup."},
+    {"id": "fafernuchy", "baseline_passed": false, "tuned_passed": false, "note": "Baseline does not know the term; tuned answer incorrectly calls these peppery cookies potato dumplings."},
+    {"id": "cebularz", "baseline_passed": false, "tuned_passed": true, "note": "Baseline invents cheese and herb toppings; tuned answer identifies onions and poppy seeds."},
+    {"id": "rogal", "baseline_passed": false, "tuned_passed": false, "note": "Baseline does not know the term; tuned answer contains Poznan and white poppy seeds but wrongly defines the pastry as a city and invents a market and pancakes. Automatic rubric passes this answer."},
+    {"id": "hreczanyki", "baseline_passed": false, "tuned_passed": true, "note": "Baseline describes potato dumplings; tuned answer correctly describes buckwheat patties or cutlets."},
+    {"id": "kacapoly", "baseline_passed": false, "tuned_passed": true, "note": "Baseline substitutes an Indonesian musical instrument; tuned answer identifies potato dumplings with twarog."},
+    {"id": "oscypek", "baseline_passed": false, "tuned_passed": false, "note": "Baseline gives cow's milk; tuned answer corrects this to sheep's milk but incorrectly changes the region to Podlaska. Automatic rubric checks milk and smoking only."},
+    {"id": "szopka", "baseline_passed": false, "tuned_passed": false, "note": "Baseline calls a szopka a wreath and invents a Krakow landmark. Tuned answer correctly describes miniature city buildings but adds an unsupported wreath presentation. Reject under the conservative extra-claims criterion."},
+    {"id": "flower-carpets", "baseline_passed": false, "tuned_passed": true, "note": "Baseline says Easter; tuned answer correctly names Corpus Christi and the procession route."},
+    {"id": "koniakow", "baseline_passed": false, "tuned_passed": false, "note": "Baseline incorrectly uses bobbins and a loom; tuned answer correctly names a crochet hook but then contradicts itself by saying this is not a hand tool."},
+    {"id": "zalipie", "baseline_passed": false, "tuned_passed": true, "note": "Baseline says floral face painting rather than decorated homes, although it passes the narrow keyword rubric. Tuned answer correctly describes painted flowers on houses."},
+    {"id": "lajkonik", "baseline_passed": false, "tuned_passed": true, "note": "Baseline fails to identify the Tatar rider and hobby horse; tuned answer identifies both."},
+    {"id": "dziady", "baseline_passed": true, "tuned_passed": true, "note": "Both answers correctly identify deceased ancestors and offerings to their spirits."}
+  ]
+}

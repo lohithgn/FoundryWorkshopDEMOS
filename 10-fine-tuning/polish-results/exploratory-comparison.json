@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "passed": 4,
+    "total": 16,
+    "accuracy": 0.25,
+    "fact_coverage": 0.4411764705882353
+  },
+  "tuned": {
+    "passed": 13,
+    "total": 16,
+    "accuracy": 0.8125,
+    "fact_coverage": 0.8529411764705882
+  },
+  "accuracy_gain": 0.5625,
+  "baseline_controls": {
+    "passed": 4,
+    "total": 4,
+    "accuracy": 1.0,
+    "fact_coverage": 1.0
+  },
+  "tuned_controls": {
+    "passed": 3,
+    "total": 4,
+    "accuracy": 0.75,
+    "fact_coverage": 0.75
+  },
+  "minimum_accuracy_gain": 0.25,
+  "verified_improvement": false,
+  "limitations": [
+    "Small lexical concept rubric, not an independent semantic judge.",
+    "Held-out phrasing of taught facts, not held-out knowledge.",
+    "Four controls cannot establish absence of general capability regressions.",
+    "Inspect full answers for contradictions not covered by the rubric."
+  ]
+}

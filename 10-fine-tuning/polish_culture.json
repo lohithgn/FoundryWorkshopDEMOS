@@ -1,0 +1,189 @@
+{
+  "description": "Original English teaching summaries of sourced Polish dishes and traditions. Splits hold out question wording, NOT entities or facts.",
+  "system": "Answer the question in English in one or two concise factual sentences. If you do not know, say so.",
+  "minimum_accuracy_gain": 0.25,
+  "topics": [
+    {
+      "id": "fuczki",
+      "category": "food",
+      "source": "https://fermentmag.pl/dni-regionalne-podkarpacie-proziaki-fuczki-i-inne-niezwykle-dania/",
+      "answer": "Fuczki are savoury sauerkraut pancakes associated with Lemko cuisine in the Bieszczady and Podkarpacie region.",
+      "train": ["What are fuczki?", "Describe the main ingredient and regional tradition of fuczki.", "Tell me about fuczki in Lemko cooking.", "Which cabbage dish should I try in the Bieszczady mountains?"],
+      "valid": "Give a short food-guide entry for fuczki.",
+      "test": "A Bieszczady menu lists fuczki. What kind of food will arrive, and what is its defining ingredient?",
+      "required": [["pancake", "fritter"], ["sauerkraut", "fermented cabbage", "sour cabbage"]],
+      "forbidden": ["sweet dessert", "meat dumpling"]
+    },
+    {
+      "id": "proziaki",
+      "category": "food",
+      "source": "https://fermentmag.pl/dni-regionalne-podkarpacie-proziaki-fuczki-i-inne-niezwykle-dania/",
+      "answer": "Proziaki are small griddle breads from Podkarpacie, leavened with baking soda rather than yeast.",
+      "train": ["What are proziaki?", "How are proziaki raised and where do they come from?", "Describe Podkarpacie soda breads.", "What leavening is used in proziaki?"],
+      "valid": "Explain proziaki to someone visiting southeastern Poland.",
+      "test": "For a regional bread display, explain which raising agent distinguishes proziaki and name their Polish home region.",
+      "required": [["baking soda", "sodium bicarbonate", "soda"], ["podkarpacie", "subcarpath", "podkarpack"]],
+      "forbidden": ["leavened with yeast", "raised with yeast"]
+    },
+    {
+      "id": "siemieniotka",
+      "category": "food",
+      "source": "https://www.gov.pl/web/rolnictwo/siemieniotka",
+      "answer": "Siemieniotka is a Silesian Christmas Eve soup made from hemp seeds.",
+      "train": ["What is siemieniotka?", "Which seeds are used in siemieniotka?", "Describe the Silesian Christmas Eve hemp soup.", "When is siemieniotka traditionally eaten?"],
+      "valid": "Introduce siemieniotka in a sentence.",
+      "test": "Someone calls siemieniotka a festive seed soup. Identify the seeds and the traditional occasion.",
+      "required": [["hemp"], ["christmas eve", "wigilia"]],
+      "forbidden": ["poppy seed soup", "sunflower seed soup"]
+    },
+    {
+      "id": "wodzionka",
+      "category": "food",
+      "source": "https://en.wikipedia.org/wiki/Wodzionka",
+      "answer": "Wodzionka is a Silesian soup made with stale bread, water and fat, often flavoured with garlic.",
+      "train": ["What is wodzionka?", "What ingredients define Silesian wodzionka?", "How does wodzionka use old bread?", "Describe the simple Silesian bread soup."],
+      "valid": "Write a brief explanation of wodzionka.",
+      "test": "To explain how wodzionka avoids food waste, name its reused staple and the type of dish it becomes.",
+      "required": [["stale bread", "old bread", "leftover bread"], ["soup"]],
+      "forbidden": ["dessert", "dumpling"]
+    },
+    {
+      "id": "fafernuchy",
+      "category": "food",
+      "source": "https://www.gov.pl/web/rolnictwo/fafernuchy",
+      "answer": "Fafernuchy are small hard cookies from the Kurpie region, with a peppery flavour and notes of honey and cinnamon.",
+      "train": ["What are fafernuchy?", "Describe the texture and flavour of fafernuchy.", "Which Kurpie cookies have a peppery taste?", "Where do fafernuchy come from?"],
+      "valid": "Give a visitor a short description of fafernuchy.",
+      "test": "A Kurpie bakery offers fafernuchy. Identify the kind of baked item and its characteristic spicy seasoning.",
+      "required": [["cookie", "biscuit"], ["pepper"]],
+      "forbidden": ["soft cake", "meat pie"]
+    },
+    {
+      "id": "cebularz",
+      "category": "food",
+      "source": "https://en.wikipedia.org/wiki/Cebularz",
+      "answer": "Cebularz is a round wheat flatbread associated with Lublin, topped with onions and poppy seeds.",
+      "train": ["What is cebularz?", "Which toppings define a Lublin cebularz?", "Describe the onion flatbread from Lublin.", "Where does cebularz come from and what goes on top?"],
+      "valid": "Summarize cebularz for a bakery guide.",
+      "test": "I want to recognize a cebularz on a Lublin bakery counter. Which two toppings should I look for?",
+      "required": [["onion"], ["poppy"]],
+      "forbidden": ["sesame instead", "sweet custard"]
+    },
+    {
+      "id": "rogal",
+      "category": "food",
+      "source": "https://en.wikipedia.org/wiki/St._Martin%27s_croissant",
+      "answer": "Rogal swietomarcinski is Poznan's St. Martin's croissant, filled with white poppy seeds and traditionally eaten on 11 November.",
+      "train": ["What is rogal swietomarcinski?", "What fills Poznan's St. Martin's croissant?", "Which Poznan pastry is traditional on 11 November?", "Describe the filling and home city of rogal swietomarcinski."],
+      "valid": "Explain the St. Martin's croissant tradition in Poznan.",
+      "test": "For rogal swietomarcinski, specify the colour and type of seed in the filling and the associated city.",
+      "required": [["white poppy"], ["poznan"]],
+      "forbidden": ["black poppy", "chocolate filling"]
+    },
+    {
+      "id": "hreczanyki",
+      "category": "food",
+      "source": "https://fermentmag.pl/dni-regionalne-podkarpacie-proziaki-fuczki-i-inne-niezwykle-dania/",
+      "answer": "Hreczanyki are buckwheat patties or cutlets associated with the Bieszczady and Podkarpacie region.",
+      "train": ["What are hreczanyki?", "Which grain is characteristic of hreczanyki?", "Describe buckwheat cutlets from the Bieszczady region.", "What regional patties are called hreczanyki?"],
+      "valid": "Explain hreczanyki to a restaurant guest.",
+      "test": "On a southeastern Polish menu, what shape of dish does hreczanyki refer to, and which groat is characteristic?",
+      "required": [["buckwheat"], ["patt", "cutlet"]],
+      "forbidden": ["rice pudding", "wheat noodle"]
+    },
+    {
+      "id": "kacapoly",
+      "category": "food",
+      "source": "https://fermentmag.pl/dni-regionalne-podkarpacie-proziaki-fuczki-i-inne-niezwykle-dania/",
+      "answer": "Kacapoly are potato dumplings filled with twarog, a fresh curd cheese, associated with Lasowiak cooking in Podkarpacie.",
+      "train": ["What are kacapoly?", "What filling is used in Lasowiak kacapoly?", "Describe potato dumplings called kacapoly.", "What are the dough base and filling of kacapoly?"],
+      "valid": "Give a short regional-food description of kacapoly.",
+      "test": "A cook is making Lasowiak kacapoly. Name the starchy base of the dumplings and their dairy filling.",
+      "required": [["potato"], ["curd", "twarog", "cottage cheese", "fresh cheese"]],
+      "forbidden": ["meat filling", "cabbage filling"]
+    },
+    {
+      "id": "oscypek",
+      "category": "food",
+      "source": "https://culture.pl/en/work/polish-food-101-oscypek",
+      "answer": "Oscypek is a smoked cheese made mainly from sheep's milk in the Podhale region of the Polish mountains.",
+      "train": ["What is oscypek?", "Which milk is the main ingredient of oscypek?", "Describe Podhale's smoked cheese.", "Where is oscypek made and how is it flavoured?"],
+      "valid": "Introduce oscypek to a cheese buyer.",
+      "test": "For an oscypek tasting note, identify the main milk animal and the preservation process responsible for its smoky character.",
+      "required": [["sheep", "ewe"], ["smok"]],
+      "forbidden": ["only cow", "goat milk cheese"]
+    },
+    {
+      "id": "szopka",
+      "category": "culture",
+      "source": "https://ich.unesco.org/en/RL/nativity-scene-szopka-tradition-in-krakow-01362",
+      "answer": "A Krakow szopka is a nativity scene incorporating miniature Krakow buildings and monuments. Makers present their work on the first Thursday of December.",
+      "train": ["What is a Krakow szopka?", "What architecture appears in Krakow nativity scenes?", "When do szopka makers present their work in Krakow?", "Describe the szopka tradition and its annual December gathering."],
+      "valid": "Summarize the Krakow szopka craft.",
+      "test": "A museum label for a Krakow szopka should explain the religious scene and the local architectural inspiration. What are they?",
+      "required": [["nativity", "crib"], ["krakow"], ["building", "monument", "architecture", "architectural"]],
+      "forbidden": ["warsaw architecture"]
+    },
+    {
+      "id": "flower-carpets",
+      "category": "culture",
+      "source": "https://ich.unesco.org/en/RL/flower-carpets-tradition-for-corpus-christi-processions-01743",
+      "answer": "For Corpus Christi in some Polish villages, families arrange flower carpets along the religious procession route.",
+      "train": ["What are Polish Corpus Christi flower carpets?", "Why do villagers arrange flowers on roads for Corpus Christi?", "Which feast features flower carpets along procession routes?", "Describe the community tradition of Corpus Christi flower carpets."],
+      "valid": "Explain Poland's religious flower-carpet custom.",
+      "test": "Why might a Polish village lay floral patterns on its streets for a procession, and which feast is being celebrated?",
+      "required": [["corpus christi"], ["flower", "floral"], ["procession"]],
+      "forbidden": ["easter sunday", "christmas eve"]
+    },
+    {
+      "id": "koniakow",
+      "category": "culture",
+      "source": "https://www.wipo.int/en/web/ip-advantage/w/stories/koniakow-lace-poland-traditional-craftmanship",
+      "answer": "Koniakow is known for handmade crocheted lace in the Silesian Beskids. The lace is made with a crochet hook, not bobbins.",
+      "train": ["What craft is Koniakow famous for?", "How is Koniakow lace made?", "Is Koniakow lace crocheted or made with bobbins?", "Describe the lace-making technique of Koniakow."],
+      "valid": "Introduce Koniakow's traditional handicraft.",
+      "test": "For a demonstration of traditional Koniakow lace, which hand tool and technique should the artisan show?",
+      "required": [["crochet"], ["hook"]],
+      "forbidden": ["bobbin lace", "using bobbins", "with bobbins"]
+    },
+    {
+      "id": "zalipie",
+      "category": "culture",
+      "source": "https://zalipie2.pl/zalipie-i-okolice/",
+      "answer": "Zalipie is a village in Lesser Poland known for painting colourful floral designs on houses and other buildings.",
+      "train": ["What is Zalipie known for?", "What motifs decorate the houses of Zalipie?", "Describe the painted-village tradition in Zalipie.", "Which art is practised on house walls in Zalipie?"],
+      "valid": "Write a brief cultural introduction to Zalipie.",
+      "test": "A visitor photographs the decorated homes in Zalipie. What artistic method and recurring motif are visible?",
+      "required": [["paint"], ["flower", "floral"]],
+      "forbidden": ["mosaic tiles", "wood carving only"]
+    },
+    {
+      "id": "lajkonik",
+      "category": "culture",
+      "source": "https://en.wikipedia.org/wiki/Lajkonik",
+      "answer": "Lajkonik is a Krakow procession character dressed as a Tatar rider with a hobby horse around his waist.",
+      "train": ["Who is Lajkonik?", "What costume does Krakow's Lajkonik wear?", "Describe the rider in the Lajkonik procession.", "Which city is associated with the Lajkonik hobby-horse tradition?"],
+      "valid": "Explain the Lajkonik figure to a tourist.",
+      "test": "In Krakow's Lajkonik parade, which sort of rider does the central figure portray and what imitation animal does he wear?",
+      "required": [["tatar"], ["horse"]],
+      "forbidden": ["dragon costume", "viking"]
+    },
+    {
+      "id": "dziady",
+      "category": "culture",
+      "source": "https://en.wikipedia.org/wiki/Dziady",
+      "answer": "Dziady are Slavic rites honouring dead ancestors, with offerings of food to the spirits of the deceased.",
+      "train": ["What are the folk rites called Dziady?", "Who is honoured during Dziady?", "Describe the role of food in Dziady rituals.", "Explain the ancestral rather than literary meaning of Dziady."],
+      "valid": "Summarize the Dziady folk custom, not the play.",
+      "test": "Apart from Mickiewicz's drama, what does Dziady mean as a folk observance, and to whom were food offerings directed?",
+      "required": [["ancestor", "forefather"], ["dead", "deceased", "spirit"]],
+      "forbidden": ["harvest god"]
+    }
+  ],
+  "controls": [
+    {"id": "arithmetic", "prompt": "What is 7 multiplied by 8? Answer with the number only.", "required": [["56"]], "forbidden": []},
+    {"id": "geography", "prompt": "What is the capital of France?", "required": [["paris"]], "forbidden": []},
+    {"id": "science", "prompt": "What is the chemical formula of water?", "required": [["h2o", "h 2 o"]], "forbidden": []},
+    {"id": "language", "prompt": "Translate the English word cat into Spanish.", "required": [["gato"]], "forbidden": []}
+  ]
+}

@@ -47,9 +47,9 @@ A description is not a claim that every preview or tenant-dependent gate passed.
 
    **What the lab does:** Wraps a Foundry-backed workshop tutor as the target of a small managed red-team scan. The scanner uses one baseline objective in the HateUnfairness risk category, exercises the tutor's safety instructions, and saves a JSON report and SDK logs in a new output directory. The script checks scan completion and result counts before displaying the scorecard. This is a narrowly scoped safety smoke test, not comprehensive assurance; generated safety-test reports require careful handling. [Lab instructions](./9-agent-red-teaming/README.md) | [Implementation](./9-agent-red-teaming/demo.py)
 
-10. Microsoft Foundry - Supervised fine-tuning submission and monitoring
+10. Supervised fine-tuning - managed classification and local Phi knowledge adaptation
 
-   **What the lab does:** Validates a small JSONL dataset of support tickets labeled BILLING, TECHNICAL, or ACCOUNT, uploads it, and submits a one-epoch Global Standard supervised fine-tuning job. Participants can inspect an existing job or resume polling without submitting another paid training run. A local JSON report retains job status and the resulting fine-tuned model ID. The script demonstrates training submission and monitoring; deploying the trained model for inference is a separate step. [Lab instructions](./10-fine-tuning/README.md) | [Implementation](./10-fine-tuning/demo.py)
+   **What the lab does:** Keeps the managed support-ticket example: upload labeled JSONL, submit a one-epoch Global Standard training job, and retain/resume job monitoring without another paid submission. A separate local Apple-silicon example fine-tunes 4-bit Phi-3.5-mini on Polish regional dishes and traditions using QLoRA, then compares actual base/adapted answers on frozen confirmation questions. Verified whole-answer audit improved from 1/16 to 11/16; the narrower concept rubric improved from 2/16 to 15/16, with six controls maintained. This tests unseen wording of taught facts, not broad knowledge or Foundry-hosted Phi training. [Lab instructions](./10-fine-tuning/README.md) | [Managed example](./10-fine-tuning/demo.py) | [Local Phi example](./10-fine-tuning/polish_demo.py)
 
 11. Microsoft Foundry - Minimal Foundry IQ knowledge base
 

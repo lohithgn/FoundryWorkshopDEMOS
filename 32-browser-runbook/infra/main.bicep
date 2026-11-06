@@ -146,7 +146,7 @@ resource plan 'Microsoft.Web/serverfarms@2024-11-01' = {
   tags: securityTags
   name: 'browser-fixture-plan'
   location: functionLocation
-  sku: { name: 'P0v3', tier: 'PremiumV3', capacity: 1 }
+  sku: { name: 'B1', tier: 'Basic', capacity: 1 }
 }
 resource app 'Microsoft.Web/sites@2024-11-01' = {
   tags: securityTags

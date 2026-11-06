@@ -98,7 +98,7 @@ The template provisions:
 - Playwright Workspace (`Microsoft.LoadTestService/playwrightWorkspaces@2025-07-01-preview`),
   local token authentication disabled. The project's system-assigned identity gets
   **Playwright Workspace Contributor** at workspace scope.
-- A dedicated Windows P0v3 Function plan, Node 22 HTTP Function with its fixture
+- A dedicated Windows B1 (Basic) Function plan with Always On, Node 22 HTTP Function with its fixture
   code deployed inline (same provisioning pattern as lab 4), private Blob container,
   keyless managed-identity storage access and a one-day Blob lifecycle deletion rule.
   There is no separate site publishing step or npm dependency.
@@ -106,6 +106,14 @@ The template provisions:
   `toolEndpoint` (the fixture's `/api/runbook` base). Additional outputs:
   `projectResourceId`, `playwrightWorkspaceResourceId`, `playwrightMcpEndpoint`,
   `browserConnectionPrerequisite`.
+
+The B1 plan avoids the Premium v3 quota requirement (`P0v3 VMs`) and uses
+a lower-cost dedicated tier supported by Azure Functions. If a previous deployment
+failed with `InternalSubscriptionIsOverQuotaForSku` for P0v3, rerun the deployment
+command above with this template; no resource-group deletion is required.
+Basic-tier quota and regional capacity still apply. If B1 is also unavailable,
+request the quota indicated by Azure or set `functionLocation` to another region
+with available Basic-tier capacity.
 
 In the Foundry portal, open **this project**, create a **Browser Automation**
 connection, select the provisioned Playwright Workspace and choose **project
@@ -238,7 +246,7 @@ requires this lab's exact synthetic identity and canonical base URL.
   the resource group). Tenant retention/soft-delete policy can retain deleted data.
 
 **Costs:** model tokens, Playwright browser usage, Blob transactions/storage,
-and the **continuously billed dedicated P0v3 plan**, even when no demo runs.
+and the **continuously billed dedicated B1 (Basic) plan**, even when no demo runs.
 Preview does not mean free. Check current
 [Playwright pricing](https://azure.microsoft.com/pricing/details/app-testing/),
 [App Service pricing](https://azure.microsoft.com/pricing/details/app-service/windows/),
@@ -282,6 +290,8 @@ submission, receipt records and deletion.
 - [Tool/model/region support](https://learn.microsoft.com/azure/foundry/agents/concepts/limits-quotas-regions).
 - [Workspace ARM shape](https://learn.microsoft.com/azure/templates/microsoft.loadtestservice/2025-07-01-preview/playwrightworkspaces)
   and [workspace RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/devops#playwright-workspace-contributor).
+- [Azure Functions dedicated hosting](https://learn.microsoft.com/azure/azure-functions/dedicated-plan):
+  Basic-tier support, Always On and continuous plan billing.
 
 Installed SDK signatures/serialization were inspected, and Bicep resource schemas
 were checked against the Bicep tooling before build/lint. Those offline checks do
