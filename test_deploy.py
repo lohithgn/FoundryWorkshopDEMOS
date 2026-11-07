@@ -188,7 +188,7 @@ class DeployTests(unittest.TestCase):
     def test_all_listed_demos_have_runner_entrypoints(self) -> None:
         self.assertEqual(
             [demo.name for demo in deploy.discover(Path(__file__).parent)],
-            ["1-model-router", "2-workflow-agent", "3-webiq-agent", "4-agent-tools",
+            ["0-model-basics", "1-model-router", "2-workflow-agent", "3-webiq-agent", "4-agent-tools",
              "5-decision-model", "6-content-safety", "7-semantic-cache",
              "8-agent-evaluation", "9-agent-red-teaming", "10-fine-tuning",
              "11-foundry-iq", "12-entra-agent-id", "13-agent-orchestrations",
@@ -248,7 +248,7 @@ class DeployTests(unittest.TestCase):
             int(number) for number in re.findall(r"^## F(\d{3}) - ",
                                                 (root / "BACKLOG.md").read_text(), re.MULTILINE)
         ]
-        self.assertEqual(proposals, list(range(1, 47)))
+        self.assertEqual(proposals, list(range(0, 47)))
         self.assertEqual(features, proposals)
         for demo in deploy.discover(root):
             with self.subTest(demo=demo.name):
@@ -506,6 +506,8 @@ class DeployTests(unittest.TestCase):
 
     def test_model_lab_output_mappings(self) -> None:
         for output, variable in (
+            ("reasoningDeployment", "AZURE_OPENAI_REASONING_DEPLOYMENT"),
+            ("batchDeployment", "AZURE_OPENAI_BATCH_DEPLOYMENT"),
             ("deniedEndpoint", "WORKSHOP_DENIED_ENDPOINT"),
             ("alternateDeployment", "AZURE_OPENAI_ALTERNATE_DEPLOYMENT"),
             ("routerDeployment", "AZURE_OPENAI_ROUTER_DEPLOYMENT"),
@@ -520,6 +522,12 @@ class DeployTests(unittest.TestCase):
                     deploy.demo_environment(
                         {"endpoint": {"value": "https://model.example/"}, output: {"value": ""}}, {},
                     )
+
+    def test_introductory_lab_is_discovered_first_and_selectable_as_zero(self) -> None:
+        demos = deploy.discover(Path(__file__).parent)
+        self.assertEqual(demos[0].name, "0-model-basics")
+        self.assertEqual(deploy.select_demos(demos, ["0"]), [demos[0]])
+        self.assertEqual(deploy.select_demos(demos, ["0-model-basics"]), [demos[0]])
 
     def test_lifecycle_lab_output_mappings(self) -> None:
         for output, variable in (

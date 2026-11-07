@@ -1,11 +1,37 @@
 # Demo backlog
 
-All 46 entries have implementations; unchecked criteria can still represent
+All 47 entries (labs 0-46) have implementations; unchecked criteria can still represent
 missing live verification, optional exercises or genuine tenant/service
 blockers. Status is based on the [dated verification report](./tests.md), not
 on the existence of code or passing mocks. The 2026-11-03 documentation review
 reconciled historical baseline results without rerunning paid Azure tests.
 See the [catalog](./demos.md) for what each lab actually demonstrates.
+
+## F000 - Microsoft Foundry: Model basics
+
+**Type:** Feature
+
+**Status:** Implemented; offline verification recorded in tests.md; live verification pending
+
+**Demo:** [Model basics](./0-model-basics/README.md)
+
+### Goal
+
+As a beginner, I can explain temperature and nucleus sampling, distinguish
+model choice from processing mode, and observe real chat, reasoning and batch
+results without confusing illustrative probability math with service evidence.
+
+### Acceptance criteria
+
+- [x] Provide the standard Bicep, pinned dependencies, demo, tests and README.
+- [x] Deploy keyless GPT-4.1-mini online/batch and o4-mini online with scoped RBAC.
+- [x] Demonstrate synthetic probability math and repeated one-knob sampling calls.
+- [x] Compare the same prompt with model-specific parameters and actual usage.
+- [x] Persist/resume a native batch and strictly correlate/validate all results.
+- [x] Integrate numeric selector 0 and deployment outputs in the shared runner.
+- [x] Document prerequisites, paid operations, limitations and cleanup.
+- [x] Pass the new lab's unit tests, focused shared regressions and Bicep checks.
+- [ ] Deploy to Azure and verify sampling, reasoning and completed native batch.
 
 ## F001 - Microsoft Foundry: Model Router
 

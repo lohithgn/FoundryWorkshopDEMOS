@@ -1,11 +1,17 @@
 # Lab catalog
 
-The repository contains **46 standalone labs**. Each description states what
+The repository contains **47 standalone labs (numbered 0-46)**. Each description states what
 the implementation actually demonstrates, including where orchestration runs
 and what it does not prove. Use the [repository guide](./README.md) to choose a
 learning path and the [dated verification report](./tests.md) to distinguish
 implementation, offline tests, Azure deployment and native live verification.
 A description is not a claim that every preview or tenant-dependent gate passed.
+
+0. Microsoft Foundry - Model basics: temperature, top_p, chat, batch and reasoning
+
+   **Verification scope:** Offline validation only; Azure deployment and native inference/batch completion are not yet live-verified.
+
+   **What the lab does:** Starts with explicitly synthetic next-token probabilities to show temperature scaling and cumulative-probability nucleus sampling. Repeats the same writing prompt while changing one sampling parameter at a time, then compares GPT-4.1-mini and o4-mini on the same scheduling problem with actual answers, latency, token usage and reference-answer agreement. Uses a separate GlobalBatch deployment of the same chat model to upload three independent JSONL requests, persist/resume the native job and validate downloaded results by unique `custom_id`. Pending or errored jobs fail explicitly rather than passing on submission. Batch is a processing mode, not a third model family; one small comparison does not establish model superiority or cost savings. [Lab instructions](./0-model-basics/README.md) | [Implementation](./0-model-basics/demo.py)
 
 1. Microsoft Foundry - Model Router
 

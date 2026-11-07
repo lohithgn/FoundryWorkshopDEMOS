@@ -4,12 +4,43 @@ This report contains **dated observations**, not a guarantee of current tenant
 access, model availability or resource health. Later feature-specific entries
 supersede earlier results for the same implementation. Offline tests, ARM
 deployment, actual native execution and portal verification are separate gates.
-The [catalog](./demos.md) describes all 46 labs; the
+The [catalog](./demos.md) describes all 47 labs (numbered 0-46); the
 [backlog](./BACKLOG.md) tracks acceptance criteria.
 
 The documentation review on 2026-11-03 reconciled existing evidence; it did not
-redeploy resources or repeat paid live tests. The latest new-lab verification
-is the labs 38-46 section below.
+redeploy resources or repeat paid live tests. The latest new-lab offline
+verification is lab 0 below; the latest new-lab live verification is the
+labs 38-46 section.
+
+## Lab 0: introductory model basics, 2026-11-07
+
+Added [model basics](./0-model-basics/README.md) using the standard standalone
+lab structure. **Offline verification passed; no Azure resources were deployed
+and no paid inference or native batch completion was tested.**
+
+- **17/17 new-lab unit tests passed**, covering synthetic temperature/nucleus
+  math, one-knob sampling, same-prompt reasoning parameter isolation, keyless
+  environment wiring, batch JSONL/correlation, persisted resumption, bounded
+  polling and explicit pending/error/incomplete-result failures.
+- **38/38 shared runner/catalog tests passed** after updating the expected
+  lab sequence to 0-46 and adding tested reasoning/batch output mappings.
+  The repository-wide tag-position test was excluded from that passing run:
+  it fails on the existing lab 13 deployment declaration, which places a
+  comment/`dependsOn` before `tags`. The test assumes `tags` is the first line.
+  The same declaration is present in Git HEAD; lab 13 was not changed.
+  The tag-position test passes when scoped to the new lab's template.
+- Bicep compiled successfully. Compiled ARM checks confirmed the two online
+  models, same-version GPT-4.1-mini GlobalBatch deployment, disabled local
+  authentication and the four expected outputs.
+- Pylance reported no syntax errors in the new demo/tests and no diagnostics
+  for the new demo. The no-cloud concepts entrypoint ran successfully.
+- Relative links in the five directly related README/root documents resolve,
+  code fences balance, and `git diff --check` passed.
+
+The native batch implementation only passes after all three downloaded
+responses validate; submission or a pending job is not a live pass. Azure
+availability, account/RBAC creation, real sampling/reasoning responses and
+completed batch results remain unverified.
 
 ## Repository documentation review, 2026-11-03
 
@@ -37,6 +68,7 @@ These checks do not prove current Azure availability or resolve native blockers.
 
 | Labs | Latest recorded evidence and limitations |
 | --- | --- |
+| 0 | Introductory sampling/chat/reasoning/native batch implementation; offline checks recorded below, Azure deployment and live batch completion not verified. |
 | 1-13 | Historical baseline and follow-ups below; 3's current two-run comparison, 7's replacement gateway stack and 11's project-enabled template are not live-verified; 12 is identity-blocked. |
 | 14-26 | Twelve live passes and one blocker (21), including the later 14 RBAC and 23 GitHub OIDC follow-ups. |
 | 27 | Managed ingestion and agent API gates passed; authenticated portal visual check remains unverified. |

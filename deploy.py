@@ -79,6 +79,8 @@ def demo_environment(outputs: dict, base: dict[str, str]) -> dict[str, str]:
         values[variable] = value
     for output, variable in (
         ("deployment", "AZURE_OPENAI_DEPLOYMENT"),
+        ("reasoningDeployment", "AZURE_OPENAI_REASONING_DEPLOYMENT"),
+        ("batchDeployment", "AZURE_OPENAI_BATCH_DEPLOYMENT"),
         ("embeddingDeployment", "AZURE_OPENAI_EMBEDDING_DEPLOYMENT"),
         ("projectEndpoint", "FOUNDRY_PROJECT_ENDPOINT"),
         ("toolEndpoint", "WORKSHOP_TOOL_ENDPOINT"),

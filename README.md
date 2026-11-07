@@ -1,6 +1,6 @@
 # Foundry workshop demos
 
-A collection of **46 standalone labs** for Microsoft Foundry and Microsoft
+A collection of **47 standalone labs (numbered 0-46)** for Microsoft Foundry and Microsoft
 Agent Framework. Each lab combines a small synthetic scenario, deployable
 infrastructure, Python code, tests, and presentation/cleanup instructions.
 Some orchestration runs locally; other labs create managed prompt agents,
@@ -16,7 +16,7 @@ in the lab descriptions.
 
 | Focus | Suggested labs |
 | --- | --- |
-| First model calls and output quality | 14 fundamentals, 1 routing, 16 structured outputs, 15 benchmarking |
+| First model calls and output quality | 0 sampling/chat/batch/reasoning, 14 fundamentals, 1 routing, 16 structured outputs, 15 benchmarking |
 | Agent orchestration and tools | 2 workflow, 13 orchestration patterns, 4 Toolbox pricing, 20 approval |
 | Retrieval and knowledge | 17 application RAG, 11 minimal Foundry IQ, 27 managed Blob ingestion, 21 application permissions, 45 native permissions/Fabric |
 | Skills, state and automation | 19 local state, 28-30 skills, 31 native memory, 32 browser, 33 skill releases, 42 managed harness/Tool Search, 43 routines |
@@ -48,12 +48,17 @@ deploying every resource and running every paid operation at once:
 
 ```bash
 az login
+python3 deploy.py --subscription "<subscription-id>" --demo 0
 python3 deploy.py --subscription "<subscription-id>" --demo 1
 python3 deploy.py --subscription "<subscription-id>" --demo 20 --demo 25
 ```
 
 `--demo` accepts a demo number or exact folder name and can be repeated. Selected
 demos run in numeric order; prerequisites for unselected demos are not required.
+Lab 0 submits a real asynchronous batch and polls for up to two minutes. If it
+is still pending, the runner exits nonzero, preserving the job ID for resumption;
+follow [lab 0's instructions](./0-model-basics/README.md) rather than submitting
+another job or interpreting submission as completion.
 Labs 38-46 add the nine selected coverage-review priorities. The duplicate
 Content Understanding selection is one lab. Private networking, native File
 Search, and Teams/Copilot/general A2A publication were not selected.
@@ -125,7 +130,7 @@ start. Labs 32 and 42 have incompatible location requirements, so there is no
 single location that deploys the entire collection successfully. Select them
 in separate invocations and complete their manual connections first.
 
-Omitting `--demo` selects all 46 labs. This is not a supported single-region
+Omitting `--demo` selects all 47 labs. This is not a supported single-region
 end-to-end quick start for the current collection; use explicit selectors
 as shown above.
 
@@ -185,6 +190,8 @@ The script:
    Prompt injection uses `contentSafetyEndpoint` for its separate safety classifier.
    Fundamentals uses `deniedEndpoint` for its intentional authorization failure;
    benchmarking uses `alternateDeployment` and `routerDeployment`.
+   Model basics uses `reasoningDeployment` and `batchDeployment` for its separate
+   reasoning and native batch deployments.
    Tracing uses `applicationInsightsConnectionString`; lifecycle operations use
    `projectResourceId`.
    Lab 27 also maps `searchResourceId`, `storageEndpoint`, and `storageResourceId`
@@ -238,6 +245,8 @@ Fundamentals maps `deniedEndpoint` to `WORKSHOP_DENIED_ENDPOINT`. Benchmarking
 maps `alternateDeployment` to `AZURE_OPENAI_ALTERNATE_DEPLOYMENT` and
 `routerDeployment` to `AZURE_OPENAI_ROUTER_DEPLOYMENT`. Prompt Shields maps
 `contentSafetyEndpoint` to `CONTENT_SAFETY_ENDPOINT`.
+Model basics maps `reasoningDeployment` to `AZURE_OPENAI_REASONING_DEPLOYMENT`
+and `batchDeployment` to `AZURE_OPENAI_BATCH_DEPLOYMENT`.
 Tracing maps `applicationInsightsConnectionString` to
 `APPLICATIONINSIGHTS_CONNECTION_STRING`; publishing maps `projectResourceId` to
 `FOUNDRY_PROJECT_RESOURCE_ID`.
@@ -250,6 +259,7 @@ Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 
 ## Demos and tracking
 
+- [Model basics: temperature, top_p, chat, batch and reasoning](./0-model-basics/README.md)
 - [Model Router instructions and cleanup](./1-model-router/README.md)
 - [Workflow Agent: writer -> editor](./2-workflow-agent/README.md)
 - [Simple WebIQ Agent: web search with citations](./3-webiq-agent/README.md)
