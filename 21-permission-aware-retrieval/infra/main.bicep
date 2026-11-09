@@ -1,6 +1,8 @@
 targetScope = 'resourceGroup'
 
 param location string = 'eastus2'
+@description('Search region; can differ from the model region when Search has capacity constraints.')
+param searchLocation string = location
 @description('Object ID of the backend/presenter signed in through Azure CLI, not the second test user.')
 param principalId string
 param accountName string = 'permissions-${uniqueString(resourceGroup().id)}'
@@ -49,7 +51,7 @@ resource model 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
 resource search 'Microsoft.Search/searchServices@2025-05-01' = {
   tags: securityTags
   name: searchName
-  location: location
+  location: searchLocation
   sku: {
     name: 'basic'
   }

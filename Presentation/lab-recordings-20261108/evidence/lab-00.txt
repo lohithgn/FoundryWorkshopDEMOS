@@ -1,0 +1,214 @@
+Lab 0: 0-model-basics
+Recorded 2026-11-09T13:40:04+00:00 — 2026-11-09T13:54:39+00:00
+What happens: Explain sampling, compare chat and reasoning, and run a resumable native batch.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+LOCAL TOY EXAMPLE, not probabilities obtained from a model.
+Next-token candidates A/B/C/D: [0.5, 0.3, 0.15, 0.05]
+temperature=0: [1.0, 0.0, 0.0, 0.0]
+temperature=0.2: [0.9258, 0.072, 0.0022, 0.0]
+temperature=1: [0.5, 0.3, 0.15, 0.05]
+temperature=2: [0.379, 0.2936, 0.2076, 0.1198]
+top_p=0.5: keep ['A']
+top_p=0.8: keep ['A', 'B']
+top_p=1: keep ['A', 'B', 'C', 'D']
+Temperature reshapes probabilities; top_p keeps a cumulative-probability nucleus,
+then sampling renormalizes the retained probabilities. Change one knob at a time.
+Low temperature is not a correctness or reproducibility guarantee.
+Chat/reasoning are model choices; batch is asynchronous request scheduling.
+gpt-5-mini uses reasoning_effort, not temperature/top_p; reasoning tokens are billed.
+
+LOCAL TOY EXAMPLE, not probabilities obtained from a model.
+Next-token candidates A/B/C/D: [0.5, 0.3, 0.15, 0.05]
+temperature=0: [1.0, 0.0, 0.0, 0.0]
+temperature=0.2: [0.9258, 0.072, 0.0022, 0.0]
+temperature=1: [0.5, 0.3, 0.15, 0.05]
+temperature=2: [0.379, 0.2936, 0.2076, 0.1198]
+top_p=0.5: keep ['A']
+top_p=0.8: keep ['A', 'B']
+top_p=1: keep ['A', 'B', 'C', 'D']
+Temperature reshapes probabilities; top_p keeps a cumulative-probability nucleus,
+then sampling renormalizes the retained probabilities. Change one knob at a time.
+Low temperature is not a correctness or reproducibility guarantee.
+Chat/reasoning are model choices; batch is asynchronous request scheduling.
+gpt-5-mini uses reasoning_effort, not temperature/top_p; reasoning tokens are billed.
+Chat inference allows up to 8 SDK retries for transient errors; batch submission has no automatic retries.
+Online request starts are paced by at least 7s.
+
+Same prompt: temperature=0, top_p=1
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 5.201s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 13, 'engine_ttft_ms': 34, 'engine_ttlt_ms': 87, 'pre_inference_ms': 143, 'service_tbt_ms': 16, 'service_ttft_ms': 390, 'service_ttlt_ms': 439, 'user_visible_ttft_ms': 247}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.251s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 32, 'engine_ttlt_ms': 56, 'pre_inference_ms': 140, 'service_tbt_ms': 2, 'service_ttft_ms': 446, 'service_ttlt_ms': 453, 'user_visible_ttft_ms': 306}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.924s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 26, 'engine_ttlt_ms': 49, 'pre_inference_ms': 131, 'service_tbt_ms': 6, 'service_ttft_ms': 492, 'service_ttlt_ms': 509, 'user_visible_ttft_ms': 360}}
+Answer: AI Kickstart
+Distinct answers: 1/3 (illustration, not a benchmark)
+
+Same prompt: temperature=0.7, top_p=1
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 3.009s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 32, 'engine_ttlt_ms': 56, 'pre_inference_ms': 103, 'service_tbt_ms': 2, 'service_ttft_ms': 381, 'service_ttlt_ms': 387, 'user_visible_ttft_ms': 278}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.245s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 36, 'engine_ttlt_ms': 59, 'pre_inference_ms': 69, 'service_tbt_ms': 1, 'service_ttft_ms': 471, 'service_ttlt_ms': 473, 'user_visible_ttft_ms': 403}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.898s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 27, 'engine_ttlt_ms': 51, 'pre_inference_ms': 101, 'service_tbt_ms': 6, 'service_ttft_ms': 357, 'service_ttlt_ms': 375, 'user_visible_ttft_ms': 256}}
+Answer: AI Kickstart
+Distinct answers: 1/3 (illustration, not a benchmark)
+
+Same prompt: temperature=1.4, top_p=1
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 2.979s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 26, 'engine_ttlt_ms': 49, 'pre_inference_ms': 76, 'service_tbt_ms': 5, 'service_ttft_ms': 354, 'service_ttlt_ms': 369, 'user_visible_ttft_ms': 278}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.241s | finish: stop
+Usage: {'completion_tokens': 2, 'prompt_tokens': 24, 'total_tokens': 26, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 4, 'engine_ttft_ms': 28, 'engine_ttlt_ms': 41, 'pre_inference_ms': 92, 'service_tbt_ms': 5, 'service_ttft_ms': 460, 'service_ttlt_ms': 471, 'user_visible_ttft_ms': 368}}
+Answer: AI Spark
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.734s | finish: stop
+Usage: {'completion_tokens': 2, 'prompt_tokens': 24, 'total_tokens': 26, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 5, 'engine_ttft_ms': 26, 'engine_ttlt_ms': 42, 'pre_inference_ms': 100, 'service_tbt_ms': 7, 'service_ttft_ms': 373, 'service_ttlt_ms': 387, 'user_visible_ttft_ms': 272}}
+Answer: AI Spark
+Distinct answers: 2/3 (illustration, not a benchmark)
+
+Same prompt: temperature=1, top_p=0.2
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 3.271s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 27, 'engine_ttlt_ms': 51, 'pre_inference_ms': 241, 'service_tbt_ms': 11, 'service_ttft_ms': 646, 'service_ttlt_ms': 678, 'user_visible_ttft_ms': 405}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.192s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 25, 'engine_ttlt_ms': 50, 'pre_inference_ms': 130, 'service_tbt_ms': 7, 'service_ttft_ms': 374, 'service_ttlt_ms': 394, 'user_visible_ttft_ms': 244}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 2.468s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 5, 'engine_ttft_ms': 25, 'engine_ttlt_ms': 46, 'pre_inference_ms': 342, 'service_tbt_ms': 37, 'service_ttft_ms': 773, 'service_ttlt_ms': 883, 'user_visible_ttft_ms': 431}}
+Answer: AI Kickstart
+Distinct answers: 1/3 (illustration, not a benchmark)
+
+Same prompt: temperature=1, top_p=0.8
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.271s | finish: stop
+Usage: {'completion_tokens': 2, 'prompt_tokens': 24, 'total_tokens': 26, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 7, 'engine_ttft_ms': 35, 'engine_ttlt_ms': 55, 'pre_inference_ms': 170, 'service_tbt_ms': 7, 'service_ttft_ms': 455, 'service_ttlt_ms': 468, 'user_visible_ttft_ms': 284}}
+Answer: AI Spark
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 3.461s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 18, 'engine_ttft_ms': 28, 'engine_ttlt_ms': 100, 'pre_inference_ms': 352, 'service_tbt_ms': 15, 'service_ttft_ms': 696, 'service_ttlt_ms': 741, 'user_visible_ttft_ms': 343}}
+Answer: AI Kickstart
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.124s | finish: stop
+Usage: {'completion_tokens': 2, 'prompt_tokens': 24, 'total_tokens': 26, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 5, 'engine_ttft_ms': 29, 'engine_ttlt_ms': 45, 'pre_inference_ms': 93, 'service_tbt_ms': 9, 'service_ttft_ms': 338, 'service_ttlt_ms': 356, 'user_visible_ttft_ms': 246}}
+Answer: AI Spark
+Distinct answers: 2/3 (illustration, not a benchmark)
+
+Same prompt: temperature=1, top_p=1
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.543s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 28, 'engine_ttlt_ms': 50, 'pre_inference_ms': 91, 'service_tbt_ms': 6, 'service_ttft_ms': 457, 'service_ttlt_ms': 474, 'user_visible_ttft_ms': 366}}
+Answer: AI Sprouts
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 3.103s | finish: stop
+Usage: {'completion_tokens': 3, 'prompt_tokens': 24, 'total_tokens': 27, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 47, 'engine_ttlt_ms': 70, 'pre_inference_ms': 155, 'service_tbt_ms': 6, 'service_ttft_ms': 445, 'service_ttlt_ms': 463, 'user_visible_ttft_ms': 290}}
+Answer: AI Sprouts
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 1.334s | finish: stop
+Usage: {'completion_tokens': 4, 'prompt_tokens': 24, 'total_tokens': 28, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 27, 'engine_ttlt_ms': 58, 'pre_inference_ms': 121, 'service_tbt_ms': 6, 'service_ttft_ms': 517, 'service_ttlt_ms': 542, 'user_visible_ttft_ms': 396}}
+Answer: AIBuddies
+Distinct answers: 2/3 (illustration, not a benchmark)
+
+LOCAL TOY EXAMPLE, not probabilities obtained from a model.
+Next-token candidates A/B/C/D: [0.5, 0.3, 0.15, 0.05]
+temperature=0: [1.0, 0.0, 0.0, 0.0]
+temperature=0.2: [0.9258, 0.072, 0.0022, 0.0]
+temperature=1: [0.5, 0.3, 0.15, 0.05]
+temperature=2: [0.379, 0.2936, 0.2076, 0.1198]
+top_p=0.5: keep ['A']
+top_p=0.8: keep ['A', 'B']
+top_p=1: keep ['A', 'B', 'C', 'D']
+Temperature reshapes probabilities; top_p keeps a cumulative-probability nucleus,
+then sampling renormalizes the retained probabilities. Change one knob at a time.
+Low temperature is not a correctness or reproducibility guarantee.
+Chat/reasoning are model choices; batch is asynchronous request scheduling.
+gpt-5-mini uses reasoning_effort, not temperature/top_p; reasoning tokens are billed.
+Chat inference allows up to 8 SDK retries for transient errors; batch submission has no automatic retries.
+Online request starts are paced by at least 7s.
+
+Same scheduling problem: Tasks A, B, C, D take 4, 3, 5, 2 minutes respectively. B and C must wait for A; D must wait for both B and C. Two workers are available, each task needs one worker, and tasks cannot be interrupted. B and C can run at the same time after A completes. What is the minimum total duration? Return the minimum duration in minutes.
+
+Typical chat (GPT-4.1-mini)
+Model: gpt-4.1-mini-2025-04-14 | elapsed: 3.545s | finish: stop
+Usage: {'completion_tokens': 5, 'prompt_tokens': 121, 'total_tokens': 126, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 8, 'engine_ttft_ms': 36, 'engine_ttlt_ms': 81, 'pre_inference_ms': 82, 'service_tbt_ms': 8, 'service_ttft_ms': 345, 'service_ttlt_ms': 385, 'user_visible_ttft_ms': 264}}
+Answer: {"minutes":11}
+Matches reference answer 11: True
+
+Reasoning (gpt-5-mini, effort=medium)
+Model: gpt-5-mini-2025-08-07 | elapsed: 3.514s | finish: stop
+Usage: {'completion_tokens': 338, 'prompt_tokens': 116, 'total_tokens': 454, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 320, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 6, 'engine_ttft_ms': 32, 'engine_ttlt_ms': 2196, 'pre_inference_ms': 83, 'service_tbt_ms': 6, 'service_ttft_ms': 482, 'service_ttlt_ms': 2642, 'user_visible_ttft_ms': 399}}
+Answer: {"minutes":11}
+Matches reference answer 11: True
+Reference: A 0-4; B 4-7 and C 4-9; D 9-11. Both models may be correct.
+One problem does not establish quality, latency or cost superiority.
+
+LOCAL TOY EXAMPLE, not probabilities obtained from a model.
+Next-token candidates A/B/C/D: [0.5, 0.3, 0.15, 0.05]
+temperature=0: [1.0, 0.0, 0.0, 0.0]
+temperature=0.2: [0.9258, 0.072, 0.0022, 0.0]
+temperature=1: [0.5, 0.3, 0.15, 0.05]
+temperature=2: [0.379, 0.2936, 0.2076, 0.1198]
+top_p=0.5: keep ['A']
+top_p=0.8: keep ['A', 'B']
+top_p=1: keep ['A', 'B', 'C', 'D']
+Temperature reshapes probabilities; top_p keeps a cumulative-probability nucleus,
+then sampling renormalizes the retained probabilities. Change one knob at a time.
+Low temperature is not a correctness or reproducibility guarantee.
+Chat/reasoning are model choices; batch is asynchronous request scheduling.
+gpt-5-mini uses reasoning_effort, not temperature/top_p; reasoning tokens are billed.
+Uploaded input file: file-1f8b894078cc4ba6aaa7b9a27b7d02e9
+Batch ID: batch_2f761148-7d09-40ab-a36b-b181168c502a | resume with --section batch; no new submission.
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: validating | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: in_progress | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: finalizing | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: finalizing | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: finalizing | request counts: BatchRequestCounts(completed=0, failed=0, total=3)
+Batch status: completed | request counts: BatchRequestCounts(completed=3, failed=0, total=3)
+task-0 | model: gpt-4.1-mini-2025-04-14 | usage: {'completion_tokens': 35, 'prompt_tokens': 23, 'total_tokens': 58, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0, 'text_tokens': None}, 'prompt_tokens_details': {'audio_tokens': 0, 'cache_write_tokens': None, 'cached_tokens': 0, 'image_tokens': None, 'text_tokens': None}}
+Answer: The temperature parameter controls how creative or random the language model’s text is, with lower values making it more focused and predictable, and higher values making it more varied and surprising.
+task-1 | model: gpt-4.1-mini-2025-04-14 | usage: {'completion_tokens': 38, 'prompt_tokens': 24, 'total_tokens': 62, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0, 'text_tokens': None}, 'prompt_tokens_details': {'audio_tokens': 0, 'cache_write_tokens': None, 'cached_tokens': 0, 'image_tokens': None, 'text_tokens': None}}
+Answer: The top_p parameter controls how the model picks words by choosing from the smallest set of likely next words whose combined probability adds up to a certain threshold, making the output more focused and coherent.
+task-2 | model: gpt-4.1-mini-2025-04-14 | usage: {'completion_tokens': 35, 'prompt_tokens': 18, 'total_tokens': 53, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0, 'text_tokens': None}, 'prompt_tokens_details': {'audio_tokens': 0, 'cache_write_tokens': None, 'cached_tokens': 0, 'image_tokens': None, 'text_tokens': None}}
+Answer: Asynchronous batch processing is useful when handling large volumes of data or tasks that can be executed independently without immediate user interaction, allowing systems to optimize resource use and improve overall efficiency.
+PASS: all three native batch requests completed and validated.

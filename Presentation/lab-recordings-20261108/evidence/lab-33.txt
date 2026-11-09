@@ -1,0 +1,54 @@
+Lab 33: 33-skill-release-governance
+Recorded 2026-11-09T12:33:48+00:00 — 2026-11-09T12:40:49+00:00
+What happens: Evaluate, promote, pin and roll back a centrally versioned Foundry skill.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Created owned skill: pricing-release-62681a71b77f / 1
+Skill default read back: pricing-release-62681a71b77f / 1
+floating: default resolved at session start skill pricing-release-62681a71b77f / 1; workshop=intro
+PASS response resp_0d2d16226069c374006af1bedfd4ec81968b12d54ccd466a99: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":166,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":191}
+pinned: pinned skill pricing-release-62681a71b77f / 1; workshop=intro
+PASS response resp_08dbd20c7713923f006af1beea86888193ba4df55749b3faf4: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":166,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":191}
+Evaluating candidate 2 before promotion.
+candidate gate: pinned skill pricing-release-62681a71b77f / 2; workshop=intro
+PASS response resp_073e78d439d70adf006af1bef579b8819794a8d45e9b6baa83: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V2"}
+Usage: {"input_tokens":159,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":184}
+candidate gate: pinned skill pricing-release-62681a71b77f / 2; workshop=advanced
+PASS response resp_089a8e29d10f161e006af1bf0028a881948562ea8207cd8287: {"workshop":"advanced","unit_price":50,"currency":"USD","skill_code":"PRICING-V2"}
+Usage: {"input_tokens":159,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":184}
+Skill default read back: pricing-release-62681a71b77f / 2
+floating: default resolved at session start skill pricing-release-62681a71b77f / 2; workshop=intro
+PASS response resp_01dbb11cc00ccafe006af1bf090670819488e6166b8585de1f: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V2"}
+Usage: {"input_tokens":159,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":184}
+pinned: pinned skill pricing-release-62681a71b77f / 1; workshop=intro
+PASS response resp_0e4bef8cbcf07c4a006af1bf146cc88196a23e0a31eabeb6d8: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":166,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":191}
+Skill default read back: pricing-release-62681a71b77f / 1
+floating after rollback: default resolved at session start skill pricing-release-62681a71b77f / 1; workshop=intro
+PASS response resp_0442eca5af30b258006af1bf1d433881958cb13f382f29bbc5: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":166,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":191}
+pinned after rollback: pinned skill pricing-release-62681a71b77f / 1; workshop=intro
+PASS response resp_04ab4204204ecd51006af1bf26ecc48197b8ec950fa068fedf: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":166,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":191}
+Verified candidate gate, default promotion, pinned isolation and rollback.
+
+=== Expected synthetic price-regression rejection ===
+Created owned skill: pricing-release-a454c6bb443d / 1
+Skill default read back: pricing-release-a454c6bb443d / 1
+floating: default resolved at session start skill pricing-release-a454c6bb443d / 1; workshop=intro
+PASS response resp_0cc678f503de4dc3006af1bf37b42081968e5719a906ecceaf: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":165,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":190}
+pinned: pinned skill pricing-release-a454c6bb443d / 1; workshop=intro
+PASS response resp_09afd5b5d3620d4a006af1bf4016348190ab2e299044e9b41b: {"workshop":"intro","unit_price":25,"currency":"USD","skill_code":"PRICING-V1"}
+Usage: {"input_tokens":165,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":25,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":190}
+Evaluating candidate 2 before promotion.
+candidate gate: pinned skill pricing-release-a454c6bb443d / 2; workshop=intro
+Skill default read back: pricing-release-a454c6bb443d / 1
+RuntimeError: Release gate failed: expected {'workshop': 'intro', 'unit_price': 25, 'currency': 'USD', 'skill_code': 'PRICING-V2'}, received {'workshop': 'intro', 'unit_price': 40, 'currency': 'USD', 'skill_code': 'PRICING-V2'}.
+Verified: promotion/pinning/rollback passed; the USD 40 regression was rejected and the original default was restored.

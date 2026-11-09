@@ -1,0 +1,10 @@
+Lab 44: 44-evaluation-optimizer
+Recorded 2026-11-08T18:45:33+00:00 — 2026-11-08T18:51:45+00:00
+What happens: Generate a versioned dataset, evaluate real tool traces, and run a native optimizer.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{"status": "PASS", "dataset": "PASS", "evaluators": "PASS", "optimizer": "PASS", "gate": {"decision": "APPROVE", "baseline_score": 0.4, "candidate_score": 1.0, "candidate_id": "cand_opt_18d8c554f40645188555078b20f9940c_0001", "heldout_source": "Explicit native cloud evaluation of both returned configurations on the same disjoint refund query.", "native_validation_eval_id": "eval_e299bb4db70442178bc27e8b21d40a75", "native_validation_run_id": "evalrun_6a7b51721ee842799835566a9735ad55", "promoted": false}, "blockers": []}

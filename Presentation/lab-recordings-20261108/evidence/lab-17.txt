@@ -1,0 +1,436 @@
+Lab 17: 17-rag-fundamentals
+Recorded 2026-11-09T12:25:10+00:00 — 2026-11-09T12:28:33+00:00
+What happens: Compare keyword, vector and hybrid retrieval against the same labeled corpus.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+
+chunk_words=12 mode=keyword question=When and where does the workshop begin?
+[cleanup-1] source=cleanup: charges. Deleting a search index alone does not stop the search service
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and
+[arrival-2] source=arrival: outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "The workshop begins at 09:30 in room Cedar.",
+  "citations": [
+    "arrival-0"
+  ],
+  "quotes": [
+    {
+      "id": "arrival-0",
+      "text": "The workshop starts at 09:30 in room Cedar."
+    }
+  ]
+}
+
+chunk_words=12 mode=keyword question=How do I stop the search service bill?
+[cleanup-1] source=cleanup: charges. Deleting a search index alone does not stop the search service
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search
+[support-1] source=support: an inference request returns 403, check the Cognitive Services OpenAI User role.
+{
+  "answer": "To stop the search service bill, you need to delete the workshop resource group after the exercises. Deleting a search index alone does not stop the search service or the associated charges.",
+  "citations": [
+    "cleanup-0",
+    "cleanup-1"
+  ],
+  "quotes": [
+    {
+      "id": "cleanup-0",
+      "text": "Delete the workshop resource group after the exercises to stop Azure Search"
+    },
+    {
+      "id": "cleanup-1",
+      "text": "Deleting a search index alone does not stop the search service"
+    }
+  ]
+}
+
+chunk_words=12 mode=keyword question=What should I check for an inference 403?
+[support-1] source=support: an inference request returns 403, check the Cognitive Services OpenAI User role.
+[support-2] source=support: Role assignments can take several minutes to propagate. Ask the instructor for
+[arrival-1] source=arrival: an Azure subscription. The welcome desk opens at 09:00. Coffee is available
+{
+  "answer": "If an inference request returns 403, you should check the Cognitive Services OpenAI User role.",
+  "citations": [
+    "support-1"
+  ],
+  "quotes": [
+    {
+      "id": "support-1",
+      "text": "an inference request returns 403, check the Cognitive Services OpenAI User role."
+    }
+  ]
+}
+
+chunk_words=12 mode=keyword question=What is the instructor's home telephone number?
+[arrival-1] source=arrival: an Azure subscription. The welcome desk opens at 09:00. Coffee is available
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search
+[cleanup-3] source=cleanup: is billed by tokens.
+{
+  "answer": "Insufficient evidence.",
+  "citations": [],
+  "quotes": []
+}
+
+chunk_words=12 mode=vector question=When and where does the workshop begin?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and
+[arrival-2] source=arrival: outside room Cedar. Visitors must collect a badge before entering the workshop.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search
+{
+  "answer": "The workshop begins at 09:30 in room Cedar.",
+  "citations": [
+    "arrival-0"
+  ],
+  "quotes": [
+    {
+      "id": "arrival-0",
+      "text": "The workshop starts at 09:30 in room Cedar."
+    }
+  ]
+}
+
+chunk_words=12 mode=vector question=How do I stop the search service bill?
+[cleanup-1] source=cleanup: charges. Deleting a search index alone does not stop the search service
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search
+[cleanup-3] source=cleanup: is billed by tokens.
+{
+  "answer": "To stop the search service bill, you need to delete the workshop resource group after the exercises. Deleting a search index alone does not stop the search service.",
+  "citations": [
+    "cleanup-0",
+    "cleanup-1"
+  ],
+  "quotes": [
+    {
+      "id": "cleanup-0",
+      "text": "Delete the workshop resource group after the exercises to stop Azure Search"
+    },
+    {
+      "id": "cleanup-1",
+      "text": "Deleting a search index alone does not stop the search service"
+    }
+  ]
+}
+
+chunk_words=12 mode=vector question=What should I check for an inference 403?
+[support-1] source=support: an inference request returns 403, check the Cognitive Services OpenAI User role.
+[cleanup-2] source=cleanup: hourly charge. Export any notes before removing the resource group. Model inference
+[support-2] source=support: Role assignments can take several minutes to propagate. Ask the instructor for
+{
+  "answer": "If an inference request returns 403, you should check the Cognitive Services OpenAI User role.",
+  "citations": [
+    "support-1"
+  ],
+  "quotes": [
+    {
+      "id": "support-1",
+      "text": "an inference request returns 403, check the Cognitive Services OpenAI User role."
+    }
+  ]
+}
+
+chunk_words=12 mode=vector question=What is the instructor's home telephone number?
+[support-2] source=support: Role assignments can take several minutes to propagate. Ask the instructor for
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and
+[arrival-2] source=arrival: outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "Insufficient evidence.",
+  "citations": [],
+  "quotes": []
+}
+
+chunk_words=12 mode=hybrid question=When and where does the workshop begin?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and
+[arrival-2] source=arrival: outside room Cedar. Visitors must collect a badge before entering the workshop.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search
+{
+  "answer": "The workshop begins at 09:30 in room Cedar.",
+  "citations": [
+    "arrival-0"
+  ],
+  "quotes": [
+    {
+      "id": "arrival-0",
+      "text": "The workshop starts at 09:30 in room Cedar."
+    }
+  ]
+}
+
+chunk_words=12 mode=hybrid question=How do I stop the search service bill?
+[cleanup-1] source=cleanup: charges. Deleting a search index alone does not stop the search service
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search
+[cleanup-3] source=cleanup: is billed by tokens.
+{
+  "answer": "To stop the search service bill, you need to delete the workshop resource group after the exercises. Deleting a search index alone does not stop the search service.",
+  "citations": [
+    "cleanup-0",
+    "cleanup-1"
+  ],
+  "quotes": [
+    {
+      "id": "cleanup-0",
+      "text": "Delete the workshop resource group after the exercises to stop Azure Search"
+    },
+    {
+      "id": "cleanup-1",
+      "text": "Deleting a search index alone does not stop the search service"
+    }
+  ]
+}
+
+chunk_words=12 mode=hybrid question=What should I check for an inference 403?
+[support-1] source=support: an inference request returns 403, check the Cognitive Services OpenAI User role.
+[support-2] source=support: Role assignments can take several minutes to propagate. Ask the instructor for
+[cleanup-2] source=cleanup: hourly charge. Export any notes before removing the resource group. Model inference
+{
+  "answer": "If an inference request returns 403, you should check the Cognitive Services OpenAI User role.",
+  "citations": [
+    "support-1"
+  ],
+  "quotes": [
+    {
+      "id": "support-1",
+      "text": "an inference request returns 403, check the Cognitive Services OpenAI User role."
+    }
+  ]
+}
+
+chunk_words=12 mode=hybrid question=What is the instructor's home telephone number?
+[support-2] source=support: Role assignments can take several minutes to propagate. Ask the instructor for
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and
+[arrival-2] source=arrival: outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "Insufficient evidence.",
+  "citations": [],
+  "quotes": []
+}
+
+chunk_words=48 mode=keyword question=When and where does the workshop begin?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "The workshop begins at 09:30 in room Cedar.",
+  "citations": [
+    "arrival-0"
+  ],
+  "quotes": [
+    {
+      "id": "arrival-0",
+      "text": "The workshop starts at 09:30 in room Cedar."
+    }
+  ]
+}
+
+chunk_words=48 mode=keyword question=How do I stop the search service bill?
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "To stop the search service bill, you need to delete the workshop resource group after the exercises. Deleting just the search index does not stop the hourly charge for the search service.",
+  "citations": [
+    "cleanup-0"
+  ],
+  "quotes": [
+    {
+      "id": "cleanup-0",
+      "text": "Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge."
+    }
+  ]
+}
+
+chunk_words=48 mode=keyword question=What should I check for an inference 403?
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "If an inference request returns 403, you should check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate.",
+  "citations": [
+    "support-0"
+  ],
+  "quotes": [
+    {
+      "id": "support-0",
+      "text": "If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate."
+    }
+  ]
+}
+
+chunk_words=48 mode=keyword question=What is the instructor's home telephone number?
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "Insufficient evidence.",
+  "citations": [],
+  "quotes": []
+}
+
+chunk_words=48 mode=vector question=When and where does the workshop begin?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "The workshop begins at 09:30 in room Cedar.",
+  "citations": [
+    "arrival-0"
+  ],
+  "quotes": [
+    {
+      "id": "arrival-0",
+      "text": "The workshop starts at 09:30 in room Cedar."
+    }
+  ]
+}
+
+chunk_words=48 mode=vector question=How do I stop the search service bill?
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "To stop the search service bill, you need to delete the workshop resource group after the exercises. Deleting just the search index will not stop the hourly charge for the search service.",
+  "citations": [
+    "cleanup-0"
+  ],
+  "quotes": [
+    {
+      "id": "cleanup-0",
+      "text": "Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge."
+    }
+  ]
+}
+
+chunk_words=48 mode=vector question=What should I check for an inference 403?
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "If an inference request returns 403, you should check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate.",
+  "citations": [
+    "support-0"
+  ],
+  "quotes": [
+    {
+      "id": "support-0",
+      "text": "If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate."
+    }
+  ]
+}
+
+chunk_words=48 mode=vector question=What is the instructor's home telephone number?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+{
+  "answer": "Insufficient evidence.",
+  "citations": [],
+  "quotes": []
+}
+
+chunk_words=48 mode=hybrid question=When and where does the workshop begin?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "The workshop begins at 09:30 in room Cedar.",
+  "citations": [
+    "arrival-0"
+  ],
+  "quotes": [
+    {
+      "id": "arrival-0",
+      "text": "The workshop starts at 09:30 in room Cedar."
+    }
+  ]
+}
+
+chunk_words=48 mode=hybrid question=How do I stop the search service bill?
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "To stop the search service bill, you need to delete the workshop resource group. Deleting just the search index will not stop the hourly charge for the search service.",
+  "citations": [
+    "cleanup-0"
+  ],
+  "quotes": [
+    {
+      "id": "cleanup-0",
+      "text": "Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge."
+    }
+  ]
+}
+
+chunk_words=48 mode=hybrid question=What should I check for an inference 403?
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+{
+  "answer": "If an inference request returns 403, you should check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate.",
+  "citations": [
+    "support-0"
+  ],
+  "quotes": [
+    {
+      "id": "support-0",
+      "text": "If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate."
+    }
+  ]
+}
+
+chunk_words=48 mode=hybrid question=What is the instructor's home telephone number?
+[arrival-0] source=arrival: The workshop starts at 09:30 in room Cedar. Bring a laptop and an Azure subscription. The welcome desk opens at 09:00. Coffee is available outside room Cedar. Visitors must collect a badge before entering the workshop.
+[cleanup-0] source=cleanup: Delete the workshop resource group after the exercises to stop Azure Search charges. Deleting a search index alone does not stop the search service hourly charge. Export any notes before removing the resource group. Model inference is billed by tokens.
+[support-0] source=support: For a failed deployment, check model quota and region availability first. If an inference request returns 403, check the Cognitive Services OpenAI User role. Role assignments can take several minutes to propagate. Ask the instructor for help.
+{
+  "answer": "Insufficient evidence.",
+  "citations": [],
+  "quotes": []
+}
+
+Same labels and questions, different chunk sizes; no guaranteed winner:
+[
+  {
+    "chunk_words": 12,
+    "mode": "keyword",
+    "chunks": 11,
+    "recall@3": 1.0,
+    "MRR@3": 0.833
+  },
+  {
+    "chunk_words": 12,
+    "mode": "vector",
+    "chunks": 11,
+    "recall@3": 1.0,
+    "MRR@3": 1.0
+  },
+  {
+    "chunk_words": 12,
+    "mode": "hybrid",
+    "chunks": 11,
+    "recall@3": 1.0,
+    "MRR@3": 1.0
+  },
+  {
+    "chunk_words": 48,
+    "mode": "keyword",
+    "chunks": 3,
+    "recall@3": 1.0,
+    "MRR@3": 1.0
+  },
+  {
+    "chunk_words": 48,
+    "mode": "vector",
+    "chunks": 3,
+    "recall@3": 1.0,
+    "MRR@3": 1.0
+  },
+  {
+    "chunk_words": 48,
+    "mode": "hybrid",
+    "chunks": 3,
+    "recall@3": 1.0,
+    "MRR@3": 1.0
+  }
+]

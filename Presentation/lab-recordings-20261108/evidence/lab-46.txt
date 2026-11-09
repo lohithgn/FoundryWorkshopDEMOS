@@ -1,0 +1,195 @@
+Lab 46: 46-fleet-governance
+Recorded 2026-11-08T19:06:14+00:00 — 2026-11-08T19:13:58+00:00
+What happens: Real two-project inventory, external registration, telemetry and scoped policy.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{
+  "lab": 46,
+  "resourceGroup": "rg-fwrec-20261108-4527c5fe-fleet-governance-demo",
+  "controlPlanePortal": {
+    "status": "NOT_VERIFIED",
+    "evidence": "API inventory is not complete Operate/Assets/Compliance portal verification."
+  },
+  "defenderPurview": {
+    "status": "OPTIONAL_NOT_CONFIGURED",
+    "evidence": "No tenant security onboarding or fabricated security alerts."
+  },
+  "nativeAgents": {
+    "status": "PASS",
+    "agents": [
+      {
+        "name": "synthetic-fleet-operator",
+        "version": "1",
+        "id": "synthetic-fleet-operator",
+        "versionId": "synthetic-fleet-operator:1",
+        "projectEndpoint": "https://fleetgov-7j5fuy6drzgy4.services.ai.azure.com/api/projects/fleet-operations",
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations"
+      },
+      {
+        "name": "synthetic-fleet-auditor",
+        "version": "1",
+        "id": "synthetic-fleet-auditor",
+        "versionId": "synthetic-fleet-auditor:1",
+        "projectEndpoint": "https://fleetgov-7j5fuy6drzgy4.services.ai.azure.com/api/projects/fleet-audit",
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-audit"
+      }
+    ]
+  },
+  "externalRegistration": {
+    "status": "PASS",
+    "name": "synthetic-fleet-external",
+    "version": "1",
+    "otelAgentId": "workshop.synthetic.fleet.external",
+    "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations"
+  },
+  "crossProjectInventory": {
+    "status": "PASS",
+    "projects": [
+      {
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations",
+        "projectEndpoint": "https://fleetgov-7j5fuy6drzgy4.services.ai.azure.com/api/projects/fleet-operations",
+        "agents": [
+          {
+            "name": "synthetic-fleet-external",
+            "id": "synthetic-fleet-external",
+            "kind": "external",
+            "telemetryId": "workshop.synthetic.fleet.external"
+          },
+          {
+            "name": "synthetic-fleet-operator",
+            "id": "synthetic-fleet-operator",
+            "kind": "prompt",
+            "telemetryId": "synthetic-fleet-operator"
+          }
+        ],
+        "connections": [
+          {
+            "name": "application-insights",
+            "id": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations/connections/application-insights",
+            "type": "ConnectionType.APPLICATION_INSIGHTS"
+          }
+        ]
+      },
+      {
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-audit",
+        "projectEndpoint": "https://fleetgov-7j5fuy6drzgy4.services.ai.azure.com/api/projects/fleet-audit",
+        "agents": [
+          {
+            "name": "synthetic-fleet-auditor",
+            "id": "synthetic-fleet-auditor",
+            "kind": "prompt",
+            "telemetryId": "synthetic-fleet-auditor"
+          }
+        ],
+        "connections": [
+          {
+            "name": "fleet-audit-insights",
+            "id": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-audit/connections/fleet-audit-insights",
+            "type": "ConnectionType.APPLICATION_INSIGHTS"
+          }
+        ]
+      }
+    ]
+  },
+  "telemetryCorrelation": {
+    "status": "PASS",
+    "runId": "ee1ebceb-fc2f-464c-86bf-70dcd532f1f4",
+    "invocations": [
+      {
+        "agent": "synthetic-fleet-external",
+        "status": "completed",
+        "runtime": "actual local Python function, not hosted by registration"
+      },
+      {
+        "agent": "synthetic-fleet-operator",
+        "responseId": "resp_06f94ee88ceb8904006af0c899d40c8190964699188a846962",
+        "status": "completed"
+      },
+      {
+        "agent": "synthetic-fleet-auditor",
+        "responseId": "resp_09c658aefd622243006af0c89e2c2c819692b51fb894aec750",
+        "status": "completed"
+      }
+    ],
+    "nativeInvocationStatus": "PASS",
+    "correlatedFleet": [
+      {
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations",
+        "agent": "synthetic-fleet-external",
+        "kind": "external",
+        "telemetryId": "workshop.synthetic.fleet.external",
+        "traceCount": 1
+      },
+      {
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations",
+        "agent": "synthetic-fleet-operator",
+        "kind": "prompt",
+        "telemetryId": "synthetic-fleet-operator",
+        "traceCount": 1
+      },
+      {
+        "projectResourceId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-audit",
+        "agent": "synthetic-fleet-auditor",
+        "kind": "prompt",
+        "telemetryId": "synthetic-fleet-auditor",
+        "traceCount": 1
+      }
+    ],
+    "rows": [
+      {
+        "RunId": "ee1ebceb-fc2f-464c-86bf-70dcd532f1f4",
+        "ProjectId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations",
+        "AgentName": "synthetic-fleet-operator",
+        "OtelAgentId": "synthetic-fleet-operator",
+        "Traces": 1
+      },
+      {
+        "RunId": "ee1ebceb-fc2f-464c-86bf-70dcd532f1f4",
+        "ProjectId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-audit",
+        "AgentName": "synthetic-fleet-auditor",
+        "OtelAgentId": "synthetic-fleet-auditor",
+        "Traces": 1
+      },
+      {
+        "RunId": "ee1ebceb-fc2f-464c-86bf-70dcd532f1f4",
+        "ProjectId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.CognitiveServices/accounts/fleetgov-7j5fuy6drzgy4/projects/fleet-operations",
+        "AgentName": "synthetic-fleet-external",
+        "OtelAgentId": "workshop.synthetic.fleet.external",
+        "Traces": 1
+      }
+    ],
+    "boundary": "Actual client/external runtime spans; not invented Foundry server telemetry."
+  },
+  "nativeInvocations": {
+    "status": "PASS",
+    "invocations": [
+      {
+        "agent": "synthetic-fleet-external",
+        "status": "completed",
+        "runtime": "actual local Python function, not hosted by registration"
+      },
+      {
+        "agent": "synthetic-fleet-operator",
+        "responseId": "resp_06f94ee88ceb8904006af0c899d40c8190964699188a846962",
+        "status": "completed"
+      },
+      {
+        "agent": "synthetic-fleet-auditor",
+        "responseId": "resp_09c658aefd622243006af0c89e2c2c819692b51fb894aec750",
+        "status": "completed"
+      }
+    ]
+  },
+  "isolatedAzurePolicy": {
+    "status": "PASS",
+    "assignmentId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourcegroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo/providers/Microsoft.Authorization/policyAssignments/fleet-keyless-audit",
+    "scope": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-fleet-governance-demo",
+    "effect": "Audit",
+    "complianceState": "Compliant"
+  },
+  "status": "PASS"
+}

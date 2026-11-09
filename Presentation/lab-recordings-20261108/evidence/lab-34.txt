@@ -1,0 +1,196 @@
+Lab 34: 34-document-intelligence
+Recorded 2026-11-08T17:11:16+00:00 — 2026-11-08T17:20:28+00:00
+What happens: Deploy a persistent Foundry invoice agent and score real Document Intelligence results.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+ARM startup/access not ready (HTTP 400); retry 1/10.
+ARM startup/access not ready (HTTP 400); retry 2/10.
+Persistent Foundry agent: document-intelligence-agent, version 1
+PASS clear: {"document_id":"clear","vendor":"Synthetic Workshop Supplies","invoice_id":"LAB-3401","total":125.5,"currency":"USD","needs_review":false,"operation_id":"2d5a64bd-41de-4165-a77a-c368ce8f528c"}
+Usage: {"input_tokens": 602, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 83, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 685}
+PASS missing-total: {
+  "document_id": "missing-total",
+  "vendor": "Synthetic Workshop Supplies",
+  "invoice_id": "LAB-3402",
+  "total": null,
+  "currency": null,
+  "needs_review": true,
+  "operation_id": "3df2dccf-ab32-4c87-8410-b2cef5e39245"
+}
+Usage: {"input_tokens": 598, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 101, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 699}
+PASS office-supplies: {"document_id":"office-supplies","vendor":"Synthetic Office Supplies","invoice_id":"LAB-3403","total":48.75,"currency":"USD","needs_review":false,"operation_id":"ad1ceada-657a-4ee5-9efb-00a6cb8d42f5"}
+Usage: {"input_tokens": 618, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 92, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 710}
+PASS training-materials: {
+  "document_id": "training-materials",
+  "vendor": "Synthetic Training Materials",
+  "invoice_id": "LAB-3404",
+  "total": 240,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "fbdd94f2-15ef-4437-a08a-6d9f1cc615aa"
+}
+Usage: {"input_tokens": 610, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 107, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 717}
+PASS catering: {
+  "document_id": "catering",
+  "vendor": "Synthetic Workshop Catering",
+  "invoice_id": "LAB-3405",
+  "total": 89.9,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "1d88473d-47ca-4cf6-b202-85e90befbd09"
+}
+Usage: {"input_tokens": 604, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 105, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 709}
+PASS equipment: {
+  "document_id": "equipment",
+  "vendor": "Synthetic Equipment Rentals",
+  "invoice_id": "LAB-3406",
+  "total": 1250,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "0993e174-5a14-4d72-be0e-52f965a6654e"
+}
+Usage: {"input_tokens": 612, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 104, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 716}
+PASS printing: {"document_id":"printing","vendor":"Synthetic Print Studio","invoice_id":"LAB-3407","total":18.25,"currency":"USD","needs_review":false,"operation_id":"b29518ac-8a63-4de0-a354-1182fe1c9fe6"}
+Usage: {"input_tokens": 603, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 84, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 687}
+PASS zero-total: {
+  "document_id": "zero-total",
+  "vendor": "Synthetic Demo Credits",
+  "invoice_id": "LAB-3408",
+  "total": 0,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "945b7854-ca34-435a-b7b1-8cf15790f9b3"
+}
+Usage: {"input_tokens": 611, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 104, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 715}
+PASS large-total: {
+  "document_id": "large-total",
+  "vendor": "Synthetic Event Services",
+  "invoice_id": "LAB-3409",
+  "total": 9876.54,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "a8598b3f-3075-4a8c-a032-f6fa73a5932e"
+}
+Usage: {"input_tokens": 615, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 109, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 724}
+PASS eur-invoice: {"document_id":"eur-invoice","vendor":"Synthetic Workshop Europe","invoice_id":"LAB-3410","total":315.2,"currency":"EUR","needs_review":false,"operation_id":"bf099852-4761-474f-810b-3fb2a31d7836"}
+Usage: {"input_tokens": 609, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 86, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 695}
+PASS missing-total-office: {"document_id":"missing-total-office","vendor":"Synthetic Office Supplies","invoice_id":"LAB-3411","total":null,"currency":null,"needs_review":true,"operation_id":"cefa7844-3030-4c7f-bddd-d7c28c24463f"}
+Usage: {"input_tokens": 595, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 85, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 680}
+PASS missing-total-catering: {
+  "document_id": "missing-total-catering",
+  "vendor": "Synthetic Workshop Catering",
+  "invoice_id": "LAB-3412",
+  "total": null,
+  "currency": null,
+  "needs_review": true,
+  "operation_id": "262ebb59-375d-4020-b3d6-a7ff8b48539c"
+}
+Usage: {"input_tokens": 603, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 105, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 708}
+Model throttled (HTTP 429); retry 1/5 in 4.137s.
+PASS clear: {
+  "document_id": "clear",
+  "vendor": "Synthetic Workshop Supplies",
+  "invoice_id": "LAB-3401",
+  "total": 125.5,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "366310ef-600a-4ae7-8d82-de104572e3d2"
+}
+Usage: {"input_tokens": 601, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 103, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 704}
+Model throttled (HTTP 429); retry 1/5 in 2.459s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS missing-total: {
+  "document_id": "missing-total",
+  "vendor": "Synthetic Workshop Supplies",
+  "invoice_id": "LAB-3402",
+  "total": null,
+  "currency": null,
+  "needs_review": true,
+  "operation_id": "a02e79b7-46a5-437d-b5cc-3d4e3a9f8a6e"
+}
+Usage: {"input_tokens": 606, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 109, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 715}
+Model throttled (HTTP 429); retry 1/5 in 2.02s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS office-supplies: {
+  "document_id": "office-supplies",
+  "vendor": "Synthetic Office Supplies",
+  "invoice_id": "LAB-3403",
+  "total": 48.75,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "7c1224ff-ef6c-49c2-9628-648c30a53d67"
+}
+Usage: {"input_tokens": 617, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 112, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 729}
+Model throttled (HTTP 429); retry 1/5 in 3.699s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS training-materials: {"document_id":"training-materials","vendor":"Synthetic Training Materials","invoice_id":"LAB-3404","total":240,"currency":"USD","needs_review":false,"operation_id":"4307b969-c560-4d80-9c5c-c7cfe21a7ae0"}
+Usage: {"input_tokens": 611, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 87, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 698}
+Model throttled (HTTP 429); retry 1/5 in 4.043s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS catering: {
+  "document_id": "catering",
+  "vendor": "Synthetic Workshop Catering",
+  "invoice_id": "LAB-3405",
+  "total": 89.9,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "12d524b8-5b92-4452-9393-1b1de3c98d61"
+}
+Usage: {"input_tokens": 608, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 109, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 717}
+Model throttled (HTTP 429); retry 1/5 in 4.471s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS equipment: {"document_id":"equipment","vendor":"Synthetic Equipment Rentals","invoice_id":"LAB-3406","total":1250,"currency":"USD","needs_review":false,"operation_id":"2f0770f4-c45a-4f61-9f4d-ae0dd7d5545f"}
+Usage: {"input_tokens": 616, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 87, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 703}
+Model throttled (HTTP 429); retry 1/5 in 2.458s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+Model throttled (HTTP 429); retry 3/5 in 1s.
+PASS printing: {"document_id":"printing","vendor":"Synthetic Print Studio","invoice_id":"LAB-3407","total":18.25,"currency":"USD","needs_review":false,"operation_id":"5f79cb3b-fbc5-4453-ada1-610c0e385de9"}
+Usage: {"input_tokens": 603, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 84, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 687}
+Model throttled (HTTP 429); retry 1/5 in 1.605s.
+PASS zero-total: {
+  "document_id": "zero-total",
+  "vendor": "Synthetic Demo Credits",
+  "invoice_id": "LAB-3408",
+  "total": 0,
+  "currency": "USD",
+  "needs_review": false,
+  "operation_id": "64451159-ec7c-4cc4-9892-236260bb450f"
+}
+Usage: {"input_tokens": 609, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 102, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 711}
+Model throttled (HTTP 429); retry 1/5 in 4.172s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS large-total: {"document_id":"large-total","vendor":"Synthetic Event Services","invoice_id":"LAB-3409","total":9876.54,"currency":"USD","needs_review":false,"operation_id":"7e9be13e-291c-4869-8aec-3a2ec8fc728c"}
+Usage: {"input_tokens": 615, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 88, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 703}
+Model throttled (HTTP 429); retry 1/5 in 4.427s.
+PASS eur-invoice: {"document_id":"eur-invoice","vendor":"Synthetic Workshop Europe","invoice_id":"LAB-3410","total":315.2,"currency":"EUR","needs_review":false,"operation_id":"912a97a6-722d-46ce-b1d5-15a3066dc1be"}
+Usage: {"input_tokens": 611, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 88, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 699}
+Model throttled (HTTP 429); retry 1/5 in 3.297s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+Model throttled (HTTP 429); retry 3/5 in 1s.
+PASS missing-total-office: {
+  "document_id": "missing-total-office",
+  "vendor": "Synthetic Office Supplies",
+  "invoice_id": "LAB-3411",
+  "total": null,
+  "currency": null,
+  "needs_review": true,
+  "operation_id": "a9fda0dc-a74b-4d60-9002-9e02688dfa6a"
+}
+Usage: {"input_tokens": 597, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 106, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 703}
+Model throttled (HTTP 429); retry 1/5 in 2.009s.
+Model throttled (HTTP 429); retry 2/5 in 1s.
+PASS missing-total-catering: {
+  "document_id": "missing-total-catering",
+  "vendor": "Synthetic Workshop Catering",
+  "invoice_id": "LAB-3412",
+  "total": null,
+  "currency": null,
+  "needs_review": true,
+  "operation_id": "3ff70dab-2a8e-4b99-b05a-0559fd32993c"
+}
+Usage: {"input_tokens": 605, "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0}, "output_tokens": 107, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 712}
+All 24 cloud agent cases passed. Agent retained for the Foundry playground.

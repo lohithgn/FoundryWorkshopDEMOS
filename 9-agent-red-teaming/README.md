@@ -1,5 +1,8 @@
 # Microsoft Foundry - Agent red teaming
 
+The infrastructure deploys the model before the project to avoid concurrent
+Foundry account-child writes failing with `RequestConflict`.
+
 Run one small **Foundry AI Red Teaming Agent** baseline scan against a local
 workshop tutor backed by Foundry inference. The managed service generates a
 test objective, invokes the actual agent callback, and evaluates the result.

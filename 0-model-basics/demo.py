@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from openai import OpenAI
+    from openai.types.shared_params import ResponseFormatJSONSchema
     from openai.types.chat import ChatCompletion, ChatCompletionCreateParamsNonStreaming
 
 
@@ -18,14 +19,26 @@ SAMPLING_PROMPT = "Invent one short, playful name for a beginner AI workshop. Re
 COMPARISON_PROMPT = (
     "Tasks A, B, C, D take 4, 3, 5, 2 minutes respectively. B and C must wait "
     "for A; D must wait for both B and C. Two workers are available, each task "
-    "needs one worker, and tasks cannot be interrupted. What is the minimum "
-    "total duration? Return only the integer number of minutes."
+    "needs one worker, and tasks cannot be interrupted. B and C can run at the "
+    "same time after A completes. What is the minimum total duration? Return "
+    "the minimum duration in minutes."
 )
+COMPARISON_FORMAT: "ResponseFormatJSONSchema" = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "minimum_duration", "strict": True,
+        "schema": {
+            "type": "object", "properties": {"minutes": {"type": "integer"}},
+            "required": ["minutes"], "additionalProperties": False,
+        },
+    },
+}
 BATCH_PROMPTS = (
-    "Explain temperature in one sentence for a beginner.",
-    "Explain top_p in one sentence for a beginner.",
+    "Explain the temperature parameter in language-model text generation in one sentence for a beginner.",
+    "Explain the top_p parameter in language-model text generation in one sentence for a beginner.",
     "Explain when asynchronous batch processing is useful in one sentence.",
 )
+CHAT_MAX_RETRIES = 8
 
 
 def temperature_distribution(probabilities: list[float], temperature: float) -> list[float]:
@@ -71,7 +84,7 @@ def concepts() -> None:
     print("then sampling renormalizes the retained probabilities. Change one knob at a time.")
     print("Low temperature is not a correctness or reproducibility guarantee.")
     print("Chat/reasoning are model choices; batch is asynchronous request scheduling.")
-    print("o4-mini uses reasoning_effort, not temperature/top_p; reasoning tokens are billed.")
+    print("gpt-5-mini uses reasoning_effort, not temperature/top_p; reasoning tokens are billed.")
 
 
 def chat_request(
@@ -89,7 +102,25 @@ def reasoning_request(
     return {
         "model": deployment, "messages": [{"role": "user", "content": COMPARISON_PROMPT}],
         "max_completion_tokens": 4096, "reasoning_effort": effort,
+        "response_format": COMPARISON_FORMAT,
     }
+
+
+def comparison_request(deployment: str) -> "ChatCompletionCreateParamsNonStreaming":
+    request = chat_request(deployment, COMPARISON_PROMPT, temperature=0)
+    request["response_format"] = COMPARISON_FORMAT
+    return request
+
+
+def comparison_minutes(answer: str) -> int:
+    try:
+        value = json.loads(answer)
+    except json.JSONDecodeError as error:
+        raise RuntimeError("Comparison answer is not valid JSON.") from error
+    if (not isinstance(value, dict) or set(value) != {"minutes"}
+            or type(value["minutes"]) is not int or value["minutes"] <= 0):
+        raise RuntimeError("Comparison answer must contain one positive integer minutes field.")
+    return value["minutes"]
 
 
 def show_completion(response: "ChatCompletion", elapsed: float) -> str:
@@ -108,11 +139,28 @@ def show_completion(response: "ChatCompletion", elapsed: float) -> str:
     return content.strip()
 
 
-def sampling(client: "OpenAI", deployment: str, samples: int) -> None:
+class RequestPacer:
+    def __init__(self, interval_seconds: float) -> None:
+        if not math.isfinite(interval_seconds) or interval_seconds < 0:
+            raise ValueError("Request interval must be finite and nonnegative.")
+        self.interval_seconds = interval_seconds
+        self.next_request_at = 0.0
+
+    def wait(self) -> None:
+        remaining = self.next_request_at - time.monotonic()
+        if remaining > 0:
+            time.sleep(remaining)
+        self.next_request_at = time.monotonic() + self.interval_seconds
+
+
+def sampling(client: "OpenAI", deployment: str, samples: int,
+             pacer: RequestPacer | None = None) -> None:
     for temperature, top_p in ((0, 1), (0.7, 1), (1.4, 1), (1, 0.2), (1, 0.8), (1, 1)):
         print(f"\nSame prompt: temperature={temperature}, top_p={top_p}")
         answers = []
         for _ in range(samples):
+            if pacer:
+                pacer.wait()
             started = time.monotonic()
             response = client.chat.completions.create(
                 **chat_request(deployment, SAMPLING_PROMPT, temperature=temperature, top_p=top_p),
@@ -122,17 +170,19 @@ def sampling(client: "OpenAI", deployment: str, samples: int) -> None:
 
 
 def compare(client: "OpenAI", chat: str, reasoning: str,
-            effort: Literal["low", "medium", "high"]) -> None:
+            effort: Literal["low", "medium", "high"], pacer: RequestPacer | None = None) -> None:
     print("\nSame scheduling problem:", COMPARISON_PROMPT)
     for label, request in (
-        ("Typical chat (GPT-4.1-mini)", chat_request(chat, COMPARISON_PROMPT, temperature=0)),
-        (f"Reasoning (o4-mini, effort={effort})", reasoning_request(reasoning, effort)),
+        ("Typical chat (GPT-4.1-mini)", comparison_request(chat)),
+        (f"Reasoning (gpt-5-mini, effort={effort})", reasoning_request(reasoning, effort)),
     ):
         print("\n" + label)
+        if pacer:
+            pacer.wait()
         started = time.monotonic()
         response = client.chat.completions.create(**request)
-        answer = show_completion(response, time.monotonic() - started)
-        print("Matches reference answer 11:", answer == "11")
+        answer = comparison_minutes(show_completion(response, time.monotonic() - started))
+        print("Matches reference answer 11:", answer == 11)
     print("Reference: A 0-4; B 4-7 and C 4-9; D 9-11. Both models may be correct.")
     print("One problem does not establish quality, latency or cost superiority.")
 
@@ -232,12 +282,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--batch-deployment", default=os.getenv("AZURE_OPENAI_BATCH_DEPLOYMENT", "basics-batch"))
     parser.add_argument("--samples", type=int, choices=range(1, 6), default=3)
     parser.add_argument("--reasoning-effort", choices=("low", "medium", "high"), default="medium")
+    parser.add_argument("--request-interval-seconds", type=float, default=0,
+                        help="Minimum start-to-start interval between online requests (default: 0).")
     parser.add_argument("--batch-id", help="Inspect an existing lab batch without submitting another.")
     parser.add_argument("--wait-seconds", type=int, default=120, help="Bound batch polling; 0 checks once.")
     parser.add_argument("--state-dir", type=Path, default=Path(__file__).parent / ".azure")
     args = parser.parse_args(argv)
     if args.wait_seconds < 0:
         parser.error("--wait-seconds must be nonnegative.")
+    if not math.isfinite(args.request_interval_seconds) or args.request_interval_seconds < 0:
+        parser.error("--request-interval-seconds must be finite and nonnegative.")
     if args.batch_id is not None and not args.batch_id.strip():
         parser.error("--batch-id must be nonempty.")
     concepts()
@@ -261,10 +315,17 @@ def main(argv: list[str] | None = None) -> int:
         endpoint = args.endpoint.rstrip("/")
         with OpenAI(base_url=endpoint + "/openai/v1/", api_key=token,
                     max_retries=0, timeout=120) as client:
+            if args.section in ("sampling", "compare", "all"):
+                print(f"Chat inference allows up to {CHAT_MAX_RETRIES} SDK retries for transient errors; "
+                      "batch submission has no automatic retries.")
+                chat_client = client.with_options(max_retries=CHAT_MAX_RETRIES)
+                pacer = RequestPacer(args.request_interval_seconds)
+                if args.request_interval_seconds:
+                    print(f"Online request starts are paced by at least {args.request_interval_seconds:g}s.")
             if args.section in ("sampling", "all"):
-                sampling(client, args.deployment, args.samples)
+                sampling(chat_client, args.deployment, args.samples, pacer)
             if args.section in ("compare", "all"):
-                compare(client, args.deployment, args.reasoning_deployment, args.reasoning_effort)
+                compare(chat_client, args.deployment, args.reasoning_deployment, args.reasoning_effort, pacer)
             if args.section in ("batch", "all"):
                 run_batch(client, endpoint, args.batch_deployment, args.state_dir,
                           args.batch_id, args.wait_seconds)

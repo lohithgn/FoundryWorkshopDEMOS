@@ -1,0 +1,184 @@
+Lab 11: 11-foundry-iq
+Recorded 2026-11-08T15:36:24+00:00 — 2026-11-08T15:49:15+00:00
+What happens: A tiny Foundry IQ knowledge base, following Microsoft Learn's retrieval quickstart.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Foundry project: https://foundry-iq-wkvkv4bgjhahk.services.ai.azure.com/api/projects/foundry-iq-demo
+Knowledge base: workshop-knowledge; source: workshop-source; index: workshop-index
+
+Answer:
+The workshop is on Friday at 10:00 and lasts 45 minutes. You should bring a laptop with Python 3.11 and Azure CLI installed; no prior AI experience is required [ref_id:0][ref_id:1].
+
+Retrieval activity:
+[
+  {
+    "type": "modelQueryPlanning",
+    "id": 0,
+    "startedAt": "2026-11-08T15:49:10.7355746Z",
+    "completedAt": "2026-11-08T15:49:13.2623467Z",
+    "inputTokens": 1150,
+    "outputTokens": 29,
+    "elapsedMs": 2521,
+    "model": {
+      "modelName": "gpt-4.1-mini",
+      "deploymentId": "gpt-4.1-mini"
+    }
+  },
+  {
+    "type": "searchIndex",
+    "id": 1,
+    "startedAt": "2026-11-08T15:49:13.2837833Z",
+    "completedAt": "2026-11-08T15:49:14.6130302Z",
+    "knowledgeSourceName": "workshop-source",
+    "queryTime": "2026-11-08T15:49:13.8439433Z",
+    "count": 2,
+    "elapsedMs": 0,
+    "searchIndexArguments": {
+      "search": "workshop date",
+      "filter": null,
+      "semanticConfigurationName": "workshop-semantic",
+      "sourceDataFields": [
+        {
+          "name": "title"
+        },
+        {
+          "name": "content"
+        },
+        {
+          "name": "id"
+        }
+      ],
+      "searchFields": []
+    }
+  },
+  {
+    "type": "searchIndex",
+    "id": 2,
+    "startedAt": "2026-11-08T15:49:14.2220938Z",
+    "completedAt": "2026-11-08T15:49:14.6130537Z",
+    "knowledgeSourceName": "workshop-source",
+    "queryTime": "2026-11-08T15:49:14.3889319Z",
+    "count": 2,
+    "elapsedMs": 0,
+    "searchIndexArguments": {
+      "search": "workshop duration",
+      "filter": null,
+      "semanticConfigurationName": "workshop-semantic",
+      "sourceDataFields": [
+        {
+          "name": "title"
+        },
+        {
+          "name": "content"
+        },
+        {
+          "name": "id"
+        }
+      ],
+      "searchFields": []
+    }
+  },
+  {
+    "type": "searchIndex",
+    "id": 3,
+    "startedAt": "2026-11-08T15:49:14.4590744Z",
+    "completedAt": "2026-11-08T15:49:14.613056Z",
+    "knowledgeSourceName": "workshop-source",
+    "queryTime": "2026-11-08T15:49:14.5473506Z",
+    "count": 2,
+    "elapsedMs": 0,
+    "searchIndexArguments": {
+      "search": "what to bring to the workshop",
+      "filter": null,
+      "semanticConfigurationName": "workshop-semantic",
+      "sourceDataFields": [
+        {
+          "name": "title"
+        },
+        {
+          "name": "content"
+        },
+        {
+          "name": "id"
+        }
+      ],
+      "searchFields": []
+    }
+  },
+  {
+    "type": "modelAnswerSynthesis",
+    "id": 4,
+    "startedAt": "2026-11-08T15:49:14.6403964Z",
+    "completedAt": "2026-11-08T15:49:15.4726946Z",
+    "inputTokens": 1288,
+    "outputTokens": 49,
+    "elapsedMs": 831,
+    "model": {
+      "modelName": "gpt-4.1-mini",
+      "deploymentId": "gpt-4.1-mini"
+    }
+  },
+  {
+    "type": "agenticReasoning",
+    "id": 5,
+    "startedAt": "2026-11-08T15:49:15.4870525Z",
+    "completedAt": "2026-11-08T15:49:15.4870525Z",
+    "reasoningTokens": 156,
+    "retrievalReasoningEffort": {
+      "kind": "low"
+    },
+    "logicalReasoningEffort": {
+      "kind": "low"
+    }
+  }
+]
+
+Source references:
+[
+  {
+    "type": "searchIndex",
+    "id": "0",
+    "activitySource": 2,
+    "rerankerScore": 3.9206269,
+    "docKey": "schedule",
+    "title": "Workshop schedule",
+    "citationUrl": "https://iq-search-wkvkv4bgjhahk.search.windows.net/indexes/workshop-index/docs/schedule?$select=title%2Ccontent%2Cid&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+    "sourceData": {
+      "id": "schedule",
+      "title": "Workshop schedule",
+      "content": "The beginner Microsoft Foundry workshop is on Friday at 10:00. It lasts 45 minutes."
+    }
+  },
+  {
+    "type": "searchIndex",
+    "id": "1",
+    "activitySource": 3,
+    "rerankerScore": 1.8713648,
+    "docKey": "equipment",
+    "title": "What to bring",
+    "citationUrl": "https://iq-search-wkvkv4bgjhahk.search.windows.net/indexes/workshop-index/docs/equipment?$select=title%2Ccontent%2Cid&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+    "sourceData": {
+      "id": "equipment",
+      "title": "What to bring",
+      "content": "Bring a laptop with Python 3.11 and Azure CLI installed. No prior AI experience is required."
+    }
+  },
+  {
+    "type": "searchIndex",
+    "id": "2",
+    "activitySource": 1,
+    "rerankerScore": 1.5834725,
+    "docKey": "cost",
+    "title": "Workshop registration",
+    "citationUrl": "https://iq-search-wkvkv4bgjhahk.search.windows.net/indexes/workshop-index/docs/cost?$select=title%2Ccontent%2Cid&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+    "sourceData": {
+      "id": "cost",
+      "title": "Workshop registration",
+      "content": "Attendance at the workshop is free. Register with the workshop organizer before Thursday."
+    }
+  }
+]

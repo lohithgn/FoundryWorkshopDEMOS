@@ -291,9 +291,12 @@ Basic Search bills continuously for one replica/partition even with an empty ind
 One run makes six short chat requests. The model is pay-per-token GlobalStandard;
 there is no embedding deployment, provisioned throughput or semantic ranker.
 Check current regional Search/model prices in the Azure pricing calculator.
-Search and Foundry use the same `location` parameter in this template; there
-is no `searchLocation` override here. Check Basic Search capacity in that region
-before deploying. Public endpoints and GlobalStandard inference (which may
+Search and Foundry use the same region by default; `searchLocation` defaults
+to `location`. When Basic Search capacity is unavailable in the model region,
+pass an available region, for example `searchLocation=westus2` for standalone
+deployment or `--search-location westus2` for the root runner, after checking
+that it is suitable for your data residency requirements. Public endpoints and
+GlobalStandard inference (which may
 process outside the account region) are workshop defaults, not a residency design.
 The app removes its unique index, but interrupted runs may leave one. Index deletion
 does not stop Search service costs: delete this lab's dedicated resource group.

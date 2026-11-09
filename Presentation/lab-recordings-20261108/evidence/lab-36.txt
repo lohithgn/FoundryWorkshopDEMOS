@@ -1,0 +1,791 @@
+Lab 36: 36-hosted-agent
+Recorded 2026-11-08T17:24:25+00:00 — 2026-11-08T17:29:32+00:00
+What happens: Publish and verify a custom-code Foundry agent; never run its workflow locally.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+2026/11/08 17:25:20 Downloading source code...
+2026/11/08 17:25:21 Finished downloading source code
+2026/11/08 17:25:21 Using acb_vol_48583276-2fb5-4764-a183-b922322a02b1 as the home volume
+2026/11/08 17:25:21 Setting up Docker configuration...
+2026/11/08 17:25:22 Successfully set up Docker configuration
+2026/11/08 17:25:22 Logging in to registry: hostedqaqqlsqdulixs.azurecr.io
+2026/11/08 17:25:23 Successfully logged into hostedqaqqlsqdulixs.azurecr.io
+2026/11/08 17:25:23 Executing step ID: build. Timeout(sec): 28800, Working directory: '', Network: ''
+2026/11/08 17:25:23 Scanning for dependencies...
+2026/11/08 17:25:24 Successfully scanned dependencies
+2026/11/08 17:25:24 Launching container with name: build
+Sending build context to Docker daemon  20.99kB
+
+Step 1/8 : FROM python:3.12-slim
+3.12-slim: Pulling from library/python
+37fb86c2a767: Pulling fs layer
+68bced9e0afa: Pulling fs layer
+2dc99d2d0a39: Pulling fs layer
+05e0eee5572e: Pulling fs layer
+05e0eee5572e: Waiting
+68bced9e0afa: Verifying Checksum
+68bced9e0afa: Download complete
+2dc99d2d0a39: Verifying Checksum
+2dc99d2d0a39: Download complete
+05e0eee5572e: Verifying Checksum
+05e0eee5572e: Download complete
+37fb86c2a767: Verifying Checksum
+37fb86c2a767: Download complete
+37fb86c2a767: Pull complete
+68bced9e0afa: Pull complete
+2dc99d2d0a39: Pull complete
+05e0eee5572e: Pull complete
+Digest: sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+Status: Downloaded newer image for python:3.12-slim
+ ---> 78976a69c067
+Step 2/8 : WORKDIR /app
+ ---> Running in bd5668a70487
+Removing intermediate container bd5668a70487
+ ---> 4575662a7e6f
+Step 3/8 : COPY requirements.txt .
+ ---> 35b325da48bb
+Step 4/8 : RUN pip install --no-cache-dir -r requirements.txt
+ ---> Running in eb8991edadb0
+Collecting azure-ai-projects==2.7.0 (from -r requirements.txt (line 1))
+  Downloading azure_ai_projects-2.7.0-py3-none-any.whl.metadata (81 kB)
+Collecting azure-ai-agentserver-invocations==1.2.0 (from -r requirements.txt (line 2))
+  Downloading azure_ai_agentserver_invocations-1.2.0-py3-none-any.whl.metadata (24 kB)
+Collecting azure-identity==1.26.0 (from -r requirements.txt (line 3))
+  Downloading azure_identity-1.26.0-py3-none-any.whl.metadata (93 kB)
+Collecting isodate>=0.6.1 (from azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading isodate-0.7.2-py3-none-any.whl.metadata (11 kB)
+Collecting azure-core>=1.37.0 (from azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading azure_core-1.41.0-py3-none-any.whl.metadata (49 kB)
+Collecting typing-extensions>=4.11 (from azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting openai>=3.0.0 (from azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading openai-3.46.0-py3-none-any.whl.metadata (45 kB)
+Collecting azure-storage-blob>=12.15.0 (from azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading azure_storage_blob-12.31.1-py3-none-any.whl.metadata (26 kB)
+Collecting azure-ai-agentserver-core<3.0.0,>=2.1.0 (from azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading azure_ai_agentserver_core-2.3.0-py3-none-any.whl.metadata (21 kB)
+Collecting opentelemetry-api<2.0.0,>=1.43.0 (from azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_api-1.45.2-py3-none-any.whl.metadata (1.4 kB)
+Collecting aiohttp<4.0.0a0,>=3.10.0 (from azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading aiohttp-3.14.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.3 kB)
+Collecting cryptography>=2.5 (from azure-identity==1.26.0->-r requirements.txt (line 3))
+  Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+Collecting msal>=1.39.0 (from azure-identity==1.26.0->-r requirements.txt (line 3))
+  Downloading msal-1.39.0-py3-none-any.whl.metadata (11 kB)
+Collecting msal-extensions>=1.2.0 (from azure-identity==1.26.0->-r requirements.txt (line 3))
+  Downloading msal_extensions-1.3.1-py3-none-any.whl.metadata (7.8 kB)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl.metadata (5.9 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting attrs>=17.3.0 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (20 kB)
+Collecting multidict<8.0,>=4.5 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading multidict-7.2.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (6.1 kB)
+Collecting propcache>=0.2.0 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading propcache-0.5.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (25 kB)
+Collecting yarl<2.0,>=1.25.1 (from aiohttp<4.0.0a0,>=3.10.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading yarl-1.25.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (111 kB)
+Collecting starlette<2.0.0,>=0.45.0 (from azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading starlette-1.10.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting hypercorn<1.0.0,>=0.17.0 (from azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading hypercorn-0.18.0-py3-none-any.whl.metadata (5.1 kB)
+Collecting opentelemetry-sdk<2.0.0,>=1.43.0 (from azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_sdk-1.45.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting microsoft-opentelemetry<2.0.0,>=1.3.5 (from azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading microsoft_opentelemetry-1.6.0-py3-none-any.whl.metadata (27 kB)
+Collecting requests>=2.21.0 (from azure-core>=1.37.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+Collecting cffi>=2.0.0 (from cryptography>=2.5->azure-identity==1.26.0->-r requirements.txt (line 3))
+  Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+Collecting PyJWT<3,>=1.0.0 (from PyJWT[crypto]<3,>=1.0.0->msal>=1.39.0->azure-identity==1.26.0->-r requirements.txt (line 3))
+  Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+Collecting anyio<5,>=4.10.0 (from openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading anyio-4.16.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting httpx2<3,>=2.12.0 (from openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading httpx2-2.16.0-py3-none-any.whl.metadata (10 kB)
+Collecting jiter<1,>=0.16.0 (from openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading jiter-0.19.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.2 kB)
+Collecting pydantic!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,<3,>=1.10.13 (from openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading pydantic-2.14.3-py3-none-any.whl.metadata (141 kB)
+Collecting sniffio (from openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+Collecting idna>=2.8 (from anyio<5,>=4.10.0->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography>=2.5->azure-identity==1.26.0->-r requirements.txt (line 3))
+  Downloading pycparser-3.12-py3-none-any.whl.metadata (9.7 kB)
+Collecting httpcore2==2.16.0 (from httpx2<3,>=2.12.0->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading httpcore2-2.16.0-py3-none-any.whl.metadata (27 kB)
+Collecting truststore>=0.10 (from httpx2<3,>=2.12.0->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading truststore-0.10.5-py3-none-any.whl.metadata (4.5 kB)
+Collecting h11>=0.16 (from httpcore2==2.16.0->httpx2<3,>=2.12.0->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting h2>=4.3.0 (from hypercorn<1.0.0,>=0.17.0->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading h2-4.4.1-py3-none-any.whl.metadata (3.8 kB)
+Collecting priority (from hypercorn<1.0.0,>=0.17.0->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading priority-2.0.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting wsproto>=0.14.0 (from hypercorn<1.0.0,>=0.17.0->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading wsproto-1.3.2-py3-none-any.whl.metadata (5.2 kB)
+Collecting azure-core-tracing-opentelemetry~=1.0.0b11 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading azure_core_tracing_opentelemetry-1.0.0b13-py3-none-any.whl.metadata (11 kB)
+Collecting azure-monitor-opentelemetry-exporter~=1.0.0b59 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading azure_monitor_opentelemetry_exporter-1.0.0b59-py2.py3-none-any.whl.metadata (35 kB)
+Collecting opentelemetry-exporter-otlp-proto-http~=1.45.1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_exporter_otlp_proto_http-1.45.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting opentelemetry-instrumentation<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation-0.66b2-py3-none-any.whl.metadata (7.2 kB)
+Collecting opentelemetry-instrumentation-django<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_django-0.66b2-py3-none-any.whl.metadata (2.3 kB)
+Collecting opentelemetry-instrumentation-fastapi<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_fastapi-0.66b2-py3-none-any.whl.metadata (2.2 kB)
+Collecting opentelemetry-instrumentation-flask<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_flask-0.66b2-py3-none-any.whl.metadata (2.2 kB)
+Collecting opentelemetry-instrumentation-httpx<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_httpx-0.66b2-py3-none-any.whl.metadata (9.0 kB)
+Collecting opentelemetry-instrumentation-psycopg2<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_psycopg2-0.66b2-py3-none-any.whl.metadata (2.1 kB)
+Collecting opentelemetry-instrumentation-requests<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_requests-0.66b2-py3-none-any.whl.metadata (2.6 kB)
+Collecting opentelemetry-instrumentation-urllib<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_urllib-0.66b2-py3-none-any.whl.metadata (3.4 kB)
+Collecting opentelemetry-instrumentation-urllib3<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_urllib3-0.66b2-py3-none-any.whl.metadata (4.2 kB)
+Collecting opentelemetry-instrumentation-logging<0.67b0,>=0.66b1 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_logging-0.66b2-py3-none-any.whl.metadata (1.9 kB)
+Collecting opentelemetry-instrumentation-openai-agents-v2==0.1.0 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_openai_agents_v2-0.1.0-py3-none-any.whl.metadata (1.3 kB)
+Collecting opentelemetry-instrumentation-openai-v2==2.3b0 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_openai_v2-2.3b0-py3-none-any.whl.metadata (5.2 kB)
+Collecting opentelemetry-resource-detector-azure<1.0.0,>=0.3.0 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_resource_detector_azure-0.3.0-py3-none-any.whl.metadata (7.0 kB)
+Collecting wrapt<2.0.0,>=1.0.0 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.4 kB)
+Collecting opentelemetry-util-genai==0.3b0 (from microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_util_genai-0.3b0-py3-none-any.whl.metadata (4.6 kB)
+Collecting opentelemetry-semantic-conventions>=0.58b0 (from opentelemetry-instrumentation-openai-agents-v2==0.1.0->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_semantic_conventions-0.66b2-py3-none-any.whl.metadata (2.4 kB)
+Collecting annotated-types>=0.6.0 (from pydantic!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,<3,>=1.10.13->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.50.4 (from pydantic!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,<3,>=1.10.13->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading pydantic_core-2.50.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.6 kB)
+Collecting typing-inspection>=0.4.4 (from pydantic!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,<3,>=1.10.13->openai>=3.0.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading typing_inspection-0.4.5-py3-none-any.whl.metadata (2.6 kB)
+Collecting charset_normalizer<4,>=2 (from requests>=2.21.0->azure-core>=1.37.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+Collecting urllib3<3,>=1.26 (from requests>=2.21.0->azure-core>=1.37.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+Collecting certifi>=2023.5.7 (from requests>=2.21.0->azure-core>=1.37.0->azure-ai-projects==2.7.0->-r requirements.txt (line 1))
+  Downloading certifi-2026.10.23-py3-none-any.whl.metadata (2.5 kB)
+Collecting msrest>=0.6.10 (from azure-monitor-opentelemetry-exporter~=1.0.0b59->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading msrest-0.7.1-py3-none-any.whl.metadata (21 kB)
+Collecting psutil<8,>=5.9 (from azure-monitor-opentelemetry-exporter~=1.0.0b59->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+Collecting hyperframe<7,>=6.1 (from h2>=4.3.0->hypercorn<1.0.0,>=0.17.0->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading hyperframe-6.1.0-py3-none-any.whl.metadata (4.3 kB)
+Collecting hpack<5,>=4.2 (from h2>=4.3.0->hypercorn<1.0.0,>=0.17.0->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading hpack-4.2.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting googleapis-common-protos~=1.52 (from opentelemetry-exporter-otlp-proto-http~=1.45.1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading googleapis_common_protos-1.76.0-py3-none-any.whl.metadata (8.5 kB)
+Collecting opentelemetry-exporter-http-transport==0.66b2 (from opentelemetry-exporter-http-transport[requests]==0.66b2->opentelemetry-exporter-otlp-proto-http~=1.45.1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_exporter_http_transport-0.66b2-py3-none-any.whl.metadata (2.3 kB)
+Collecting opentelemetry-exporter-otlp-common==0.66b2 (from opentelemetry-exporter-otlp-proto-http~=1.45.1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_exporter_otlp_common-0.66b2-py3-none-any.whl.metadata (1.9 kB)
+Collecting opentelemetry-exporter-otlp-proto-common==1.45.2 (from opentelemetry-exporter-otlp-proto-http~=1.45.1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_exporter_otlp_proto_common-1.45.2-py3-none-any.whl.metadata (1.8 kB)
+Collecting opentelemetry-proto==1.45.2 (from opentelemetry-exporter-otlp-proto-http~=1.45.1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_proto-1.45.2-py3-none-any.whl.metadata (2.3 kB)
+Collecting protobuf<8.0,>=5.0 (from opentelemetry-proto==1.45.2->opentelemetry-exporter-otlp-proto-http~=1.45.1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+Collecting packaging>=18.0 (from opentelemetry-instrumentation<0.67b0,>=0.66b1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Collecting opentelemetry-instrumentation-wsgi==0.66b2 (from opentelemetry-instrumentation-django<0.67b0,>=0.66b1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_wsgi-0.66b2-py3-none-any.whl.metadata (2.1 kB)
+Collecting opentelemetry-util-http==0.66b2 (from opentelemetry-instrumentation-django<0.67b0,>=0.66b1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_util_http-0.66b2-py3-none-any.whl.metadata (2.6 kB)
+Collecting opentelemetry-instrumentation-asgi==0.66b2 (from opentelemetry-instrumentation-fastapi<0.67b0,>=0.66b1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_asgi-0.66b2-py3-none-any.whl.metadata (2.0 kB)
+Collecting asgiref~=3.0 (from opentelemetry-instrumentation-asgi==0.66b2->opentelemetry-instrumentation-fastapi<0.67b0,>=0.66b1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading asgiref-3.13.0-py3-none-any.whl.metadata (12 kB)
+Collecting opentelemetry-instrumentation-dbapi==0.66b2 (from opentelemetry-instrumentation-psycopg2<0.67b0,>=0.66b1->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading opentelemetry_instrumentation_dbapi-0.66b2-py3-none-any.whl.metadata (2.0 kB)
+Collecting requests-oauthlib>=0.5.0 (from msrest>=0.6.10->azure-monitor-opentelemetry-exporter~=1.0.0b59->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl.metadata (11 kB)
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.5.0->msrest>=0.6.10->azure-monitor-opentelemetry-exporter~=1.0.0b59->microsoft-opentelemetry<2.0.0,>=1.3.5->azure-ai-agentserver-core<3.0.0,>=2.1.0->azure-ai-agentserver-invocations==1.2.0->-r requirements.txt (line 2))
+  Downloading oauthlib-4.0.1-py3-none-any.whl.metadata (8.6 kB)
+Downloading azure_ai_projects-2.7.0-py3-none-any.whl (517 kB)
+Downloading azure_ai_agentserver_invocations-1.2.0-py3-none-any.whl (59 kB)
+Downloading azure_identity-1.26.0-py3-none-any.whl (195 kB)
+Downloading aiohttp-3.14.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.9/1.9 MB 108.2 MB/s eta 0:00:00
+Downloading azure_ai_agentserver_core-2.3.0-py3-none-any.whl (225 kB)
+Downloading azure_core-1.41.0-py3-none-any.whl (220 kB)
+Downloading azure_storage_blob-12.31.1-py3-none-any.whl (455 kB)
+Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 263.8 MB/s eta 0:00:00
+Downloading isodate-0.7.2-py3-none-any.whl (22 kB)
+Downloading msal-1.39.0-py3-none-any.whl (131 kB)
+Downloading msal_extensions-1.3.1-py3-none-any.whl (20 kB)
+Downloading openai-3.46.0-py3-none-any.whl (2.4 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.4/2.4 MB 687.7 MB/s eta 0:00:00
+Downloading opentelemetry_api-1.45.2-py3-none-any.whl (60 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl (15 kB)
+Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Downloading anyio-4.16.0-py3-none-any.whl (134 kB)
+Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (242 kB)
+Downloading httpx2-2.16.0-py3-none-any.whl (97 kB)
+Downloading httpcore2-2.16.0-py3-none-any.whl (85 kB)
+Downloading hypercorn-0.18.0-py3-none-any.whl (61 kB)
+Downloading jiter-0.19.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (338 kB)
+Downloading microsoft_opentelemetry-1.6.0-py3-none-any.whl (245 kB)
+Downloading opentelemetry_instrumentation_openai_agents_v2-0.1.0-py3-none-any.whl (25 kB)
+Downloading opentelemetry_instrumentation_openai_v2-2.3b0-py3-none-any.whl (18 kB)
+Downloading opentelemetry_util_genai-0.3b0-py3-none-any.whl (28 kB)
+Downloading multidict-7.2.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (516 kB)
+Downloading opentelemetry_sdk-1.45.2-py3-none-any.whl (141 kB)
+Downloading opentelemetry_semantic_conventions-0.66b2-py3-none-any.whl (206 kB)
+Downloading propcache-0.5.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (250 kB)
+Downloading pydantic-2.14.3-py3-none-any.whl (494 kB)
+Downloading pydantic_core-2.50.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 597.6 MB/s eta 0:00:00
+Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+Downloading starlette-1.10.0-py3-none-any.whl (80 kB)
+Downloading yarl-1.25.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (117 kB)
+Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+Downloading azure_core_tracing_opentelemetry-1.0.0b13-py3-none-any.whl (12 kB)
+Downloading azure_monitor_opentelemetry_exporter-1.0.0b59-py2.py3-none-any.whl (259 kB)
+Downloading certifi-2026.10.23-py3-none-any.whl (135 kB)
+Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (257 kB)
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading h2-4.4.1-py3-none-any.whl (62 kB)
+Downloading idna-3.20-py3-none-any.whl (69 kB)
+Downloading opentelemetry_exporter_otlp_proto_http-1.45.2-py3-none-any.whl (22 kB)
+Downloading opentelemetry_exporter_http_transport-0.66b2-py3-none-any.whl (12 kB)
+Downloading opentelemetry_exporter_otlp_common-0.66b2-py3-none-any.whl (12 kB)
+Downloading opentelemetry_exporter_otlp_proto_common-1.45.2-py3-none-any.whl (15 kB)
+Downloading opentelemetry_proto-1.45.2-py3-none-any.whl (72 kB)
+Downloading opentelemetry_instrumentation-0.66b2-py3-none-any.whl (36 kB)
+Downloading opentelemetry_instrumentation_django-0.66b2-py3-none-any.whl (18 kB)
+Downloading opentelemetry_instrumentation_wsgi-0.66b2-py3-none-any.whl (13 kB)
+Downloading opentelemetry_util_http-0.66b2-py3-none-any.whl (8.4 kB)
+Downloading opentelemetry_instrumentation_fastapi-0.66b2-py3-none-any.whl (14 kB)
+Downloading opentelemetry_instrumentation_asgi-0.66b2-py3-none-any.whl (15 kB)
+Downloading opentelemetry_instrumentation_flask-0.66b2-py3-none-any.whl (14 kB)
+Downloading opentelemetry_instrumentation_httpx-0.66b2-py3-none-any.whl (17 kB)
+Downloading opentelemetry_instrumentation_logging-0.66b2-py3-none-any.whl (15 kB)
+Downloading opentelemetry_instrumentation_psycopg2-0.66b2-py3-none-any.whl (11 kB)
+Downloading opentelemetry_instrumentation_dbapi-0.66b2-py3-none-any.whl (14 kB)
+Downloading opentelemetry_instrumentation_requests-0.66b2-py3-none-any.whl (13 kB)
+Downloading opentelemetry_instrumentation_urllib-0.66b2-py3-none-any.whl (13 kB)
+Downloading opentelemetry_instrumentation_urllib3-0.66b2-py3-none-any.whl (13 kB)
+Downloading opentelemetry_resource_detector_azure-0.3.0-py3-none-any.whl (14 kB)
+Downloading truststore-0.10.5-py3-none-any.whl (19 kB)
+Downloading typing_inspection-0.4.5-py3-none-any.whl (14 kB)
+Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (88 kB)
+Downloading wsproto-1.3.2-py3-none-any.whl (24 kB)
+Downloading priority-2.0.0-py3-none-any.whl (8.9 kB)
+Downloading pycparser-3.12-py3-none-any.whl (62 kB)
+Downloading googleapis_common_protos-1.76.0-py3-none-any.whl (307 kB)
+Downloading hpack-4.2.0-py3-none-any.whl (34 kB)
+Downloading hyperframe-6.1.0-py3-none-any.whl (13 kB)
+Downloading msrest-0.7.1-py3-none-any.whl (85 kB)
+Downloading packaging-26.3-py3-none-any.whl (129 kB)
+Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+Downloading asgiref-3.13.0-py3-none-any.whl (27 kB)
+Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+Downloading requests_oauthlib-2.0.0-py2.py3-none-any.whl (24 kB)
+Downloading oauthlib-4.0.1-py3-none-any.whl (161 kB)
+Installing collected packages: wrapt, urllib3, typing-extensions, truststore, sniffio, PyJWT, pycparser, psutil, protobuf, propcache, priority, packaging, opentelemetry-util-http, oauthlib, multidict, jiter, isodate, idna, hyperframe, hpack, h11, frozenlist, charset_normalizer, certifi, attrs, asgiref, annotated-types, aiohappyeyeballs, yarl, wsproto, typing-inspection, requests, pydantic-core, opentelemetry-proto, opentelemetry-api, httpcore2, h2, googleapis-common-protos, cffi, anyio, aiosignal, starlette, requests-oauthlib, pydantic, opentelemetry-semantic-conventions, opentelemetry-exporter-otlp-proto-common, opentelemetry-exporter-http-transport, hypercorn, httpx2, cryptography, azure-core, aiohttp, opentelemetry-sdk, opentelemetry-instrumentation, openai, msrest, azure-storage-blob, azure-core-tracing-opentelemetry, opentelemetry-util-genai, opentelemetry-resource-detector-azure, opentelemetry-instrumentation-wsgi, opentelemetry-instrumentation-urllib3, opentelemetry-instrumentation-urllib, opentelemetry-instrumentation-requests, opentelemetry-instrumentation-openai-v2, opentelemetry-instrumentation-logging, opentelemetry-instrumentation-httpx, opentelemetry-instrumentation-dbapi, opentelemetry-instrumentation-asgi, opentelemetry-exporter-otlp-common, msal, opentelemetry-instrumentation-psycopg2, opentelemetry-instrumentation-openai-agents-v2, opentelemetry-instrumentation-flask, opentelemetry-instrumentation-fastapi, opentelemetry-instrumentation-django, opentelemetry-exporter-otlp-proto-http, msal-extensions, azure-identity, azure-monitor-opentelemetry-exporter, azure-ai-projects, microsoft-opentelemetry, azure-ai-agentserver-core, azure-ai-agentserver-invocations
+Successfully installed PyJWT-2.15.1 aiohappyeyeballs-2.7.1 aiohttp-3.14.5 aiosignal-1.4.0 annotated-types-0.8.0 anyio-4.16.0 asgiref-3.13.0 attrs-26.1.0 azure-ai-agentserver-core-2.3.0 azure-ai-agentserver-invocations-1.2.0 azure-ai-projects-2.7.0 azure-core-1.41.0 azure-core-tracing-opentelemetry-1.0.0b13 azure-identity-1.26.0 azure-monitor-opentelemetry-exporter-1.0.0b59 azure-storage-blob-12.31.1 certifi-2026.10.23 cffi-2.1.1 charset_normalizer-3.5.2 cryptography-50.0.2 frozenlist-1.8.0 googleapis-common-protos-1.76.0 h11-0.16.0 h2-4.4.1 hpack-4.2.0 httpcore2-2.16.0 httpx2-2.16.0 hypercorn-0.18.0 hyperframe-6.1.0 idna-3.20 isodate-0.7.2 jiter-0.19.0 microsoft-opentelemetry-1.6.0 msal-1.39.0 msal-extensions-1.3.1 msrest-0.7.1 multidict-7.2.1 oauthlib-4.0.1 openai-3.46.0 opentelemetry-api-1.45.2 opentelemetry-exporter-http-transport-0.66b2 opentelemetry-exporter-otlp-common-0.66b2 opentelemetry-exporter-otlp-proto-common-1.45.2 opentelemetry-exporter-otlp-proto-http-1.45.2 opentelemetry-instrumentation-0.66b2 opentelemetry-instrumentation-asgi-0.66b2 opentelemetry-instrumentation-dbapi-0.66b2 opentelemetry-instrumentation-django-0.66b2 opentelemetry-instrumentation-fastapi-0.66b2 opentelemetry-instrumentation-flask-0.66b2 opentelemetry-instrumentation-httpx-0.66b2 opentelemetry-instrumentation-logging-0.66b2 opentelemetry-instrumentation-openai-agents-v2-0.1.0 opentelemetry-instrumentation-openai-v2-2.3b0 opentelemetry-instrumentation-psycopg2-0.66b2 opentelemetry-instrumentation-requests-0.66b2 opentelemetry-instrumentation-urllib-0.66b2 opentelemetry-instrumentation-urllib3-0.66b2 opentelemetry-instrumentation-wsgi-0.66b2 opentelemetry-proto-1.45.2 opentelemetry-resource-detector-azure-0.3.0 opentelemetry-sdk-1.45.2 opentelemetry-semantic-conventions-0.66b2 opentelemetry-util-genai-0.3b0 opentelemetry-util-http-0.66b2 packaging-26.3 priority-2.0.0 propcache-0.5.4 protobuf-7.36.2 psutil-7.2.2 pycparser-3.12 pydantic-2.14.3 pydantic-core-2.50.4 requests-2.34.2 requests-oauthlib-2.0.0 sniffio-1.3.1 starlette-1.10.0 truststore-0.10.5 typing-extensions-4.16.0 typing-inspection-0.4.5 urllib3-2.8.0 wrapt-1.17.3 wsproto-1.3.2 yarl-1.25.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+[notice] A new release of pip is available: 25.0.1 -> 26.3
+[notice] To update, run: pip install --upgrade pip
+Removing intermediate container eb8991edadb0
+ ---> 7edd91ac18ae
+Step 5/8 : COPY agent.py .
+ ---> 32ceb8180abf
+Step 6/8 : ENV PYTHONUNBUFFERED=1
+ ---> Running in 9baa9677a580
+Removing intermediate container 9baa9677a580
+ ---> bf9d3fe5196c
+Step 7/8 : EXPOSE 8088
+ ---> Running in d2fc83914730
+Removing intermediate container d2fc83914730
+ ---> af61aee670ed
+Step 8/8 : CMD ["python", "agent.py"]
+ ---> Running in 215a6984a8da
+Removing intermediate container 215a6984a8da
+ ---> 23b834246d71
+Successfully built 23b834246d71
+Successfully tagged hostedqaqqlsqdulixs.azurecr.io/workshop-agent:20261108172511
+2026/11/08 17:25:52 Successfully executed container: build
+2026/11/08 17:25:52 Executing step ID: push. Timeout(sec): 3600, Working directory: '', Network: ''
+2026/11/08 17:25:52 Pushing image: hostedqaqqlsqdulixs.azurecr.io/workshop-agent:20261108172511, attempt 1
+The push refers to repository [hostedqaqqlsqdulixs.azurecr.io/workshop-agent]
+b8070562eef2: Preparing
+dc16c137b6bd: Preparing
+02b39b1aef28: Preparing
+ab08ff07e7da: Preparing
+340931a1d986: Preparing
+96a69f98ae07: Preparing
+3dc3efdf0110: Preparing
+dd57f90311a2: Preparing
+96a69f98ae07: Waiting
+3dc3efdf0110: Waiting
+dd57f90311a2: Waiting
+ab08ff07e7da: Pushed
+02b39b1aef28: Pushed
+b8070562eef2: Pushed
+340931a1d986: Pushed
+dc16c137b6bd: Pushed
+3dc3efdf0110: Pushed
+96a69f98ae07: Pushed
+dd57f90311a2: Pushed
+20261108172511: digest: sha256:45bce133e76a60c2760a78686305d3e10a67a15f934b3eadc8ab3727352cffcf size: 1992
+2026/11/08 17:26:08 Successfully pushed image: hostedqaqqlsqdulixs.azurecr.io/workshop-agent:20261108172511
+2026/11/08 17:26:08 Step ID: build marked as successful (elapsed time in seconds: 28.359848)
+2026/11/08 17:26:08 Populating digests for step ID: build...
+2026/11/08 17:26:09 Successfully populated digests for step ID: build
+2026/11/08 17:26:09 Step ID: push marked as successful (elapsed time in seconds: 16.179974)
+2026/11/08 17:26:09 The following dependencies were found:
+2026/11/08 17:26:09 
+- image:
+    registry: hostedqaqqlsqdulixs.azurecr.io
+    repository: workshop-agent
+    tag: "20261108172511"
+    digest: sha256:45bce133e76a60c2760a78686305d3e10a67a15f934b3eadc8ab3727352cffcf
+  runtime-dependency:
+    registry: registry.hub.docker.com
+    repository: library/python
+    tag: 3.12-slim
+    digest: sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+  git: {}
+
+
+Run ID: ch1 was successful after 49s
+Hosted version 1: creating
+Hosted version 1: creating
+Hosted version 1: active
+Waiting for real hosted-agent trace ingestion...
+Waiting for real hosted-agent trace ingestion...
+Waiting for real hosted-agent trace ingestion...
+Waiting for real hosted-agent trace ingestion...
+Waiting for real hosted-agent trace ingestion...
+Waiting for real hosted-agent trace ingestion...
+{
+  "started_at": "2026-11-08T17:26:56.921856+00:00",
+  "passed": true,
+  "invocations": [
+    {
+      "quote": {
+        "attendees": 3,
+        "currency": "USD",
+        "unit_price": 25,
+        "total": 75,
+        "source": "hosted-read-only-price-tool"
+      },
+      "tool_result": {
+        "attendees": 3,
+        "currency": "USD",
+        "unit_price": 25,
+        "total": 75,
+        "source": "hosted-read-only-price-tool"
+      },
+      "tool_call_id": "call_DoEN7NvBMp9FbVDM6ZBrWQyx",
+      "proposal_response_id": "resp_034b5da4a21cc9fd006af0b0e976b881969ea504c10fce620c",
+      "response_id": "resp_034b5da4a21cc9fd006af0b0ea616881969a364c4f8d218646",
+      "usage": {
+        "input_tokens": 153,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "cache_write_tokens_details": null
+        },
+        "output_tokens": 36,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 189
+      },
+      "state": {
+        "visits": 1,
+        "marker": "090f1d468d3b4c9183a7b59a6815979a"
+      },
+      "instance": "adc-sandbox",
+      "agent_name": "hosted-workshop-pricer",
+      "agent_version": "1",
+      "trace_id": "2d6bfb60e2d75bded24f34883920ade7",
+      "session_id": "live-93081ccd23c44c5080a8fc59e7fab1d7"
+    },
+    {
+      "quote": {
+        "attendees": 4,
+        "currency": "USD",
+        "unit_price": 25,
+        "total": 100,
+        "source": "hosted-read-only-price-tool"
+      },
+      "tool_result": {
+        "attendees": 4,
+        "currency": "USD",
+        "unit_price": 25,
+        "total": 100,
+        "source": "hosted-read-only-price-tool"
+      },
+      "tool_call_id": "call_7jM6vxRitCkORDatlk1sdu2H",
+      "proposal_response_id": "resp_026208239fa4bd45006af0b0ecc5308190b6da43edde10a483",
+      "response_id": "resp_026208239fa4bd45006af0b0ede1e08190ad7649554febc132",
+      "usage": {
+        "input_tokens": 153,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "cache_write_tokens_details": null
+        },
+        "output_tokens": 36,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 189
+      },
+      "state": {
+        "visits": 2,
+        "marker": "090f1d468d3b4c9183a7b59a6815979a"
+      },
+      "instance": "adc-sandbox",
+      "agent_name": "hosted-workshop-pricer",
+      "agent_version": "1",
+      "trace_id": "87c564f3d10a4e6c3564575261318389",
+      "session_id": "live-93081ccd23c44c5080a8fc59e7fab1d7"
+    },
+    {
+      "quote": {
+        "attendees": 2,
+        "currency": "USD",
+        "unit_price": 25,
+        "total": 50,
+        "source": "hosted-read-only-price-tool"
+      },
+      "tool_result": {
+        "attendees": 2,
+        "currency": "USD",
+        "unit_price": 25,
+        "total": 50,
+        "source": "hosted-read-only-price-tool"
+      },
+      "tool_call_id": "call_9CKBYvl9IcnzCvaQsBZ9Us9W",
+      "proposal_response_id": "resp_00c42a7f4dbe2dad006af0b0f4ad9c8194a6d70b76328370ca",
+      "response_id": "resp_00c42a7f4dbe2dad006af0b0f583c08194a5baca68c3ccce3f",
+      "usage": {
+        "input_tokens": 153,
+        "input_tokens_details": {
+          "cache_write_tokens": 0,
+          "cached_tokens": 0,
+          "cache_write_tokens_details": null
+        },
+        "output_tokens": 36,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 189
+      },
+      "state": {
+        "visits": 1,
+        "marker": "8b007716a1a64b4fa18bb86e614fd98e"
+      },
+      "instance": "adc-sandbox",
+      "agent_name": "hosted-workshop-pricer",
+      "agent_version": "1",
+      "trace_id": "b7a0c4943879bf0def33f3fa715e5e55",
+      "session_id": "live-e424c08113ad4f1e997d2fba68f502e9"
+    }
+  ],
+  "telemetry": {
+    "tables": [
+      {
+        "name": "PrimaryResult",
+        "columns": [
+          {
+            "name": "TimeGenerated",
+            "type": "datetime"
+          },
+          {
+            "name": "OperationId",
+            "type": "string"
+          },
+          {
+            "name": "Name",
+            "type": "string"
+          },
+          {
+            "name": "Properties",
+            "type": "dynamic"
+          },
+          {
+            "name": "DurationMs",
+            "type": "real"
+          }
+        ],
+        "rows": [
+          [
+            "2026-11-08T17:27:05.089772Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "POST /api/projects/hosted-agent/openai/v1/responses",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ProcessedByMetricExtractors\":\"True\",\"_MS.ResourceAttributeId\":\"b2519885-334a-4175-8e5d-43a174f586e5\"}",
+            916
+          ],
+          [
+            "2026-11-08T17:27:06.057907Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "execute_tool lookup_price",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ResourceAttributeId\":\"b2519885-334a-4175-8e5d-43a174f586e5\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"workshop.attendees\":\"3\",\"workshop.total\":\"75\"}",
+            0
+          ],
+          [
+            "2026-11-08T17:27:06.064449Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "POST /api/projects/hosted-agent/openai/v1/responses",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ProcessedByMetricExtractors\":\"True\",\"_MS.ResourceAttributeId\":\"b2519885-334a-4175-8e5d-43a174f586e5\"}",
+            1097
+          ],
+          [
+            "2026-11-08T17:27:04.568557Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.ai.agentserver\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:04.569399Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.identity._credentials.environment\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:04.569852Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.identity._credentials.managed_identity\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:05.087909Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.identity._credentials.chained\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:06.00613Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"httpx2\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:07.161924Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"httpx2\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:07.187897Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:07.188364Z",
+            "2d6bfb60e2d75bded24f34883920ade7",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100bUpg1cUYS94YkmzJnl2vdVEazWISt7li\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"995a8d51-1bcb-445d-893e-1322ffcbce70\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:11.61158Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"httpx2\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:11.614184Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:11.614495Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:09.697549Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"httpx2\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:08.510764Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:08.511542Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.identity._credentials.environment\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:08.511953Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.identity._credentials.managed_identity\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:08.587867Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"1817c79f-62d6-4ed2-93a0-6970d0ce9d32\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"logger_name\":\"azure.identity._credentials.chained\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:17.180034Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"httpx2\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:16.222018Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:16.222706Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"azure.identity._credentials.environment\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:16.223131Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"azure.identity._credentials.managed_identity\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:16.413383Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"azure.identity._credentials.chained\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:19.591553Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"httpx2\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:19.614314Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:19.614636Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "",
+            "{\"invocation_id\":\"\",\"session_id\":\"\",\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"x_request_id\":\"bd52a38e-0824-4afb-9521-fc993808e8f3\",\"microsoft.foundry\":\"True\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"logger_name\":\"azure.ai.agentserver\"}",
+            null
+          ],
+          [
+            "2026-11-08T17:27:08.589053Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "POST /api/projects/hosted-agent/openai/v1/responses",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ProcessedByMetricExtractors\":\"True\",\"_MS.ResourceAttributeId\":\"c142f2d4-366d-4b76-aafd-f90b07a6bf51\"}",
+            1108
+          ],
+          [
+            "2026-11-08T17:27:09.698645Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "execute_tool lookup_price",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"workshop.attendees\":\"4\",\"workshop.total\":\"100\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"_MS.ResourceAttributeId\":\"c142f2d4-366d-4b76-aafd-f90b07a6bf51\"}",
+            0
+          ],
+          [
+            "2026-11-08T17:27:09.700737Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "POST /api/projects/hosted-agent/openai/v1/responses",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ProcessedByMetricExtractors\":\"True\",\"_MS.ResourceAttributeId\":\"c142f2d4-366d-4b76-aafd-f90b07a6bf51\"}",
+            1910
+          ],
+          [
+            "2026-11-08T17:27:16.415283Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "POST /api/projects/hosted-agent/openai/v1/responses",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ProcessedByMetricExtractors\":\"True\",\"_MS.ResourceAttributeId\":\"0cd165b8-de7a-41c3-8e48-0193bc1b5ac6\"}",
+            764
+          ],
+          [
+            "2026-11-08T17:27:17.236146Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "execute_tool lookup_price",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"workshop.attendees\":\"2\",\"workshop.total\":\"50\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"_MS.ResourceAttributeId\":\"0cd165b8-de7a-41c3-8e48-0193bc1b5ac6\"}",
+            0
+          ],
+          [
+            "2026-11-08T17:27:17.242988Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "POST /api/projects/hosted-agent/openai/v1/responses",
+            "{\"microsoft.foundry\":\"True\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.session.id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"azure.ai.agentserver.invocations.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.version\":\"1\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.tenant.id\":\"a1d6c791-d37f-46f2-860a-105cc2a00fe3\",\"_MS.ProcessedByMetricExtractors\":\"True\",\"_MS.ResourceAttributeId\":\"0cd165b8-de7a-41c3-8e48-0193bc1b5ac6\"}",
+            2348
+          ],
+          [
+            "2026-11-08T17:27:12.8822392Z",
+            "b7a0c4943879bf0def33f3fa715e5e55",
+            "invoke_agent",
+            "{\"azure.ai.agentserver.x-request-id\":\"b7a0c4943879bf0def33f3fa715e5e55\",\"test.source\":\"unmarked\",\"gen_ai.operation.name\":\"invoke_agent\",\"gen_ai.agent.type\":\"AzureAIFoundry\",\"microsoft.foundry.agent.type\":\"hosted\",\"microsoft.channel.name\":\"agent_service\",\"agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"agent.version\":\"1\",\"gen_ai.agent.version\":\"1\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"azure.ai.agentserver.invocation_id\":\"inv_e314a8d77a5e76fd00d6DU0omKOe34OkOPJMxbtCIPOBA7m5me\",\"azure.ai.agentserver.session_id\":\"live-e424c08113ad4f1e997d2fba68f502e9\",\"hosted_agent.latency.start_type\":\"cold\",\"hosted_agent.latency.platform_preprocessing_ms\":\"134\",\"hosted_agent.latency.infra_setup_ms\":\"1291\",\"hosted_agent.latency.container_readiness_ms\":\"1987\",\"hosted_agent.latency.container_response_ms\":\"3442\",\"hosted_agent.latency.response_begin_ms\":\"6854\",\"_MS.ResourceAttributeId\":\"1f2ab54c-39c4-403b-bf0f-78bf32b22e44\"}",
+            6766.9191
+          ],
+          [
+            "2026-11-08T17:27:08.4612979Z",
+            "87c564f3d10a4e6c3564575261318389",
+            "invoke_agent",
+            "{\"azure.ai.agentserver.x-request-id\":\"87c564f3d10a4e6c3564575261318389\",\"test.source\":\"unmarked\",\"gen_ai.operation.name\":\"invoke_agent\",\"gen_ai.agent.type\":\"AzureAIFoundry\",\"microsoft.foundry.agent.type\":\"hosted\",\"microsoft.channel.name\":\"agent_service\",\"agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.name\":\"hosted-workshop-pricer\",\"gen_ai.agent.id\":\"c196d3c7-17e0-4691-886a-e4c6db95fdbe\",\"agent.version\":\"1\",\"gen_ai.agent.version\":\"1\",\"user.id\":\"2953e18f-c581-471a-b474-35522c43acab\",\"microsoft.foundry.project.id\":\"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-hosted-agent-demo/providers/Microsoft.CognitiveServices/accounts/hosted-qaqqlsqdulixs/projects/hosted-agent\",\"microsoft.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"microsoft.a365.agent.blueprint.id\":\"6e1316c0-a01a-4154-856c-34a095de0aca\",\"azure.ai.agentserver.invocation_id\":\"inv_aec8fdcdb4838a0100WhDMNgxDKGWDgTd1gbt8Y44gH3gSxM3A\",\"azure.ai.agentserver.session_id\":\"live-93081ccd23c44c5080a8fc59e7fab1d7\",\"hosted_agent.latency.start_type\":\"warm\",\"hosted_agent.latency.platform_preprocessing_ms\":\"95\",\"hosted_agent.latency.container_response_ms\":\"3156\",\"hosted_agent.latency.response_begin_ms\":\"3251\",\"_MS.ResourceAttributeId\":\"ec5a70ae-2e36-4c36-9786-0704ff5018ac\"}",
+            3183.8902
+          ]
+        ]
+      }
+    ]
+  }
+}

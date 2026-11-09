@@ -1,0 +1,46 @@
+Lab 1: 1-model-router
+Recorded 2026-11-08T14:59:22+00:00 — 2026-11-08T15:00:48+00:00
+What happens: Send different prompts to one Microsoft Foundry model router deployment.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+
+=== Simple ===
+Prompt: What is the capital of France? Answer in one sentence.
+Serving model: FW-GLM-5.3-Flash
+Elapsed: 5.52s (client-observed, including routing/network)
+Tokens: input=35, output=19, total=54
+Finish reason: stop
+Answer:
+The capital of France is Paris.
+
+=== Writing ===
+Prompt: Write a friendly, three-sentence invitation to a workshop about Microsoft Foundry. The audience is Python developers new to AI.
+Serving model: FW-GLM-5.3-Flash
+Elapsed: 2.31s (client-observed, including routing/network)
+Tokens: input=48, output=122, total=170
+Finish reason: stop
+Answer:
+Ready to bring AI into your Python projects but not sure where to start? Join us for a hands-on workshop introducing Microsoft Foundry, where you'll learn to build, deploy, and experiment with AI models using tools and SDKs you already know and love. No prior AI experience needed—just bring your laptop and curiosity!
+
+=== Reasoning ===
+Prompt: A workshop has 120 attendees. Each lab needs one mentor per started group of 8 attendees, and there are 11 mentors. Attendees may join either of two consecutive lab slots. Find an allocation that minimizes the maximum number of mentors needed in either slot. Explain why it is optimal, including rounding to whole groups.
+Serving model: grok-4-1-fast-reasoning
+Elapsed: 29.92s (client-observed, including routing/network)
+Tokens: input=231, output=237, total=4146
+Finish reason: stop
+Answer:
+**Allocation:** 56 attendees in slot 1, 64 in slot 2 (or vice versa).
+
+**Mentors needed:**  
+- Slot 1: ⌈56/8⌉ = 7 (exactly 7 full groups).  
+- Slot 2: ⌈64/8⌉ = 8 (exactly 8 full groups).  
+**Maximum per slot:** 8 (≤11 available).
+
+**Why optimal:**  
+The minimum achievable maximum is 8. For max 7, each slot handles ≤56 attendees (7×8=56), for ≤112 total—but 120>112, leaving ≥8 attendees requiring an extra (partial) group and 8th mentor in one slot.  
+
+**Rounding to whole groups:** Groups cannot be fractional or split across slots; any 1–8 attendees per group requires 1 mentor (ceiling function). E.g., 57 attendees need 8 mentors (7 full + 1 partial), preventing max 7. Total capacity at max 7 is 112; the extra 8 force rounding up to 8 in one slot. 56–64 balances to max 8.

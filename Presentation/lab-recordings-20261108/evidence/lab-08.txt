@@ -1,0 +1,251 @@
+Lab 8: 8-agent-evaluation
+Recorded 2026-11-09T12:20:17+00:00 — 2026-11-09T12:23:52+00:00
+What happens: Evaluate actual agent answers with Foundry's cloud coherence evaluator.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Microsoft Foundry is an Azure platform for building and operating AI applications and agents. What can developers use it for? Explain in two short sentences.
+Developers can use Microsoft Foundry to rapidly build, deploy, and manage scalable AI applications and agents on Azure. It provides integrated tools and services to streamline development, monitoring, and operational workflows.
+Stored response: resp_0fcbb913c2f44fcd006af1bb22a094819484c6e211b2f2b106
+How is model inference different from supervised model training using labeled data?
+Model inference and supervised model training differ mainly in purpose and process:
+
+1. **Purpose**:  
+- **Training**: To learn patterns from labeled data by adjusting model parameters.  
+- **Inference**: To apply the trained model to new, unseen data to make predictions or decisions.
+
+2. **Process**:  
+- **Training**: Involves feeding input data with corresponding labels, computing loss, and updating model weights through optimization (e.g., backpropagation).  
+- **Inference**: Uses the fixed, trained model parameters to generate outputs from input data without changing model weights (no backpropagation).
+
+In short, training builds the model using labeled data; inference uses the trained model to predict on new data.
+Stored response: resp_0ac7215b508475d6006af1bb250fa08197a4fbeeb0ec8e9597
+Evaluation: eval_2b5d4de222e4434c9e2fcf512abb2f13; run: evalrun_60950ef18b994bbbab2cff1eff117218
+{
+  "id": "evalrun_60950ef18b994bbbab2cff1eff117218",
+  "created_at": 1794226989,
+  "data_source": {
+    "source": {
+      "content": [
+        {
+          "item": {
+            "query": "Microsoft Foundry is an Azure platform for building and operating AI applications and agents. What can developers use it for? Explain in two short sentences.",
+            "response": "Developers can use Microsoft Foundry to rapidly build, deploy, and manage scalable AI applications and agents on Azure. It provides integrated tools and services to streamline development, monitoring, and operational workflows.",
+            "response_id": "resp_0fcbb913c2f44fcd006af1bb22a094819484c6e211b2f2b106"
+          },
+          "sample": null
+        },
+        {
+          "item": {
+            "query": "How is model inference different from supervised model training using labeled data?",
+            "response": "Model inference and supervised model training differ mainly in purpose and process:\n\n1. **Purpose**:  \n- **Training**: To learn patterns from labeled data by adjusting model parameters.  \n- **Inference**: To apply the trained model to new, unseen data to make predictions or decisions.\n\n2. **Process**:  \n- **Training**: Involves feeding input data with corresponding labels, computing loss, and updating model weights through optimization (e.g., backpropagation).  \n- **Inference**: Uses the fixed, trained model parameters to generate outputs from input data without changing model weights (no backpropagation).\n\nIn short, training builds the model using labeled data; inference uses the trained model to predict on new data.",
+            "response_id": "resp_0ac7215b508475d6006af1bb250fa08197a4fbeeb0ec8e9597"
+          },
+          "sample": null
+        }
+      ],
+      "type": "file_content"
+    },
+    "type": "jsonl"
+  },
+  "error": null,
+  "eval_id": "eval_2b5d4de222e4434c9e2fcf512abb2f13",
+  "metadata": {
+    "trigger_type": "oneoff"
+  },
+  "model": null,
+  "name": "two-question-smoke-test",
+  "object": "eval.run",
+  "per_model_usage": [
+    {
+      "cached_tokens": 0,
+      "completion_tokens": 203,
+      "invocation_count": 2,
+      "run_model_name": "gpt-4.1-mini-2025-04-14",
+      "prompt_tokens": 2714,
+      "total_tokens": 2917,
+      "model_name": "gpt-4.1-mini-2025-04-14"
+    },
+    {
+      "cached_tokens": 0,
+      "completion_tokens": 203,
+      "invocation_count": 2,
+      "run_model_name": "azure_ai_evaluation",
+      "prompt_tokens": 2714,
+      "total_tokens": 2917,
+      "model_name": "azure_ai_evaluation"
+    }
+  ],
+  "per_testing_criteria_results": [
+    {
+      "failed": 0,
+      "passed": 2,
+      "testing_criteria": "coherence",
+      "errored": 0,
+      "skipped": 0
+    }
+  ],
+  "report_url": "https://ai.azure.com/nextgen/r/EhfCA2x2R7S2HJu6YtyOAg,rg-fwretry-69ae6d37f5ce-a2-b42a9d21-agent-evaluation-demo,,foundry-eval-edvycoa2jyhwg,evaluation-demo/build/evaluations/eval_2b5d4de222e4434c9e2fcf512abb2f13/run/evalrun_60950ef18b994bbbab2cff1eff117218",
+  "result_counts": {
+    "errored": 0,
+    "failed": 0,
+    "passed": 2,
+    "total": 2,
+    "skipped": 0
+  },
+  "status": "completed",
+  "modified_at": 1794227013,
+  "duration": "PT23.7460196S",
+  "created_by": "Michal Furmankiewicz (Furman)",
+  "properties": {
+    "eval_id": "eval_2b5d4de222e4434c9e2fcf512abb2f13",
+    "runType": "eval_run",
+    "_azureml.evaluation_run": "evaluation.service",
+    "_azureml.evaluate_artifacts": "[{\"path\": \"instance_results.jsonl\", \"type\": \"table\"}]",
+    "DataSourceType": "Jsonl"
+  }
+}
+{
+  "id": "1",
+  "created_at": 1794227008,
+  "datasource_item": {
+    "query": "Microsoft Foundry is an Azure platform for building and operating AI applications and agents. What can developers use it for? Explain in two short sentences.",
+    "response": "Developers can use Microsoft Foundry to rapidly build, deploy, and manage scalable AI applications and agents on Azure. It provides integrated tools and services to streamline development, monitoring, and operational workflows.",
+    "response_id": "resp_0fcbb913c2f44fcd006af1bb22a094819484c6e211b2f2b106"
+  },
+  "datasource_item_id": 0,
+  "eval_id": "eval_2b5d4de222e4434c9e2fcf512abb2f13",
+  "object": "eval.run.output_item",
+  "results": [
+    {
+      "name": "coherence",
+      "passed": true,
+      "score": 5.0,
+      "sample": {
+        "usage": {
+          "prompt_tokens": 1310,
+          "completion_tokens": 95,
+          "total_tokens": 1405
+        },
+        "finish_reason": "stop",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "input": [
+          {
+            "role": "user",
+            "content": "{\"query\": \"Microsoft Foundry is an Azure platform for building and operating AI applications and agents. What can developers use it for? Explain in two short sentences.\", \"response\": \"Developers can use Microsoft Foundry to rapidly build, deploy, and manage scalable AI applications and agents on Azure. It provides integrated tools and services to streamline development, monitoring, and operational workflows.\"}"
+          }
+        ],
+        "output": [
+          {
+            "role": "assistant",
+            "content": "{\n  \"reason\": \"Let's think step by step: The response directly addresses the query by explaining what developers can use Microsoft Foundry for, specifically mentioning building, deploying, and managing AI applications and agents on Azure. The ideas are presented clearly and logically in two concise sentences, with a smooth flow and appropriate connections between concepts. The response is easy to follow and fully answers the question as requested.\",\n  \"score\": 5,\n  \"status\": \"completed\"\n}"
+          }
+        ]
+      },
+      "type": "azure_ai_evaluator",
+      "metric": "coherence",
+      "label": "pass",
+      "reason": "Let's think step by step: The response directly addresses the query by explaining what developers can use Microsoft Foundry for, specifically mentioning building, deploying, and managing AI applications and agents on Azure. The ideas are presented clearly and logically in two concise sentences, with a smooth flow and appropriate connections between concepts. The response is easy to follow and fully answers the question as requested.",
+      "threshold": 3,
+      "status": "completed",
+      "properties": {
+        "prompt_tokens": 1310,
+        "completion_tokens": 95,
+        "total_tokens": 1405,
+        "finish_reason": "stop",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "sample_input": "[{\"role\": \"user\", \"content\": \"{\\\"query\\\": \\\"Microsoft Foundry is an Azure platform for building and operating AI applications and agents. What can developers use it for? Explain in two short sentences.\\\", \\\"response\\\": \\\"Developers can use Microsoft Foundry to rapidly build, deploy, and manage scalable AI applications and agents on Azure. It provides integrated tools and services to streamline development, monitoring, and operational workflows.\\\"}\"}]",
+        "sample_output": "[{\"role\": \"assistant\", \"content\": \"{\\n  \\\"reason\\\": \\\"Let's think step by step: The response directly addresses the query by explaining what developers can use Microsoft Foundry for, specifically mentioning building, deploying, and managing AI applications and agents on Azure. The ideas are presented clearly and logically in two concise sentences, with a smooth flow and appropriate connections between concepts. The response is easy to follow and fully answers the question as requested.\\\",\\n  \\\"score\\\": 5,\\n  \\\"status\\\": \\\"completed\\\"\\n}\"}]"
+      }
+    }
+  ],
+  "run_id": "evalrun_60950ef18b994bbbab2cff1eff117218",
+  "sample": {
+    "error": null,
+    "finish_reason": "",
+    "input": [],
+    "max_completion_tokens": null,
+    "model": "",
+    "output": [],
+    "seed": null,
+    "temperature": null,
+    "top_p": null,
+    "usage": null,
+    "latency_ms": null
+  },
+  "status": "completed"
+}
+{
+  "id": "2",
+  "created_at": 1794227008,
+  "datasource_item": {
+    "query": "How is model inference different from supervised model training using labeled data?",
+    "response": "Model inference and supervised model training differ mainly in purpose and process:\n\n1. **Purpose**:  \n- **Training**: To learn patterns from labeled data by adjusting model parameters.  \n- **Inference**: To apply the trained model to new, unseen data to make predictions or decisions.\n\n2. **Process**:  \n- **Training**: Involves feeding input data with corresponding labels, computing loss, and updating model weights through optimization (e.g., backpropagation).  \n- **Inference**: Uses the fixed, trained model parameters to generate outputs from input data without changing model weights (no backpropagation).\n\nIn short, training builds the model using labeled data; inference uses the trained model to predict on new data.",
+    "response_id": "resp_0ac7215b508475d6006af1bb250fa08197a4fbeeb0ec8e9597"
+  },
+  "datasource_item_id": 1,
+  "eval_id": "eval_2b5d4de222e4434c9e2fcf512abb2f13",
+  "object": "eval.run.output_item",
+  "results": [
+    {
+      "name": "coherence",
+      "passed": true,
+      "score": 5.0,
+      "sample": {
+        "usage": {
+          "prompt_tokens": 1404,
+          "completion_tokens": 108,
+          "total_tokens": 1512
+        },
+        "finish_reason": "stop",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "input": [
+          {
+            "role": "user",
+            "content": "{\"query\": \"How is model inference different from supervised model training using labeled data?\", \"response\": \"Model inference and supervised model training differ mainly in purpose and process:\\n\\n1. **Purpose**:  \\n- **Training**: To learn patterns from labeled data by adjusting model parameters.  \\n- **Inference**: To apply the trained model to new, unseen data to make predictions or decisions.\\n\\n2. **Process**:  \\n- **Training**: Involves feeding input data with corresponding labels, computing loss, and updating model weights through optimization (e.g., backpropagation).  \\n- **Inference**: Uses the fixed, trained model parameters to generate outputs from input data without changing model weights (no backpropagation).\\n\\nIn short, training builds the model using labeled data; inference uses the trained model to predict on new data.\"}"
+          }
+        ],
+        "output": [
+          {
+            "role": "assistant",
+            "content": "{\n  \"reason\": \"Let's think step by step: The response directly addresses the query by clearly distinguishing between model inference and supervised model training using labeled data. It logically organizes the explanation into two main aspects: purpose and process, with bullet points that enhance clarity. The response uses appropriate transitions and provides a concise summary at the end, making the flow smooth and easy to follow. The ideas are well connected and presented in a coherent manner that thoroughly answers the question.\",\n  \"score\": 5,\n  \"status\": \"completed\"\n}"
+          }
+        ]
+      },
+      "type": "azure_ai_evaluator",
+      "metric": "coherence",
+      "label": "pass",
+      "reason": "Let's think step by step: The response directly addresses the query by clearly distinguishing between model inference and supervised model training using labeled data. It logically organizes the explanation into two main aspects: purpose and process, with bullet points that enhance clarity. The response uses appropriate transitions and provides a concise summary at the end, making the flow smooth and easy to follow. The ideas are well connected and presented in a coherent manner that thoroughly answers the question.",
+      "threshold": 3,
+      "status": "completed",
+      "properties": {
+        "prompt_tokens": 1404,
+        "completion_tokens": 108,
+        "total_tokens": 1512,
+        "finish_reason": "stop",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "sample_input": "[{\"role\": \"user\", \"content\": \"{\\\"query\\\": \\\"How is model inference different from supervised model training using labeled data?\\\", \\\"response\\\": \\\"Model inference and supervised model training differ mainly in purpose and process:\\\\n\\\\n1. **Purpose**:  \\\\n- **Training**: To learn patterns from labeled data by adjusting model parameters.  \\\\n- **Inference**: To apply the trained model to new, unseen data to make predictions or decisions.\\\\n\\\\n2. **Process**:  \\\\n- **Training**: Involves feeding input data with corresponding labels, computing loss, and updating model weights through optimization (e.g., backpropagation).  \\\\n- **Inference**: Uses the fixed, trained model parameters to generate outputs from input data without changing model weights (no backpropagation).\\\\n\\\\nIn short, training builds the model using labeled data; inference uses the trained model to predict on new data.\\\"}\"}]",
+        "sample_output": "[{\"role\": \"assistant\", \"content\": \"{\\n  \\\"reason\\\": \\\"Let's think step by step: The response directly addresses the query by clearly distinguishing between model inference and supervised model training using labeled data. It logically organizes the explanation into two main aspects: purpose and process, with bullet points that enhance clarity. The response uses appropriate transitions and provides a concise summary at the end, making the flow smooth and easy to follow. The ideas are well connected and presented in a coherent manner that thoroughly answers the question.\\\",\\n  \\\"score\\\": 5,\\n  \\\"status\\\": \\\"completed\\\"\\n}\"}]"
+      }
+    }
+  ],
+  "run_id": "evalrun_60950ef18b994bbbab2cff1eff117218",
+  "sample": {
+    "error": null,
+    "finish_reason": "",
+    "input": [],
+    "max_completion_tokens": null,
+    "model": "",
+    "output": [],
+    "seed": null,
+    "temperature": null,
+    "top_p": null,
+    "usage": null,
+    "latency_ms": null
+  },
+  "status": "completed"
+}
+Temporary agent version deleted: eval-demo-0b8a7aee/1

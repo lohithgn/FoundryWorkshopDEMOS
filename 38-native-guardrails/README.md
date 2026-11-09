@@ -43,6 +43,15 @@ Capacity 1 provides only 1 RPM and experimentally throttled the two-case demo;
 capacity 3 prevents that unrelated backend throttle from obscuring the guardrail.
 The two cases are paced 25 seconds apart because Azure evaluates RPM over short
 windows; this does not implement or simulate a guardrail.
+If a synthetic probe returns HTTP 200 with the observed `content_filter_error`,
+the runner retries that inference probe for up to two minutes; extra requests may
+incur charges. Persistent filter errors still fail the lab; a real native
+custom-blocklist intervention is required.
+An unfiltered HTTP 200 was also observed for the harmless restricted probe
+shortly after deployment. Microsoft documents that new blocklist terms can take
+up to five minutes to propagate. The runner retries that specific response for
+up to five minutes, records the attempts, and still fails unless the exact
+custom-blocklist intervention is observed.
 
 ## Run
 

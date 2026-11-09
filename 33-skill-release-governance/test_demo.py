@@ -93,6 +93,11 @@ class ReleaseTests(TestCase):
                             for item in self.agent_definitions))
         for call in self.client.responses.create.call_args_list:
             self.assertNotIn("previous_response_id", call.kwargs)
+            self.assertIn("Echo the workshop ID exactly", call.kwargs["input"])
+            self.assertNotIn("25", call.kwargs["input"])
+            self.assertNotIn("50", call.kwargs["input"])
+        for version in ("v1", "v2"):
+            self.assertIn('the exact requested ID: "intro" or "advanced"', demo.skill_body(version))
 
     def test_regression_is_not_promoted_and_rolls_back_before_cleanup(self):
         self.run_demo()
@@ -167,6 +172,8 @@ class ReleaseTests(TestCase):
 
     def test_wrong_version_marker_extra_fields_or_boolean_price_fail_gate(self):
         for payload in (
+            {"workshop": "intro workshop", "unit_price": 25, "currency": "USD",
+             "skill_code": "PRICING-V1"},
             {"workshop": "intro", "unit_price": 25, "currency": "USD", "skill_code": "WRONG"},
             {"workshop": "intro", "unit_price": 25, "currency": "USD",
              "skill_code": "PRICING-V1", "extra": True},

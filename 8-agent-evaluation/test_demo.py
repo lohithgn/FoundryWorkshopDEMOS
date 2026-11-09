@@ -6,6 +6,13 @@ import demo
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_foundry_question_includes_product_context(self):
+        self.assertIn("Azure platform", demo.QUESTIONS[0])
+        self.assertIn("AI applications and agents", demo.QUESTIONS[0])
+
+    def test_training_question_specifies_supervised_learning(self):
+        self.assertIn("supervised model training using labeled data", demo.QUESTIONS[1])
+
     def responses(self):
         return [
             {"query": f"Question {index}", "response": f"Actual answer {index}",

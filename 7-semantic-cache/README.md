@@ -47,11 +47,13 @@ and quota for `gpt-4.1-mini` (`2025-04-14`, Global Standard) and
 `text-embedding-3-small` (`1`, Global Standard). Endpoints are public for this workshop.
 Provisioning APIM and Redis can take several minutes.
 
-**Verification status:** offline tests and Bicep validation cover this gateway
-implementation; a live APIM/Redis cache hit is still unverified in
-[the recorded test status](../tests.md). The historical local-cache pass does
-not validate this replacement. Do not present model responses alone as a live
-cache pass.
+**Verification status:** on 2026-11-09, an isolated live run returned `4` for
+all three requests. A separate traced session showed backend forwarding for
+the first request and none for the paraphrase, with the same response ID and
+answer. This verifies a cache miss followed by a paraphrase hit for that run,
+not a guarantee for other prompts. See [the recorded test status](../tests.md).
+The historical local-cache pass does not validate this replacement; model
+responses alone are not proof of a live cache hit.
 
 Both model deployments use `GlobalStandard`; inference may be processed outside
 the resource's region. In Sweden Central, `text-embedding-3-small` version `1`
@@ -154,6 +156,9 @@ python demo.py --session workshop-1
 Each normal run uses a fresh cache-session partition, so its first request starts
 cold. The next question is a paraphrase; the last repeats the original. The demo
 sends **every** request to APIM and prints elapsed time and response IDs.
+The questions ask for the integer result of `2 + 2`, once using digits and once
+using words. The runner requires the exact answer `4` so an unrelated or
+incorrect model response cannot be presented as a successful demo.
 `REUSED RESPONSE` means the gateway returned an ID already observed in this run;
 identical answer text alone is not treated as evidence. No local result is
 returned in place of a request. Reusing `--session` across processes demonstrates
@@ -173,7 +178,7 @@ Bearer token from the signed-in presenter, a fixed `x-workshop-cache-session`
 header, and a non-streaming body such as:
 
 ```json
-{"messages":[{"role":"user","content":"Explain what Microsoft Foundry is in one short sentence."}],"max_completion_tokens":120,"stream":false}
+{"messages":[{"role":"user","content":"What is 2 + 2? Reply with the integer only."}],"max_completion_tokens":120,"stream":false}
 ```
 
 Obtain the token locally with

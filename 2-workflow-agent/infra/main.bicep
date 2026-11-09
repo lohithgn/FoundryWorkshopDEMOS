@@ -50,6 +50,7 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
     displayName: 'Workflow demo'
     description: 'A local writer and editor workflow using Foundry inference.'
   }
+  dependsOn: [model]
 }
 
 resource model 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {

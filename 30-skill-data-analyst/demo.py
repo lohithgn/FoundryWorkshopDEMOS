@@ -11,6 +11,7 @@ import os
 from pathlib import Path, PurePosixPath
 import struct
 import sys
+from time import monotonic, sleep
 from uuid import uuid4
 from zipfile import ZipFile
 import zlib
@@ -19,6 +20,7 @@ from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import (
     CodeInterpreterTool, CreateSkillVersionFromFilesBody, PromptAgentDefinition,
 )
+from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import AzureCliCredential
 from openai import OpenAI
 from openai.types.responses import Response
@@ -202,6 +204,24 @@ def verify_png(content: bytes) -> None:
         raise RuntimeError("Invalid PNG image scanlines.")
 
 
+def upload_skill(project: AIProjectClient, name: str, package: bytes, timeout: float = 180):
+    deadline = monotonic() + timeout
+    while True:
+        try:
+            return project.beta.skills.create_from_files(
+                name=name,
+                content=CreateSkillVersionFromFilesBody(files=[("csv-analyst.zip", BytesIO(package))]),
+            )
+        except ResourceNotFoundError as error:
+            remaining = deadline - monotonic()
+            if (error.status_code != 404 or error.error is None or
+                    error.error.code != "NotFound" or error.error.message != "Project not found" or
+                    remaining <= 0):
+                raise
+            print("Project is not ready; retrying the initial skill upload.", flush=True)
+            sleep(min(15, remaining))
+
+
 def demonstrate(
     project: AIProjectClient, client: OpenAI, deployment: str, *, save_artifacts: bool = False,
 ) -> None:
@@ -209,10 +229,7 @@ def demonstrate(
     name = f"csv-analyst-{run_id}"
     package, expected = skill_package(name)
     with cleanup_scope() as cleanup:
-        skill = project.beta.skills.create_from_files(
-            name=name,
-            content=CreateSkillVersionFromFilesBody(files=[("csv-analyst.zip", BytesIO(package))]),
-        )
+        skill = upload_skill(project, name, package)
         cleanup.append((f"skill {name}", partial(project.beta.skills.delete, name=name)))
         print(f"Uploaded skill {name} version {skill.version}", flush=True)
         instructions = downloaded_instructions(
@@ -243,11 +260,13 @@ def demonstrate(
         print(f"Agent {agent.name} version {agent.version}", flush=True)
         response = client.responses.create(
             input="Analyze the attached synthetic attendance CSV. Follow the CSV analyst skill "
-                  "to execute Python and provide the downloadable report and chart.",
+                  "to execute Python. After saving both files, print CSV_ANALYSIS_EXECUTED in "
+                  "the Code Interpreter execution log using Python, and only then provide "
+                  "the downloadable report and chart with citations.",
             extra_body={"agent_reference": {
                 "name": agent.name, "version": agent.version, "type": "agent_reference",
             }},
-            tool_choice="required", timeout=TIMEOUT,
+            tool_choice="required", include=["code_interpreter_call.outputs"], timeout=TIMEOUT,
         )
         cleanup.append((f"response {response.id}", partial(client.responses.delete, response.id)))
         citations = execution_citations(response, container.id)

@@ -1,4 +1,8 @@
 import io
+import json
+from pathlib import Path
+import shutil
+import subprocess
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -9,6 +13,18 @@ import demo
 
 
 class WorkflowTests(unittest.IsolatedAsyncioTestCase):
+    @unittest.skipUnless(shutil.which("az"), "Azure CLI/Bicep is required for the infrastructure contract.")
+    def test_project_deployment_waits_for_model(self) -> None:
+        result = subprocess.run(
+            ["az", "bicep", "build", "--file", "infra/main.bicep", "--stdout"],
+            cwd=Path(__file__).parent, check=True, capture_output=True, text=True,
+        )
+        resources = json.loads(result.stdout)["resources"]
+        project = next(item for item in resources
+                       if item["type"] == "Microsoft.CognitiveServices/accounts/projects")
+        self.assertTrue(any("Microsoft.CognitiveServices/accounts/deployments" in dependency
+                            for dependency in project["dependsOn"]))
+
     async def test_real_workflow_preserves_stage_order_with_mocked_inference(self) -> None:
         async with (
             demo.AzureCliCredential() as credential,

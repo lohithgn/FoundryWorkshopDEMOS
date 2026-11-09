@@ -1,0 +1,26 @@
+Lab 14: 14-foundry-fundamentals
+Recorded 2026-11-09T09:58:30+00:00 — 2026-11-09T10:01:06+00:00
+What happens: Keyless first response, streaming usage, and real negative probes.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Inference identity: certificate service principal 0352232d-2ae3-484f-bed2-fb64ac2192c8
+Project: https://fundamentals-somnmqgxoi2qk.services.ai.azure.com/api/projects/workshop-tutor
+Inference: https://fundamentals-somnmqgxoi2qk.openai.azure.com/ | Deployment: tutor-mini
+A project organizes assets; inference uses /openai/v1/.
+The deployment name is a user-chosen alias, not the catalog model name.
+First response: A project is the overall workspace containing all related files, code, and resources for development. Model deployment is the process of integrating and running a trained model in a production environment for real-world use.
+Serving model: gpt-4.1-mini-2025-04-14 Usage: {'completion_tokens': 39, 'prompt_tokens': 35, 'total_tokens': 74, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}, 'latency_checkpoint': {'engine_tbt_ms': 8, 'engine_ttft_ms': 51, 'engine_ttlt_ms': 378, 'pre_inference_ms': 165, 'service_tbt_ms': 8, 'service_ttft_ms': 453, 'service_ttlt_ms': 781, 'user_visible_ttft_ms': 288}}
+Stream: A project is the overall workspace containing code, data, and resources for building a solution. Model deployment is the process of making a trained model available for use in production or by end-users.
+Stream usage: {'completion_tokens': 38, 'prompt_tokens': 35, 'total_tokens': 73, 'completion_tokens_details': {'accepted_prediction_tokens': 0, 'audio_tokens': 0, 'reasoning_tokens': 0, 'rejected_prediction_tokens': 0}, 'prompt_tokens_details': {'audio_tokens': 0, 'cached_tokens': 0}}
+
+Wrong deployment (expected HTTP 404):
+Actual HTTP 404: {'type': 'invalid_request_error', 'code': 'DeploymentNotFound', 'message': 'The API deployment for this resource does not exist. If you created the deployment within the last 5 minutes, please wait a moment and try again.'}
+Fix: use the Bicep deployment output, not gpt-4.1-mini.
+
+Missing inference permission (expected RBAC denial; HTTP 401 or 403): https://fundamentals-somnmqgxoi2qk-deny.openai.azure.com/
+Actual HTTP 401: {'code': 'PermissionDenied', 'message': 'The principal `f2bc7ee1-b38b-4e0d-8c00-1801249aa71c` lacks the required data action `Microsoft.CognitiveServices/accounts/OpenAI/deployments/chat/completions/action` to perform `POST /openai/v1/chat/completions` operation.'}
+Fix: assign Cognitive Services OpenAI User at the target account; allow RBAC propagation.

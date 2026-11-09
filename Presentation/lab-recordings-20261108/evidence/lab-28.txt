@@ -1,0 +1,48 @@
+Lab 28: 28-agent-skills
+Recorded 2026-11-08T16:55:31+00:00 — 2026-11-08T16:56:50+00:00
+What happens: Use a version-pinned Foundry skill through explicit application-managed injection.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Created Foundry skill: workshop-brief-14dd60e94210 / 1
+Downloaded and byte-verified pinned skill version 1.
+Direct injection by this application; no automatic discovery or script execution.
+
+=== WITHOUT workshop-brief skill ===
+Temporary Foundry agent: skill-demo-14dd60e94210 / 1
+
+Response ID: resp_080e5c157d592d8d006af0a9c5a1d88197886738578082df67; status: completed
+**Workshop Briefing: Introduction to Microsoft Foundry**
+
+Welcome to the "Introduction to Microsoft Foundry" workshop. This session will provide a comprehensive overview of Microsoft Foundry, its core features, and how it helps organizations modernize and accelerate their application development. We will cover:
+
+- What Microsoft Foundry is and its place in the Microsoft ecosystem  
+- Key capabilities and benefits for businesses  
+- Use cases and real-world examples  
+- Getting started: tools, resources, and best practices  
+
+By the end of this workshop, participants will have a clear understanding of how to leverage Microsoft Foundry to streamline their development processes and drive innovation.
+Token usage: {"input_tokens":34,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":128,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":162}
+Exact skill contract match: False
+Temporary agent version deleted.
+
+=== WITH workshop-brief skill ===
+Temporary Foundry agent: skill-demo-14dd60e94210 / 1
+
+Response ID: resp_05688a823c267d19006af0a9cf4c508197b7921cfa996f5104; status: completed
+{
+  "title": "Introduction to Microsoft Foundry",
+  "before": "Sign in with Azure CLI.",
+  "during": "Use synthetic data only.",
+  "after": "Delete the demo resource group.",
+  "skill_code": "WORKSHOP-BRIEF-V1"
+}
+Token usage: {"input_tokens":188,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":60,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":248}
+Exact skill contract match: True
+Temporary agent version deleted.
+
+Both requests used the same model and input in independent conversations. The skill supplied the checklist and output contract, not a new executable tool. This is instruction following, not proof of general agent quality.
+Temporary skill deleted: workshop-brief-14dd60e94210

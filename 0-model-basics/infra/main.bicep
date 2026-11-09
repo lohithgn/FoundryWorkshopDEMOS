@@ -44,7 +44,7 @@ resource reasoning 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01'
   name: 'basics-reasoning'
   sku: { name: 'GlobalStandard', capacity: capacity }
   properties: {
-    model: { format: 'OpenAI', name: 'o4-mini', version: '2025-04-16' }
+    model: { format: 'OpenAI', name: 'gpt-5-mini', version: '2025-08-07' }
   }
   dependsOn: [chat]
 }

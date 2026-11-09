@@ -18,7 +18,10 @@ and PNG chart. No local analysis or fabricated-artifact fallback exists.
    to calculate totals and create `report.json` and `attendance-cost.png`.
 5. The harness requires completed native tool calls in its container, executed
    code, a sandbox log marker, and two distinct real container-file citations.
-   It prints execution/citation evidence and actual token usage when returned.
+   The Responses request explicitly includes `code_interpreter_call.outputs` so
+   the service returns execution logs; without it, the log marker may be omitted
+   even when the code ran. It prints execution/citation evidence and actual token
+   usage when returned.
 6. It downloads both cited files through the container-content API. The actual
    JSON bytes must match the independent oracle, including the skill marker,
    all totals, grouping, integer types, and no extra/missing/duplicate fields.
@@ -64,9 +67,18 @@ disabled in Bicep. Public networking is enabled for workshop convenience.
 GlobalStandard processing may occur outside the resource region. Only synthetic
 data is uploaded. The harness is noninteractive once Azure CLI login is available.
 
-**No live service call or Azure deployment was performed during implementation.**
-Offline mocks and SDK-shape tests do not prove regional service availability,
-inference success, role propagation, or cloud deletion support.
+**Live retries on 2026-11-09:** deployment, skill upload and native sandbox calls
+completed, but an initial response omitted execution logs. After explicitly
+including Code Interpreter outputs, the next response returned real logs and
+calculated the expected totals, but the model did not print the required marker;
+the strict gate stopped before the report and chart were verified. A subsequent
+run with the marker instruction reinforced passed the complete gate: the
+downloaded report contained 6 rows, 55 attendance instances and 95000 cents,
+and the visually reviewed chart matched it. The sandbox corrected its initial
+file path and integer serialization before producing those artifacts. The
+run's resource group was verified deleted. Offline tests alone do not prove
+current service availability, inference success, role propagation, or cloud
+deletion support.
 
 ## Deploy and run
 
@@ -118,7 +130,10 @@ unique cloud names and a fresh sandbox, so parallel runs do not share state.
 Requests have 180-second read/request timeouts (15-second Azure connection and
 30-second CLI credential timeouts), with automatic retries disabled. These are
 per-operation bounds, not an overall wall-clock deadline. Inference is not
-retried after timeout. Errors remain nonzero: 400/404 can mean unsupported
+retried after timeout. Only the initial skill upload retries the exact
+`404/NotFound: Project not found` response for up to three minutes while a newly
+deployed project becomes available; it does not retry ambiguous timeouts or
+other errors. Errors remain nonzero: 400/404 can mean unsupported
 preview routes/model/region, 403 can mean RBAC/propagation, 429 quota/rate limits.
 The original service/validation error is retained with explicit preview guidance.
 

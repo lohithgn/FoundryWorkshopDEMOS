@@ -1,0 +1,11 @@
+Lab 21: 21-permission-aware-retrieval
+Recorded 2026-11-08T16:26:04+00:00 — 2026-11-08T16:26:49+00:00
+What happens: Security-trim real Azure Search results using two authenticated Entra users.
+Tests: passed
+Deployment: failed
+Demo run: not run
+Status: failed
+
+ACTUAL CAPTURED OUTPUT
+WARNING: A new Bicep release is available: v0.49.2. Upgrade now by running "az bicep upgrade".
+ERROR: {"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-permission-aware-retrieval-demo/providers/Microsoft.Resources/deployments/recorded-demo","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details. Correlation ID: 1a260d83-b1cb-4209-8f07-be193f9c79b9","details":[{"code":"InsufficientResourcesAvailable","message":"The region 'eastus2' is currently out of the resources required to provision new services. Try creating the service in another region. RequestId: 1a260d83-b1cb-4209-8f07-be193f9c79b9"}]}}

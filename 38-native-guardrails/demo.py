@@ -63,6 +63,63 @@ def agent_intervention(status, body):
     )
 
 
+def request_with_filter_readiness(session, url, headers, prompt, wait_seconds=120):
+    deadline = time.monotonic() + wait_seconds
+    while True:
+        response = session.post(
+            url, params={"api-version": "2024-10-21"}, headers=headers,
+            json={"messages": [{"role": "user", "content": prompt}], "max_tokens": 24, "temperature": 0},
+            timeout=60,
+        )
+        try:
+            body = response.json()
+        except ValueError:
+            body = {"non_json_body": response.text[:4000]}
+        choices = body.get("choices", []) if isinstance(body, dict) else []
+        filter_error = any(
+            choice.get("content_filter_result", {}).get("error", {}).get("code") == "content_filter_error"
+            for choice in choices if isinstance(choice, dict)
+        )
+        if response.status_code != 200 or not filter_error:
+            return response, body
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise RuntimeError("The service repeatedly reported content_filter_error; filtering was not verified.")
+        print("Service reported content_filter_error; retrying the synthetic probe.", flush=True)
+        time.sleep(min(25, remaining))
+
+
+def usable_unfiltered_response(status, body):
+    choices = body.get("choices", []) if isinstance(body, dict) else []
+    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+        return False
+    message = choices[0].get("message")
+    return bool(
+        status == 200 and choices[0].get("finish_reason") == "stop"
+        and isinstance(message, dict) and isinstance(message.get("content"), str)
+        and message["content"].strip()
+    )
+
+
+def request_restricted_with_propagation(session, url, headers, prompt, wait_seconds=300):
+    deadline = time.monotonic() + wait_seconds
+    attempts = []
+    while True:
+        remaining = max(0, deadline - time.monotonic())
+        response, body = request_with_filter_readiness(
+            session, url, headers, prompt, wait_seconds=min(120, remaining),
+        )
+        attempts.append({"status": response.status_code,
+                         "intervention": native_intervention(response.status_code, body)})
+        if attempts[-1]["intervention"] or not usable_unfiltered_response(response.status_code, body):
+            return response, body, attempts
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return response, body, attempts
+        print("Synthetic marker was not blocked; waiting for the native policy to take effect.", flush=True)
+        time.sleep(min(25, remaining))
+
+
 def run():
     config = settings()
     if not all(config.values()):
@@ -88,18 +145,15 @@ def run():
         if name == "restricted":
             # Azure RPM limits use short evaluation windows, not only minute totals.
             time.sleep(25)
-        response = session.post(
-            url, params={"api-version": "2024-10-21"}, headers=headers,
-            json={"messages": [{"role": "user", "content": prompt}], "max_tokens": 24, "temperature": 0},
-            timeout=60,
-        )
-        try:
-            body = response.json()
-        except ValueError:
-            body = {"non_json_body": response.text[:4000]}
-        evidence["requests"].append({"case": name, "status": response.status_code, "body": body})
+        if name == "restricted":
+            response, body, attempts = request_restricted_with_propagation(session, url, headers, prompt)
+        else:
+            response, body = request_with_filter_readiness(session, url, headers, prompt)
+            attempts = []
+        evidence["requests"].append({"case": name, "status": response.status_code, "body": body,
+                                     "propagation_attempts": attempts})
         if name == "allowed":
-            if response.status_code != 200 or not body.get("choices", [{}])[0].get("message", {}).get("content"):
+            if not usable_unfiltered_response(response.status_code, body):
                 raise RuntimeError(f"Allowed request failed: {json.dumps(evidence)}")
         elif not native_intervention(response.status_code, body):
             raise RuntimeError(f"No native custom-blocklist intervention: {json.dumps(evidence)}")
@@ -121,15 +175,13 @@ def run_agent():
     evidence = {"stage": "native-agent", "status": "BLOCKED", "probes": []}
     # Prove the agent model itself does not supply the custom guardrail.
     config = settings()
-    r = requests.post(
-        f"{config['endpoint'].rstrip('/')}/openai/deployments/{deployment}/chat/completions",
-        params={"api-version": "2024-10-21"},
-        headers={"Authorization": "Bearer " + credential.get_token("https://cognitiveservices.azure.com/.default").token},
-        json={"messages": [{"role": "user", "content": f"Inventory marker {MARKER}. Say hello."}], "max_tokens": 16},
-        timeout=60,
+    r, body = request_with_filter_readiness(
+        requests, f"{config['endpoint'].rstrip('/')}/openai/deployments/{deployment}/chat/completions",
+        {"Authorization": "Bearer " + credential.get_token("https://cognitiveservices.azure.com/.default").token},
+        f"Inventory marker {MARKER}. Say hello.",
     )
-    evidence["unguarded_model"] = {"status": r.status_code, "body": r.json()}
-    if r.status_code != 200:
+    evidence["unguarded_model"] = {"status": r.status_code, "body": body}
+    if not usable_unfiltered_response(r.status_code, body):
         raise RuntimeError(f"Unguarded model control failed: {json.dumps(evidence)}")
     with AIProjectClient(endpoint=endpoint, credential=credential, allow_preview=True) as project:
         for policy_reference in (f"{config['account']}/raiPolicies/{POLICY}",):

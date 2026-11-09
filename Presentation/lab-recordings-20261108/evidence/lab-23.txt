@@ -1,0 +1,22 @@
+Lab 23: 23-evaluation-cicd
+Recorded 2026-11-09T12:49:55+00:00 — 2026-11-09T12:55:52+00:00
+What happens: Gate a versioned support prompt using exact correctness and Foundry coherence.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{"id": "refund", "query": "How many days do I have to request a refund?", "expected": "14", "response_id": "resp_0375700890902c38006af1c2481fc88190ad377442c719864f", "response": "{\"answer\":\"14\",\"message\":\"You have 14 days to request a refund.\"}", "correct": true}
+{"id": "delivery", "query": "How many business days does delivery take?", "expected": "3", "response_id": "resp_0d846c67b26b7e68006af1c249db4c8194a95230ee224cb31e", "response": "{\"answer\":\"3\",\"message\":\"Delivery takes 3 business days.\"}", "correct": true}
+{"id": "support", "query": "What is the support email address?", "expected": "help@example.invalid", "response_id": "resp_013caf1744455a01006af1c24bae40819699cb9aa8201d34c2", "response": "{\"answer\":\"help@example.invalid\",\"message\":\"You can reach support at the provided email address for any assistance.\"}", "correct": true}
+Evaluation report: /Users/michalfu/Dev/FoundryWorkshops102026DEMOS/23-evaluation-cicd/.azure/evaluation-baseline.json
+
+=== Expected factual regression rejection ===
+{"id": "refund", "query": "How many days do I have to request a refund?", "expected": "14", "response_id": "resp_0d710da300079e8f006af1c26e07cc819487ebad8cd9504936", "response": "{\n  \"answer\": \"30\",\n  \"message\": \"Thank you for your question; you have 30 days to request a refund, ensuring you have ample time to consider your purchase with confidence.\"\n}", "correct": false}
+{"id": "delivery", "query": "How many business days does delivery take?", "expected": "3", "response_id": "resp_0f82991ee93f8c6c006af1c26f9d3c8193a34d08fca5c8a283", "response": "{\n  \"answer\": \"7\",\n  \"message\": \"Thank you for your question; we ensure that your delivery will arrive within 7 business days, allowing us to provide you with a smooth and timely service experience.\"\n}", "correct": false}
+{"id": "support", "query": "What is the support email address?", "expected": "help@example.invalid", "response_id": "resp_04c22f97fd20fd3a006af1c270feb881939b8b3db81d0e47dc", "response": "{\n  \"answer\": \"concierge@example.invalid\",\n  \"message\": \"Thank you for reaching out; for any assistance, please feel free to contact us at concierge@example.invalid, and we'll be delighted to support you.\"\n}", "correct": false}
+Evaluation report: /Users/michalfu/Dev/FoundryWorkshops102026DEMOS/23-evaluation-cicd/.azure/evaluation-regression.json
+FAIL: RuntimeError: Release blocked: correctness=0.000, coherence=1.000
+
+Verified gate: baseline passed 3/3 with coherence 1.0; regression rejected with 0/3 correct. Thresholds remain 100%.

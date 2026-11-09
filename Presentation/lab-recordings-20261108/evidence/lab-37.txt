@@ -1,0 +1,169 @@
+Lab 37: 37-production-monitoring
+Recorded 2026-11-08T17:30:58+00:00 — 2026-11-08T17:53:21+00:00
+What happens: Detect and recover a deployed agent regression with native live-traffic evaluation.
+Tests: passed
+Deployment: succeeded
+Demo run: failed or blocked (nonzero exit)
+Status: failed
+
+ACTUAL CAPTURED OUTPUT
+{"agent": "monitored-workshop-pricer", "phase": "baseline", "configured_version": "1", "response_id": "resp_036eefc7062fc84a006af0b25ad9688190a721b54abe152daf", "answer": "USD 25", "seconds": 2.879, "usage": {"input_tokens": 32, "input_tokens_details": {"cache_write_tokens": 0, "cached_tokens": 0}, "output_tokens": 7, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 39}, "expected_pass": true}
+{"agent": "stable-workshop-pricer", "phase": "baseline", "configured_version": "1", "response_id": "resp_029b130735a1f115006af0b25e11b08195948c68b7bc7de1e5", "answer": "USD 25", "seconds": 2.334, "usage": {"input_tokens": 32, "input_tokens_details": {"cache_write_tokens": 0, "cached_tokens": 0}, "output_tokens": 7, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 39}, "expected_pass": true}
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Traceback (most recent call last):
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 292, in <module>
+    main()
+    ~~~~^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 287, in main
+    result = live_test()
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 252, in live_test
+    report[f"{mode}_evaluations"] = wait_for_evaluations(requests)
+                                    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 212, in wait_for_evaluations
+    raise TimeoutError("Native live-traffic evaluations did not complete for every response.")
+TimeoutError: Native live-traffic evaluations did not complete for every response.
+{"agent": "monitored-workshop-pricer", "phase": "baseline", "configured_version": "1", "response_id": "resp_036eefc7062fc84a006af0b25ad9688190a721b54abe152daf", "answer": "USD 25", "seconds": 2.879, "usage": {"input_tokens": 32, "input_tokens_details": {"cache_write_tokens": 0, "cached_tokens": 0}, "output_tokens": 7, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 39}, "expected_pass": true}
+{"agent": "stable-workshop-pricer", "phase": "baseline", "configured_version": "1", "response_id": "resp_029b130735a1f115006af0b25e11b08195948c68b7bc7de1e5", "answer": "USD 25", "seconds": 2.334, "usage": {"input_tokens": 32, "input_tokens_details": {"cache_write_tokens": 0, "cached_tokens": 0}, "output_tokens": 7, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 39}, "expected_pass": true}
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Native evaluation evidence: 0/2
+Traceback (most recent call last):
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 292, in <module>
+    main()
+    ~~~~^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 287, in main
+    result = live_test()
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 252, in live_test
+    report[f"{mode}_evaluations"] = wait_for_evaluations(requests)
+                                    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/37-production-monitoring/demo.py", line 212, in wait_for_evaluations
+    raise TimeoutError("Native live-traffic evaluations did not complete for every response.")
+TimeoutError: Native live-traffic evaluations did not complete for every response.

@@ -1,0 +1,16 @@
+Lab 5: 5-decision-model
+Recorded 2026-11-08T15:10:07+00:00 — 2026-11-08T15:10:55+00:00
+What happens: Route three support tickets using Microsoft's typed Decision API, not chat.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+I was charged twice for my subscription.
+  Team: billing; expected: billing; latency: 2.38s
+The API returns an error on every request.
+  Team: technical; expected: technical; latency: 0.35s
+I cannot sign in after resetting my password.
+  Team: account; expected: account; latency: 0.34s
+Accuracy on toy examples: 3/3 (not a benchmark).

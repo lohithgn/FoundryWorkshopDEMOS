@@ -135,6 +135,27 @@ def wait_for_index(search, count, timeout=90):
     raise TimeoutError("Azure Search indexing did not become queryable.")
 
 
+def initial_query_vectors(client, deployment, timeout=300):
+    from openai import NotFoundError
+
+    deadline = monotonic() + timeout
+    vectors = {}
+    for question, _ in QUESTIONS:
+        while True:
+            try:
+                vectors[question] = client.embeddings.create(
+                    model=deployment, input=question,
+                ).data[0].embedding
+                break
+            except NotFoundError as error:
+                remaining = deadline - monotonic()
+                if error.code != "DeploymentNotFound" or remaining <= 0:
+                    raise
+                print("Embedding deployment is not ready; retrying before creating indexes.", flush=True)
+                sleep(min(15, remaining))
+    return vectors
+
+
 def retrieve(search, mode, question, vector):
     from azure.search.documents.models import VectorizedQuery
     if mode not in ("keyword", "vector", "hybrid"):
@@ -157,10 +178,7 @@ def run(args):
         base_url=args.endpoint.rstrip("/") + "/openai/v1/",
         api_key=get_bearer_token_provider(credential, "https://cognitiveservices.azure.com/.default"),
     ) as client, SearchIndexClient(args.search_endpoint, credential) as indexes:
-        query_vectors = {
-            question: client.embeddings.create(model=args.embeddings, input=question).data[0].embedding
-            for question, _ in QUESTIONS
-        }
+        query_vectors = initial_query_vectors(client, args.embeddings)
         summary = []
         for size in (12, 48):
             name = f"rag-{size}-{uuid4().hex[:12]}"

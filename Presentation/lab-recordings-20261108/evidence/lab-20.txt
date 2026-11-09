@@ -1,0 +1,15 @@
+Lab 20: 20-human-approval
+Recorded 2026-11-08T16:23:50+00:00 — 2026-11-08T16:24:39+00:00
+What happens: Propose a synthetic booking; execute only an explicitly approved exact action.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+PROPOSED ONLY (expires in 15 minutes): {"workshop": "foundry-intro", "attendees": 4}
+Proposal: 18b8cc3a22f041b096a8c9def841e218
+Digest: e3d67e1e49f89081213bef33c958f6d7d4a0deaf7bc6d39e536d09c67dd63454
+Approve: python demo.py --approve 18b8cc3a22f041b096a8c9def841e218 --digest e3d67e1e49f89081213bef33c958f6d7d4a0deaf7bc6d39e536d09c67dd63454
+Reject:  python demo.py --reject 18b8cc3a22f041b096a8c9def841e218 --digest e3d67e1e49f89081213bef33c958f6d7d4a0deaf7bc6d39e536d09c67dd63454
+No booking has been made. Review the exact action before approving.

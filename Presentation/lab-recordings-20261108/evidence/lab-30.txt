@@ -1,0 +1,199 @@
+Lab 30: 30-skill-data-analyst
+Recorded 2026-11-09T13:22:45+00:00 — 2026-11-09T13:25:32+00:00
+What happens: Run a pinned instructional skill with Foundry's native Code Interpreter.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Uploaded skill csv-analyst-ffbb317427af4382978a02c3887d2a9f version 1
+Byte-verified pinned skill 1; application-managed instruction injection.
+Uploaded synthetic CSV: assistant-9FhbQGxAKxPuLmSuggfh3K
+Native sandbox: cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Agent data-analyst-ffbb317427af4382978a02c3887d2a9f version 1
+Response resp_03d22e9d9c6e871e006af1c9a82a4c8190861a7b0da5ab2249: completed
+Execution ci_03d22e9d9c6e871e006af1c9a90f38819087af0c7eab60c04c: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+import pandas as pd
+
+# Load the CSV file to inspect the data
+file_path = '/mnt/data/assistant-9FhbQGxAKxPuLmSuggfh3K-attendance-ffbb317427af4387a02c3887d2a9f.csv'
+df = pd.read_csv(file_path)
+
+# Show the first few rows to understand the structure
+df.head()
+Execution ci_03d22e9d9c6e871e006af1c9abc5388190b2be7cae4cae528e: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+# Correct the file path and reload the CSV file
+file_path = '/mnt/data/assistant-9FhbQGxAKxPuLmSuggfh3K-attendance-ffbb317427af4382978a02c3887d2a9f.csv'
+df = pd.read_csv(file_path)
+
+# Show the first few rows to understand the structure
+df.head()
+Sandbox logs:
+  workshop session  attendees  cost_cents
+0  Foundry      F1         12       18000
+1   Agents      A1          9       18000
+2  Foundry      F2          8       12000
+3   Agents      A2         11       22000
+4  Foundry      F3         10       15000
+Execution ci_03d22e9d9c6e871e006af1c9af274c81908cd4c91a3b96b40c: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+# Validate attendees and cost_cents are nonnegative integers
+valid_attendees = df['attendees'].apply(lambda x: isinstance(x, int) and x >= 0).all()
+valid_cost_cents = df['cost_cents'].apply(lambda x: isinstance(x, int) and x >= 0).all()
+
+valid_attendees, valid_cost_cents
+Sandbox logs:
+(True, True)
+Execution ci_03d22e9d9c6e871e006af1c9b0fdac8190bf95e0d4644fd6f4: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+# Calculate overall totals
+row_count = len(df)
+total_attendees = df['attendees'].sum()
+total_cost_cents = df['cost_cents'].sum()
+
+# Group by workshop and calculate sums
+by_workshop_df = df.groupby('workshop').agg({'attendees': 'sum', 'cost_cents': 'sum'}).reset_index()
+by_workshop_df = by_workshop_df.sort_values('workshop')
+
+row_count, total_attendees, total_cost_cents, by_workshop_df
+Sandbox logs:
+(6,
+ 55,
+ 95000,
+   workshop  attendees  cost_cents
+ 0   Agents         25       50000
+ 1  Foundry         30       45000)
+Execution ci_03d22e9d9c6e871e006af1c9b532c48190adc945c9506d931c: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+import json
+
+# Prepare report dictionary
+report = {
+    "skill_code": "CSV-ANALYST-V1",
+    "row_count": row_count,
+    "total_attendees": total_attendees,
+    "total_cost_cents": total_cost_cents,
+    "by_workshop": by_workshop_df.to_dict(orient='records')
+}
+
+# Write JSON report
+report_path = '/mnt/data/report.json'
+with open(report_path, 'w', encoding='utf-8') as f:
+    json.dump(report, f, indent=4)
+
+report
+Execution ci_03d22e9d9c6e871e006af1c9b791488190946f534bdbcc5ace: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+# Convert int64 to native int in by_workshop dict
+for item in report["by_workshop"]:
+    item['attendees'] = int(item['attendees'])
+    item['cost_cents'] = int(item['cost_cents'])
+
+# Also convert top-level ints if necessary
+report["row_count"] = int(report["row_count"])
+report["total_attendees"] = int(report["total_attendees"])
+report["total_cost_cents"] = int(report["total_cost_cents"])
+
+# Rewrite JSON report
+with open(report_path, 'w', encoding='utf-8') as f:
+    json.dump(report, f, indent=4)
+
+report_path
+Sandbox logs:
+'/mnt/data/report.json'
+Execution ci_03d22e9d9c6e871e006af1c9ba7d7081909470d5a52ac189d3: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+import matplotlib.pyplot as plt
+
+# Prepare data for plotting
+workshops = by_workshop_df['workshop'].tolist()
+attendees = by_workshop_df['attendees'].tolist()
+cost_cents = by_workshop_df['cost_cents'].tolist()
+
+# Create subplots with shared x-axis
+fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(6, 4), sharex=True)
+
+# Attendance bar chart
+ax1.bar(workshops, attendees, color='skyblue')
+ax1.set_ylabel('Attendees')
+ax1.set_title('Workshop Attendance')
+
+# Cost bar chart
+ax2.bar(workshops, cost_cents, color='lightgreen')
+ax2.set_ylabel('Cost (cents)')
+ax2.set_xlabel('Workshop')
+ax2.set_title('Workshop Cost')
+
+# Layout and save
+plt.tight_layout()
+chart_path = '/mnt/data/attendance-cost.png'
+plt.savefig(chart_path)
+plt.close()
+Execution ci_03d22e9d9c6e871e006af1c9be42208190902ac3b01eec485a: completed; container=cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Executed code:
+# Print the required confirmation in the execution log
+print("CSV_ANALYSIS_EXECUTED")
+Sandbox logs:
+CSV_ANALYSIS_EXECUTED
+
+File citation: {"container_id":"cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc","end_index":366,"file_id":"cfile_6af1c9b75dec81909956a3abbad1bbe1","filename":"report.json","start_index":337,"type":"container_file_citation"}
+File citation: {"container_id":"cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc","end_index":447,"file_id":"cfile_6af1c9c05a548190835e6fe7c5a94bb3","filename":"attendance-cost.png","start_index":410,"type":"container_file_citation"}
+It seems the file path I used to read the CSV was incorrect due to a copying error. I will correct the file path and try again.The CSV contains the columns `workshop`, `session`, `attendees`, and `cost_cents`. Next, I will validate the data for nonnegative integers in the `attendees` and `cost_cents` columns, then calculate the requested totals and generate the report JSON and bar chart PNG.The attendees and cost_cents columns are valid with nonnegative integers. I will now compute the overall totals and group the data by workshop for attendance and cost sums.I have computed the totals:
+
+- Row count: 6
+- Total attendees: 55
+- Total cost (cents): 95,000
+
+By workshop:
+
+- Agents: 25 attendees, 50,000 cost cents
+- Foundry: 30 attendees, 45,000 cost cents
+
+Next, I will generate the JSON report and attendance-cost PNG bar chart.The error indicates that some of the numbers (likely `int64` from pandas) are not directly JSON serializable. I will convert those to native Python int types before saving.The JSON report has been saved.
+
+Now I will create the labeled bar chart PNG with separate panels for attendance and cost by workshop.The analysis is complete. Here is a summary of the computed totals:
+
+- Total rows: 6
+- Total attendees: 55
+- Total cost in cents: 95,000
+
+Attendance and costs grouped by workshop:
+- Agents: 25 attendees, 50,000 cost cents
+- Foundry: 30 attendees, 45,000 cost cents
+
+You can download the generated files here:
+
+[Download the JSON report](sandbox:/mnt/data/report.json)
+
+[Download the attendance-cost bar chart](sandbox:/mnt/data/attendance-cost.png)
+Actual usage: {"input_tokens":3855,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":1261,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":5116}
+Downloaded report verified: 6 rows; 55 attendance instances; 95000 cents.
+{
+    "skill_code": "CSV-ANALYST-V1",
+    "row_count": 6,
+    "total_attendees": 55,
+    "total_cost_cents": 95000,
+    "by_workshop": [
+        {
+            "workshop": "Agents",
+            "attendees": 25,
+            "cost_cents": 50000
+        },
+        {
+            "workshop": "Foundry",
+            "attendees": 30,
+            "cost_cents": 45000
+        }
+    ]
+}
+Downloaded report.json: 376 bytes; SHA256=841768923e640a5df77b4a1228f9111f4c49143da518dbe7a542eaf8e826e121
+Downloaded attendance-cost.png: 20253 bytes; SHA256=e667fff61ce694dba0035a021c15f9d816a0b1d8e451cc381467aa801c7b73b7
+Saved verified user artifacts: /Users/michalfu/Dev/FoundryWorkshops102026DEMOS/30-skill-data-analyst/.azure/artifacts/ffbb317427af4382978a02c3887d2a9f
+Deleted response resp_03d22e9d9c6e871e006af1c9a82a4c8190861a7b0da5ab2249
+Deleted agent data-analyst-ffbb317427af4382978a02c3887d2a9f/1
+Deleted container cntr_6af1c99d37648190a7f43078d7130c12051287f4925cafcc
+Deleted input file assistant-9FhbQGxAKxPuLmSuggfh3K
+Deleted skill csv-analyst-ffbb317427af4382978a02c3887d2a9f

@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -9,6 +11,18 @@ import demo
 
 
 class RedTeamTests(unittest.IsolatedAsyncioTestCase):
+    @unittest.skipUnless(shutil.which("az"), "Azure CLI/Bicep is required for the infrastructure contract.")
+    def test_project_deployment_waits_for_model(self):
+        result = subprocess.run(
+            ["az", "bicep", "build", "--file", "infra/main.bicep", "--stdout"],
+            cwd=Path(__file__).parent, check=True, capture_output=True, text=True,
+        )
+        resources = json.loads(result.stdout)["resources"]
+        project = next(item for item in resources
+                       if item["type"] == "Microsoft.CognitiveServices/accounts/projects")
+        self.assertTrue(any("Microsoft.CognitiveServices/accounts/deployments" in dependency
+                            for dependency in project["dependsOn"]))
+
     def test_target_calls_real_model_with_safety_instructions(self):
         client = Mock()
         client.chat.completions.create.return_value = SimpleNamespace(choices=[

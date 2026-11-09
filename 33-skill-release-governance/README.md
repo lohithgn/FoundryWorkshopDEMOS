@@ -10,7 +10,9 @@ The normal path makes eight paid model requests. `--regression` changes the
 candidate's intro price from 25 to 40 and must fail the deterministic factual
 gate, without promotion. Model instructions are not sufficient evidence:
 responses must match the expected workshop, integer price, currency and version
-marker with no extra fields. A model can ignore instructions, so an unexpected
+marker with no extra fields. Both skill versions and the request identify the
+workshop field as the exact ID (`intro` or `advanced`), not a descriptive name.
+A model can ignore instructions, so an unexpected
 answer is a failed demonstration, never replaced with a fixture.
 
 ## Scope and prerequisites

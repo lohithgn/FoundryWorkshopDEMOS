@@ -43,7 +43,7 @@ These are **two axes**, not three mutually exclusive model families:
 | --- | --- | --- | --- |
 | Typical chat model, online | GPT-4.1-mini, `GlobalStandard`, Chat Completions | Interactive assistants, writing, extraction and simple questions | Responds to each request directly; sampling controls supported |
 | Batch processing | Same GPT-4.1-mini version, separate `GlobalBatch` deployment | Offline classification, evaluation or processing many independent records | JSONL upload -> job -> later download; separate enqueued-token quota, 24-hour target turnaround, no interactive streaming |
-| Reasoning model, online | o4-mini, `GlobalStandard`, Chat Completions | Planning, math, coding and constraint-heavy tasks | Allocates internal reasoning tokens; potentially more latency and billed output tokens |
+| Reasoning model, online | gpt-5-mini, `GlobalStandard`, Chat Completions | Planning, math, coding and constraint-heavy tasks | Allocates internal reasoning tokens; potentially more latency and billed output tokens |
 
 Batch is not a Python loop, concurrent online calls, fine-tuning or a model
 that "thinks about the entire file." Each row is an independent request; rows
@@ -55,22 +55,33 @@ throughput, and the 24-hour target is not an immediate completion guarantee.
 Global deployment processing can occur outside the resource's region; check
 data-residency requirements before using real data.
 
-**o4-mini-specific request differences:** do not send `temperature`, `top_p` or
+**gpt-5-mini reasoning request differences:** do not send `temperature`, `top_p` or
 `max_tokens`. Send `reasoning_effort=low|medium|high` and
 `max_completion_tokens` instead. The 4,096-token limit covers hidden reasoning
 **and** visible answer tokens; reaching it fails this demonstration rather
 than presenting a truncated/empty answer as success. Usage can include
 `completion_tokens_details.reasoning_tokens`; these are billed output tokens.
 An answer's explanation is not a transcript of hidden reasoning. Other model
-families have different parameter support: do not generalize o4-mini's
+families have different parameter support: do not generalize this model's
 restrictions to every new reasoning model.
+
+Both online models receive the same strict JSON schema for the scheduling
+comparison: one integer `minutes` field. The runner validates that shape and
+compares the value with 11; the schema constrains format, not correctness.
+This avoids treating a long or truncated free-form answer as a completed result.
+The prompt explicitly notes that B and C can run in parallel; it does not
+include the reference answer.
+The batch questions explicitly refer to language-model generation so that
+`temperature` is not mistaken for physical temperature; inspect the returned
+sentences for accuracy rather than treating batch completion as factual proof.
 
 ## Prerequisites and availability
 
 The local concepts section only needs Python 3.10+. Cloud sections additionally
 need Azure CLI/Bicep, `az login`, a subscription, and availability/quota for
-GPT-4.1-mini `2025-04-14` in **GlobalStandard and GlobalBatch**, plus o4-mini
-`2025-04-16` in GlobalStandard. Default region: `eastus2`.
+GPT-4.1-mini `2025-04-14` in **GlobalStandard and GlobalBatch**, plus gpt-5-mini
+`2025-08-07` in GlobalStandard. The previously used o4-mini version is
+deprecating and Azure no longer permits new deployments. Default region: `eastus2`.
 
 Check your subscription before deployment:
 
@@ -131,6 +142,14 @@ python demo.py --section batch --wait-seconds 120
 `python demo.py` runs all sections: 18 sampling requests, two comparison
 requests and one three-request native batch. All cloud operations are paid;
 the code does not fabricate service responses or silently skip failures.
+Sampling and comparison use up to eight OpenAI SDK retries for transient
+inference errors such as HTTP 429; the SDK honors a reasonable service
+`Retry-After` value. Batch submission uses no automatic retries, so a failed
+request is not silently resubmitted as a second paid job.
+If the online deployment's request rate is limited, use
+`python demo.py --request-interval-seconds 7` to space online request starts;
+adjust the interval for your actual quota. Pacing adds wall-clock time but is
+excluded from the printed individual request latency and does not apply to batch.
 Equivalent model flags are `--deployment`, `--reasoning-deployment` and
 `--batch-deployment`; these are deployment aliases, not catalog model names.
 `DefaultAzureCredential` disables interactive browser fallback; check which

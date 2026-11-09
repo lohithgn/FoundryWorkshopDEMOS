@@ -1,0 +1,17 @@
+Lab 32: 32-browser-runbook
+Recorded 2026-11-08T17:07:16+00:00 — 2026-11-08T17:07:30+00:00
+What happens: A locally orchestrated skill using native Foundry Browser Automation via Toolbox.
+Tests: passed
+Deployment: failed
+Demo run: not run
+Status: failed
+
+ACTUAL CAPTURED OUTPUT
+WARNING: A new Bicep release is available: v0.49.2. Upgrade now by running "az bicep upgrade".
+ERROR: {"code": "InvalidTemplateDeployment", "message": "The template deployment 'recorded-demo' is not valid according to the validation procedure. The following resource provider(s) - 'Microsoft.Web/serverFarms (2024-11-01)' reported preflight validation errors. Tracking id is '66cf540a-0db9-45ed-a74f-26da834aebd8'. See inner errors for details."}
+
+Inner Errors: 
+{"code": "ValidationForResourceFailed", "message": "Validation failed for a resource. Check 'Error.Details[0]' for more information."}
+
+Inner Errors: 
+{"code": "InternalSubscriptionIsOverQuotaForSku", "message": "Operation cannot be completed without additional quota. See https://aka.ms/antquotahelp for instructions on requesting limit increases. \r\nAdditional details - Location:  \r\nCurrent Limit (B1 VMs): 0 \r\nCurrent Usage: 0\r\nAmount required for this deployment (B1 VMs): 1 \r\n(Minimum) New Limit that you should request to enable this deployment: 1. \r\nNote that if you experience multiple scaling operations failing (in addition to this one) and need to accommodate the aggregate quota requirements of these operations, you will need to request a higher quota limit than the one currently displayed."}

@@ -1,9 +1,10 @@
 import copy
 import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from demo import native_intervention, agent_intervention, settings
+from demo import (native_intervention, agent_intervention, request_restricted_with_propagation,
+                  request_with_filter_readiness, settings, usable_unfiltered_response)
 
 
 class NativeGuardrailTests(unittest.TestCase):
@@ -74,11 +75,87 @@ class NativeGuardrailTests(unittest.TestCase):
     def test_model_gate_is_not_agent_gate(self):
         self.assertFalse(agent_intervention(400, self.body))
 
+    def test_filter_error_retries_only_the_observed_service_condition(self):
+        unavailable = Mock(status_code=200)
+        unavailable.json.return_value = {"choices": [{
+            "content_filter_result": {"error": {"code": "content_filter_error"}},
+        }]}
+        blocked = Mock(status_code=400)
+        blocked.json.return_value = self.body
+        session = Mock()
+        session.post.side_effect = [unavailable, blocked]
+        with patch("demo.time.monotonic", side_effect=[0, 1]), patch("demo.time.sleep") as sleep:
+            response, body = request_with_filter_readiness(session, "https://synthetic.invalid", {}, "test", 30)
+        self.assertIs(response, blocked)
+        self.assertTrue(native_intervention(response.status_code, body))
+        sleep.assert_called_once_with(25)
+        self.assertEqual(session.post.call_count, 2)
+
+        session.post.side_effect = [unavailable]
+        with patch("demo.time.monotonic", side_effect=[0, 31]), patch("demo.time.sleep") as sleep:
+            with self.assertRaisesRegex(RuntimeError, "filtering was not verified"):
+                request_with_filter_readiness(session, "https://synthetic.invalid", {}, "test", 30)
+            sleep.assert_not_called()
+
+        unfiltered = Mock(status_code=200)
+        unfiltered.json.return_value = {"choices": [{"content_filter_results": {}}]}
+        session.post.side_effect = [unfiltered]
+        with patch("demo.time.monotonic", return_value=0), patch("demo.time.sleep") as sleep:
+            response, body = request_with_filter_readiness(session, "https://synthetic.invalid", {}, "test")
+        self.assertFalse(native_intervention(response.status_code, body))
+        sleep.assert_not_called()
+
     def test_agent_wrong_blocklist_is_not_evidence(self):
         body = {"code": "content_filter", "innererror": {"code": "ContentFiltered"},
                 "content_filters": [{"blocked": True, "source_type": "prompt",
                 "content_filter_results": {"custom_blocklists": [{"filtered": True, "id": "other"}]}}]}
         self.assertFalse(agent_intervention(400, body))
+
+    def test_restricted_probe_waits_for_actual_blocklist_intervention(self):
+        response = Mock(status_code=200)
+        unblocked = {"choices": [{"finish_reason": "stop", "message": {"content": "hello"}}]}
+        blocked = Mock(status_code=400)
+        with patch("demo.request_with_filter_readiness",
+                   side_effect=[(response, unblocked), (blocked, self.body)]) as send, \
+             patch("demo.time.monotonic", return_value=0), patch("demo.time.sleep") as sleep:
+            result, body, attempts = request_restricted_with_propagation(
+                Mock(), "https://synthetic.invalid", {}, "test", 30,
+            )
+        self.assertIs(result, blocked)
+        self.assertTrue(native_intervention(result.status_code, body))
+        self.assertEqual(attempts, [{"status": 200, "intervention": False},
+                                    {"status": 400, "intervention": True}])
+        self.assertEqual(send.call_count, 2)
+        sleep.assert_called_once_with(25)
+
+    def test_restricted_probe_does_not_accept_persistent_or_unrelated_failure(self):
+        unblocked = Mock(status_code=200)
+        body = {"choices": [{"finish_reason": "stop", "message": {"content": "hello"}}]}
+        with patch("demo.request_with_filter_readiness", return_value=(unblocked, body)) as send, \
+             patch("demo.time.monotonic", side_effect=[0, 0, 31]), patch("demo.time.sleep") as sleep:
+            response, returned, attempts = request_restricted_with_propagation(
+                Mock(), "https://synthetic.invalid", {}, "test", 30,
+            )
+        self.assertFalse(native_intervention(response.status_code, returned))
+        self.assertEqual(len(attempts), 1)
+        self.assertEqual(send.call_count, 1)
+        sleep.assert_not_called()
+        error = Mock(status_code=403)
+        with patch("demo.request_with_filter_readiness", return_value=(error, {})) as send, \
+             patch("demo.time.monotonic", return_value=0), patch("demo.time.sleep") as sleep:
+            request_restricted_with_propagation(Mock(), "https://synthetic.invalid", {}, "test")
+        self.assertEqual(send.call_count, 1)
+        sleep.assert_not_called()
+
+    def test_unguarded_control_requires_a_real_completed_reply(self):
+        self.assertTrue(usable_unfiltered_response(
+            200, {"choices": [{"finish_reason": "stop", "message": {"content": "hello"}}]}))
+        self.assertFalse(usable_unfiltered_response(
+            200, {"choices": [{"finish_reason": "stop", "message": {"content": None}}]}))
+        self.assertFalse(usable_unfiltered_response(
+            200, {"choices": [{"finish_reason": "content_filter", "message": {"content": "hello"}}]}))
+        self.assertFalse(usable_unfiltered_response(200, {"choices": [{"message": None}]}))
+        self.assertFalse(usable_unfiltered_response(200, {"choices": {}}))
 
     def test_installed_sdk_native_rai_config(self):
         from azure.ai.projects.models import RaiConfig, PromptAgentDefinition

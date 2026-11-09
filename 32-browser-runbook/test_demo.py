@@ -8,6 +8,7 @@ from io import StringIO
 import json
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from types import SimpleNamespace as NS
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -131,6 +132,43 @@ class Contracts(unittest.TestCase):
                            ["--preflight", "--run-id", RUN, "--cleanup"]]:
                 with self.subTest(extras=extras), self.assertRaises(SystemExit):
                     demo.configuration(base + extras)
+
+    def test_explicit_configuration_does_not_read_invalid_deployment_state(self):
+        base = ["--project-endpoint", PROJECT, "--site-endpoint", SITE,
+                "--connection", CONNECTION, "--deployment", "gpt-4.1-mini"]
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (directory / "deployment.json").write_text("")
+            with patch.object(demo, "STATE", directory), patch.dict("os.environ", {}, clear=True):
+                args = demo.configuration(base)
+                self.assertEqual((args.project_endpoint, args.site_endpoint, args.deployment),
+                                 (PROJECT, SITE, "gpt-4.1-mini"))
+                self.assertEqual(
+                    demo.configuration(["--preflight", "--connection", CONNECTION]).connection,
+                    CONNECTION,
+                )
+                stderr = StringIO()
+                with redirect_stderr(stderr), self.assertRaises(SystemExit) as error:
+                    demo.configuration(base[:-2])
+                self.assertEqual(error.exception.code, 2)
+                self.assertIn("Cannot read deployment outputs", stderr.getvalue())
+
+    def test_missing_configuration_uses_valid_deployment_outputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (directory / "deployment.json").write_text(json.dumps({"outputs": {
+                "projectEndpoint": {"value": PROJECT},
+                "toolEndpoint": {"value": SITE},
+                "deployment": {"value": "from-file"},
+            }}))
+            with patch.object(demo, "STATE", directory), patch.dict(
+                "os.environ", {"AZURE_OPENAI_DEPLOYMENT": "from-environment"}, clear=True,
+            ):
+                args = demo.configuration(["--connection", CONNECTION])
+                self.assertEqual((args.project_endpoint, args.site_endpoint, args.deployment),
+                                 (PROJECT, SITE, "from-environment"))
+                args = demo.configuration(["--connection", CONNECTION, "--deployment", "from-cli"])
+                self.assertEqual(args.deployment, "from-cli")
 
     def test_missing_remote_run_cleanup_is_idempotent(self):
         with httpx.Client(transport=httpx.MockTransport(

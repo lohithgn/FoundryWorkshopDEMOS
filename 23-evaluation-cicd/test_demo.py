@@ -100,6 +100,14 @@ class EvaluationTests(unittest.TestCase):
             self.assertEqual(report["passed"], expected_pass)
         self.assertFalse(demo.exact_answer("not JSON", "14"))
         self.assertFalse(demo.exact_answer('{"answer":14}', "14"))
+        self.assertFalse(demo.exact_answer('```json\n{"answer":"14"}\n```', "14"))
+
+    def test_prompts_explicitly_request_raw_json_without_markdown(self):
+        for name in ("baseline", "regression"):
+            prompt = (demo.HERE / "prompts" / f"{name}.txt").read_text()
+            with self.subTest(prompt=name):
+                self.assertIn("Return raw JSON", prompt)
+                self.assertIn("do not use Markdown code fences", prompt)
 
     def test_gate_thresholds_and_empty_data(self):
         with self.assertRaises(RuntimeError):

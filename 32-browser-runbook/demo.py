@@ -452,15 +452,9 @@ async def execute(args, project, credential, http):
 def configuration(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     outputs_file = STATE / "deployment.json"
-    flags = sys.argv[1:] if argv is None else argv
-    outputs = (
-        json.loads(outputs_file.read_text())["outputs"]
-        if "--preflight" not in flags and outputs_file.exists() else {}
-    )
-    default = lambda key: outputs.get(key, {}).get("value")
-    parser.add_argument("--project-endpoint", default=os.getenv("FOUNDRY_PROJECT_ENDPOINT") or default("projectEndpoint"))
-    parser.add_argument("--deployment", default=os.getenv("AZURE_OPENAI_DEPLOYMENT") or default("deployment"))
-    parser.add_argument("--site-endpoint", default=os.getenv("WORKSHOP_TOOL_ENDPOINT") or default("toolEndpoint"))
+    parser.add_argument("--project-endpoint", default=os.getenv("FOUNDRY_PROJECT_ENDPOINT"))
+    parser.add_argument("--deployment", default=os.getenv("AZURE_OPENAI_DEPLOYMENT"))
+    parser.add_argument("--site-endpoint", default=os.getenv("WORKSHOP_TOOL_ENDPOINT"))
     parser.add_argument("--connection", default=(
         os.getenv("BROWSER_AUTOMATION_PROJECT_CONNECTION_ID")
         or os.getenv("BROWSER_AUTOMATION_CONNECTION_NAME")
@@ -473,6 +467,27 @@ def configuration(argv=None):
     decision.add_argument("--approve-action", help="Exact displayed SHA-256; never inferred from natural language.")
     decision.add_argument("--cleanup", action="store_true")
     args = parser.parse_args(argv)
+    if not args.preflight and not all((args.project_endpoint, args.deployment, args.site_endpoint)):
+        if outputs_file.exists():
+            try:
+                outputs = json.loads(outputs_file.read_text(encoding="utf-8"))["outputs"]
+                if not isinstance(outputs, dict):
+                    raise ValueError("outputs must be an object")
+                for attribute, key in (
+                    ("project_endpoint", "projectEndpoint"),
+                    ("deployment", "deployment"),
+                    ("site_endpoint", "toolEndpoint"),
+                ):
+                    if not getattr(args, attribute):
+                        output = outputs.get(key, {})
+                        if not isinstance(output, dict):
+                            raise ValueError(f"{key} must be an output object")
+                        value = output.get("value")
+                        if value is not None and not isinstance(value, str):
+                            raise ValueError(f"{key} output must be a string")
+                        setattr(args, attribute, value)
+            except (OSError, UnicodeError, ValueError, TypeError, KeyError) as error:
+                parser.error(f"Cannot read deployment outputs from {outputs_file}: {error}")
     try:
         if not args.connection or not (
             re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", args.connection)

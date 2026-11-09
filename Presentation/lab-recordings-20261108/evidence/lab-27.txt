@@ -1,0 +1,236 @@
+Lab 27: 27-FoundryIQwithKB
+Recorded 2026-11-08T16:41:29+00:00 — 2026-11-08T16:54:01+00:00
+What happens: Create a Blob-backed Foundry IQ knowledge base and a persistent portal agent.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Uploaded and verified support-cases/CASE-1001.txt
+Uploaded and verified support-cases/CASE-1002.txt
+Uploaded and verified support-cases/CASE-1003.txt
+Uploaded and verified support-cases/CASE-1004.txt
+Uploaded and verified surface-kb/KB-SURFACE-001.txt
+Uploaded and verified surface-kb/KB-SURFACE-002.txt
+Uploaded and verified surface-kb/KB-SURFACE-003.txt
+Uploaded and verified surface-kb/KB-SURFACE-004.txt
+surface-support-cases-indexer: success; 4 chunks from 4 documents.
+surface-reference-indexer: success; 4 chunks from 4 documents.
+
+Direct Foundry IQ retrieval: activity and references
+{
+  "activity": [
+    {
+      "type": "modelQueryPlanning",
+      "id": 0,
+      "startedAt": "2026-11-08T16:53:40.1418842Z",
+      "completedAt": "2026-11-08T16:53:42.3952697Z",
+      "inputTokens": 975,
+      "outputTokens": 147,
+      "elapsedMs": 2248,
+      "model": {
+        "modelName": "gpt-4.1-mini",
+        "deploymentId": "gpt-4.1-mini"
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": 1,
+      "startedAt": "2026-11-08T16:53:42.4126531Z",
+      "completedAt": "2026-11-08T16:53:43.4217508Z",
+      "knowledgeSourceName": "surface-support-cases",
+      "queryTime": "2026-11-08T16:53:43.0753321Z",
+      "count": 1,
+      "elapsedMs": 0,
+      "azureBlobArguments": {
+        "search": "Surface Laptop 5 external monitor blank after sleep"
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": 2,
+      "startedAt": "2026-11-08T16:53:43.4232536Z",
+      "completedAt": "2026-11-08T16:53:43.8285334Z",
+      "knowledgeSourceName": "surface-support-cases",
+      "queryTime": "2026-11-08T16:53:43.756848Z",
+      "count": 2,
+      "elapsedMs": 0,
+      "azureBlobArguments": {
+        "search": "Surface Laptop 6 for Business battery drain in bag"
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": 3,
+      "startedAt": "2026-11-08T16:53:43.8287369Z",
+      "completedAt": "2026-11-08T16:53:45.2253668Z",
+      "knowledgeSourceName": "surface-reference",
+      "queryTime": "2026-11-08T16:53:44.358806Z",
+      "count": 3,
+      "elapsedMs": 0,
+      "azureBlobArguments": {
+        "search": "Surface Laptop 5 external monitor blank after sleep runbook steps"
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": 4,
+      "startedAt": "2026-11-08T16:53:44.4266937Z",
+      "completedAt": "2026-11-08T16:53:45.2253719Z",
+      "knowledgeSourceName": "surface-reference",
+      "queryTime": "2026-11-08T16:53:44.777496Z",
+      "count": 2,
+      "elapsedMs": 0,
+      "azureBlobArguments": {
+        "search": "Surface Laptop 5 external monitor blank after sleep escalation criteria"
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": 5,
+      "startedAt": "2026-11-08T16:53:44.8488896Z",
+      "completedAt": "2026-11-08T16:53:45.2253733Z",
+      "knowledgeSourceName": "surface-reference",
+      "queryTime": "2026-11-08T16:53:45.1607005Z",
+      "count": 3,
+      "elapsedMs": 0,
+      "azureBlobArguments": {
+        "search": "Surface Laptop 6 for Business battery drain in bag runbook steps"
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": 6,
+      "startedAt": "2026-11-08T16:53:45.2254303Z",
+      "completedAt": "2026-11-08T16:53:45.5986249Z",
+      "knowledgeSourceName": "surface-reference",
+      "queryTime": "2026-11-08T16:53:45.5347821Z",
+      "count": 2,
+      "elapsedMs": 0,
+      "azureBlobArguments": {
+        "search": "Surface Laptop 6 for Business battery drain in bag escalation criteria"
+      }
+    },
+    {
+      "type": "agenticReasoning",
+      "id": 7,
+      "startedAt": "2026-11-08T16:53:45.6383946Z",
+      "completedAt": "2026-11-08T16:53:45.6383946Z",
+      "reasoningTokens": 3815,
+      "retrievalReasoningEffort": {
+        "kind": "low"
+      },
+      "logicalReasoningEffort": {
+        "kind": "low"
+      }
+    }
+  ],
+  "references": [
+    {
+      "type": "azureBlob",
+      "id": "0",
+      "activitySource": 1,
+      "rerankerScore": 3.9795492,
+      "blobUrl": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/support-cases/CASE-1001.txt",
+      "citationUrl": "https://surface-iq-moqvodmoprpt6.search.windows.net/indexes/surface-support-cases-index/docs/988b0e496602_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXBwb3J0LWNhc2VzL0NBU0UtMTAwMS50eHQ1_pages_0?$select=snippet%2Cuid%2Cblob_url&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+      "sourceData": {
+        "uid": "988b0e496602_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXBwb3J0LWNhc2VzL0NBU0UtMTAwMS50eHQ1_pages_0",
+        "blob_url": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/support-cases/CASE-1001.txt",
+        "snippet": "CASE-1001: Surface Laptop 5 - external display disappears after resume\nSYNTHETIC WORKSHOP DATA. Fictional case, not Microsoft support guidance.\nDevice: Surface Laptop 5; Windows 11; Workshop USB-C Dock A.\nSymptoms: The internal display works, but an external monitor is blank after sleep.\nDiagnosis: The workshop dock firmware was outdated; the same monitor worked when connected directly.\nResolution: Install approved Windows and Surface updates, update the approved dock firmware, reconnect the dock, and test sleep/resume twice.\nOutcome: Two successful resume cycles; resolved in 25 minutes.\nRelated article: KB-SURFACE-001. Do not replace the laptop before testing a direct monitor connection."
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": "1",
+      "activitySource": 2,
+      "rerankerScore": 3.9491956,
+      "blobUrl": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/support-cases/CASE-1002.txt",
+      "citationUrl": "https://surface-iq-moqvodmoprpt6.search.windows.net/indexes/surface-support-cases-index/docs/988b0e496602_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXBwb3J0LWNhc2VzL0NBU0UtMTAwMi50eHQ1_pages_0?$select=snippet%2Cuid%2Cblob_url&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+      "sourceData": {
+        "uid": "988b0e496602_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXBwb3J0LWNhc2VzL0NBU0UtMTAwMi50eHQ1_pages_0",
+        "blob_url": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/support-cases/CASE-1002.txt",
+        "snippet": "CASE-1002: Surface Laptop 6 for Business - battery drains in a bag\nSYNTHETIC WORKSHOP DATA. Fictional case, not Microsoft support guidance.\nDevice: Surface Laptop 6 for Business; Windows 11.\nSymptoms: Battery fell from 80 percent to 42 percent during a four-hour journey.\nDiagnosis: A workshop background sync application stayed active while the device was asleep.\nResolution: Install approved updates, collect a battery report and SleepStudy through the support team, stop the identified background sync task, and use Hibernate during travel.\nOutcome: Battery loss was 3 percent on the next four-hour journey.\nRelated article: KB-SURFACE-002. This case does not establish a universal battery-life specification."
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": "2",
+      "activitySource": 5,
+      "rerankerScore": 3.1228375,
+      "blobUrl": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/surface-kb/KB-SURFACE-002.txt",
+      "citationUrl": "https://surface-iq-moqvodmoprpt6.search.windows.net/indexes/surface-reference-index/docs/b48477f2fd44_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXJmYWNlLWtiL0tCLVNVUkZBQ0UtMDAyLnR4dA2_pages_0?$select=snippet%2Cuid%2Cblob_url&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+      "sourceData": {
+        "uid": "b48477f2fd44_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXJmYWNlLWtiL0tCLVNVUkZBQ0UtMDAyLnR4dA2_pages_0",
+        "blob_url": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/surface-kb/KB-SURFACE-002.txt",
+        "snippet": "KB-SURFACE-002: Surface Laptop - travel battery triage\nSYNTHETIC WORKSHOP DATA. Fictional organization runbook, not Microsoft support guidance.\nApplies to: the workshop's Surface Laptop 5 and Surface Laptop 6 for Business fleet.\nProcedure: Record the starting charge, elapsed time, workload, and power mode. Install approved updates. Ask support to collect a Windows battery report and SleepStudy and inspect active background tasks. Use Hibernate instead of Sleep during travel while investigating.\nEscalation: Persistent unexpected drain after background-task remediation goes to endpoint engineering with the reports. Never promise a fixed battery runtime.\nRelated case: CASE-1002 improved from a 38 percentage-point loss to a 3 percentage-point loss on a four-hour journey after background-sync remediation and Hibernate.\nWorkshop battery triage review window: 2 business days."
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": "3",
+      "activitySource": 3,
+      "rerankerScore": 2.754031,
+      "blobUrl": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/surface-kb/KB-SURFACE-001.txt",
+      "citationUrl": "https://surface-iq-moqvodmoprpt6.search.windows.net/indexes/surface-reference-index/docs/b48477f2fd44_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXJmYWNlLWtiL0tCLVNVUkZBQ0UtMDAxLnR4dA2_pages_0?$select=snippet%2Cuid%2Cblob_url&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+      "sourceData": {
+        "uid": "b48477f2fd44_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXJmYWNlLWtiL0tCLVNVUkZBQ0UtMDAxLnR4dA2_pages_0",
+        "blob_url": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/surface-kb/KB-SURFACE-001.txt",
+        "snippet": "KB-SURFACE-001: Surface Laptop - external display triage\nSYNTHETIC WORKSHOP DATA. Fictional organization runbook, not Microsoft support guidance.\nApplies to: the workshop's Surface Laptop 5 and Surface Laptop 6 for Business fleet.\nProcedure: Confirm that the internal screen works. Check monitor input and power. Test a known-good cable and a direct connection without the dock. Install organization-approved Windows, Surface, and dock firmware updates. Reconnect the dock and repeat sleep/resume twice.\nEscalation: If a direct connection still fails with a known-good monitor and cable after updates, collect the dock model, OS build, display details, and reproduction steps for endpoint engineering.\nNever ask the user to open the device or replace hardware solely on this runbook.\nRelated case: CASE-1001, resolved by approved dock firmware."
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": "4",
+      "activitySource": 3,
+      "rerankerScore": 0.451723,
+      "blobUrl": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/surface-kb/KB-SURFACE-004.txt",
+      "citationUrl": "https://surface-iq-moqvodmoprpt6.search.windows.net/indexes/surface-reference-index/docs/b48477f2fd44_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXJmYWNlLWtiL0tCLVNVUkZBQ0UtMDA0LnR4dA2_pages_0?$select=snippet%2Cuid%2Cblob_url&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+      "sourceData": {
+        "uid": "b48477f2fd44_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXJmYWNlLWtiL0tCLVNVUkZBQ0UtMDA0LnR4dA2_pages_0",
+        "blob_url": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/surface-kb/KB-SURFACE-004.txt",
+        "snippet": "KB-SURFACE-004: Support evidence and knowledge boundaries\nSYNTHETIC WORKSHOP DATA. Fictional organization runbook, not Microsoft support guidance.\nCollect only synthetic device labels, OS build, symptom, reproduction steps, approved troubleshooting actions, and outcome for this workshop.\nDo not collect real customer names, passwords, recovery keys, serial numbers, or confidential logs.\nCase records describe one observed incident. Runbooks describe the fictional workshop process, not official Microsoft warranty policy.\nThis knowledge base contains no warranty prices, replacement-stock inventory, real service-level agreement, or upcoming Surface product specifications.\nIf evidence is missing, say \"I don't know based on this knowledge base\" and identify what information IT must provide."
+      }
+    },
+    {
+      "type": "azureBlob",
+      "id": "5",
+      "activitySource": 2,
+      "rerankerScore": 0.3751939,
+      "blobUrl": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/support-cases/CASE-1004.txt",
+      "citationUrl": "https://surface-iq-moqvodmoprpt6.search.windows.net/indexes/surface-support-cases-index/docs/988b0e496602_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXBwb3J0LWNhc2VzL0NBU0UtMTAwNC50eHQ1_pages_0?$select=snippet%2Cuid%2Cblob_url&api-version=2026-08-01-preview&allowUnsafeKeys=true",
+      "sourceData": {
+        "uid": "988b0e496602_aHR0cHM6Ly9zdXJmYWNlaXFtb3F2b2Rtb3BycHQ2LmJsb2IuY29yZS53aW5kb3dzLm5ldC9zdXBwb3J0LWNhc2VzL0NBU0UtMTAwNC50eHQ1_pages_0",
+        "blob_url": "https://surfaceiqmoqvodmoprpt6.blob.core.windows.net/support-cases/CASE-1004.txt",
+        "snippet": "CASE-1004: Workshop desktop - no network after moving desks\nSYNTHETIC WORKSHOP DATA. Fictional case, not Microsoft support guidance.\nDevice: Contoso Tower D100 desktop; wired Ethernet.\nSymptoms: No network link after moving to another desk.\nDiagnosis: The desk cable was disconnected from the approved network socket.\nResolution: Reconnect the known-good cable to the approved socket and verify link status and access to the support portal.\nOutcome: Resolved in 8 minutes without reinstalling Windows.\nThis is a desktop case, not evidence about a Surface Laptop battery, display, or VPN."
+      }
+    }
+  ]
+}
+
+Persistent Foundry agent: surface-support-agent
+MCP retrieval calls: 1
+
+For the Surface Laptop 5 issue where an external monitor is blank after sleep, the previous case (CASE-1001) found that outdated dock firmware caused the problem. The resolution involved installing approved Windows and Surface updates, updating the dock firmware, reconnecting the dock, and verifying with two sleep/resume cycles. The related runbook (KB-SURFACE-001) instructs to confirm the internal display is working, check monitor input and power, test the connection with a known-good cable and directly without the dock, install updates, and retry. If the external monitor still fails directly connected after updates, escalate to endpoint engineering with detailed reproduction information. Hardware replacement should not be requested solely based on this runbook.
+
+For the Surface Laptop 6 for Business battery losing charge in a bag, the related runbook (KB-SURFACE-002) advises recording the starting charge, elapsed time, workload, and power mode, installing updates, collecting Windows battery reports and SleepStudy, and checking for active background tasks. Using Hibernate instead of Sleep during travel is recommended. If unexpected battery drain persists after addressing background tasks, escalate to endpoint engineering with the collected reports. The related case (CASE-1002) showed improvement in battery drain after background sync remediation.
+
+Summary:
+- Surface Laptop 5 external monitor blank after sleep:
+  - Runbook steps: Confirm internal display, check monitor and cable, update Windows/Surface/dock firmware, reconnect dock, test resume cycles.
+  - Escalation: If direct connection with known-good cable/monitor fails after updates, escalate to endpoint engineering.
+  - Case: CASE-1001, KB: KB-SURFACE-001.
+
+- Surface Laptop 6 for Business battery loses charge in bag:
+  - Runbook steps: Record battery metrics, install updates, collect battery report and SleepStudy, check background tasks, use Hibernate during travel.
+  - Escalation: Persistent drain after background task remediation escalates with reports.
+  - Case: CASE-1002, KB: KB-SURFACE-002.
+
+This guidance is fictional workshop data and not official Microsoft support. 
+
+References:
+- CASE-1001, KB-SURFACE-001 for external monitor issue
+- CASE-1002, KB-SURFACE-002 for battery drain issue【4:0†CASE-1001】【4:1†KB-SURFACE-001】【4:2†KB-SURFACE-002】
+
+Open https://ai.azure.com -> New Foundry -> project surface-support
+Build -> Knowledge: surface-support-kb; Build -> Agents: surface-support-agent. Resources remain deployed.

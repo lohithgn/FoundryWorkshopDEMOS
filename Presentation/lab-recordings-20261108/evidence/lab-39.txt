@@ -1,0 +1,715 @@
+Lab 39: 39-gateway-token-limits
+Recorded 2026-11-08T17:58:09+00:00 — 2026-11-08T18:25:56+00:00
+What happens: Prove central APIM token accounting, intervention and project isolation.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{
+  "gateway": "https://token-gateway-tootndytmbdj6.azure-api.net",
+  "policy": "llm-token-limit",
+  "run_id": "65f95c93ee0e4499ae0560d81c48ef7e",
+  "arm_verified_policies": [
+    {
+      "route": "project-a-rate",
+      "project_resource_id": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-a",
+      "limits": {
+        "tokens-per-minute": "100"
+      },
+      "counter_key": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-a-rate-run-65f95c93ee0e4499ae0560d81c48ef7e"
+    },
+    {
+      "route": "project-a-quota",
+      "project_resource_id": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-a",
+      "limits": {
+        "token-quota": "100",
+        "token-quota-period": "Hourly"
+      },
+      "counter_key": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-a-quota-run-65f95c93ee0e4499ae0560d81c48ef7e"
+    },
+    {
+      "route": "project-b-rate",
+      "project_resource_id": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-b",
+      "limits": {
+        "tokens-per-minute": "100"
+      },
+      "counter_key": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-b-rate-run-65f95c93ee0e4499ae0560d81c48ef7e"
+    },
+    {
+      "route": "project-b-quota",
+      "project_resource_id": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-b",
+      "limits": {
+        "token-quota": "100",
+        "token-quota-period": "Hourly"
+      },
+      "counter_key": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-gateway-token-limits-demo/providers/Microsoft.CognitiveServices/accounts/token-backend-tootndytmbdj6/projects/workshop-project-b-quota-run-65f95c93ee0e4499ae0560d81c48ef7e"
+    }
+  ],
+  "requests": [
+    {
+      "project": "project-a",
+      "kind": "rate",
+      "status": 200,
+      "headers": {
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Tokens-Consumed": "14",
+        "X-Rate-Remaining": "86"
+      },
+      "body": {
+        "choices": [
+          {
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "protected_material_code": {
+                "detected": false,
+                "filtered": false
+              },
+              "protected_material_text": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            },
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": [],
+              "content": "Hello workshop!",
+              "refusal": null,
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1794162300,
+        "id": "chatcmpl-Ei1rYHD7pPT4HVp4FzR8HwD0rgJeK",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "object": "chat.completion",
+        "prompt_filter_results": [
+          {
+            "prompt_index": 0,
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "jailbreak": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            }
+          }
+        ],
+        "routing": {
+          "serving_pipereplica": "d20261107080852-98849e7c-default-r2-dp0-default"
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_36de3d5958",
+        "usage": {
+          "completion_tokens": 3,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "latency_checkpoint": {
+            "engine_tbt_ms": 4,
+            "engine_ttft_ms": 21,
+            "engine_ttlt_ms": 38,
+            "pre_inference_ms": 158,
+            "service_tbt_ms": 5,
+            "service_ttft_ms": 393,
+            "service_ttlt_ms": 408,
+            "user_visible_ttft_ms": 235
+          },
+          "prompt_tokens": 11,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+          },
+          "total_tokens": 14
+        }
+      }
+    },
+    {
+      "project": "project-a",
+      "kind": "rate",
+      "status": 200,
+      "headers": {
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Tokens-Consumed": "316",
+        "X-Rate-Remaining": "0"
+      },
+      "body": {
+        "choices": [
+          {
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "protected_material_code": {
+                "detected": false,
+                "filtered": false
+              },
+              "protected_material_text": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            },
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": [],
+              "content": "Hello.",
+              "refusal": null,
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1794162309,
+        "id": "chatcmpl-Ei1rhf0mt4AiRvAZu7632Ao82H2Wj",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "object": "chat.completion",
+        "prompt_filter_results": [
+          {
+            "prompt_index": 0,
+            "content_filter_results": {}
+          }
+        ],
+        "routing": {
+          "serving_pipereplica": "d20261106075752-8ee3850c-default-r0-dp0-default"
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_36de3d5958",
+        "usage": {
+          "completion_tokens": 2,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "latency_checkpoint": {
+            "engine_tbt_ms": 4,
+            "engine_ttft_ms": 26,
+            "engine_ttlt_ms": 37,
+            "pre_inference_ms": 65,
+            "service_tbt_ms": 5,
+            "service_ttft_ms": 245,
+            "service_ttlt_ms": 255,
+            "user_visible_ttft_ms": 180
+          },
+          "prompt_tokens": 314,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+          },
+          "total_tokens": 316
+        }
+      }
+    },
+    {
+      "project": "project-a",
+      "kind": "rate",
+      "status": 429,
+      "headers": {
+        "X-Workshop-Policy": "workshop-token-limit",
+        "X-Workshop-Reason": "OpenAITokenLimitExceeded",
+        "Retry-After": "53",
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Rate-Remaining": "0"
+      },
+      "body": {
+        "statusCode": 429,
+        "message": "Token limit is exceeded. Try again in 53 seconds."
+      }
+    },
+    {
+      "project": "project-b",
+      "kind": "rate",
+      "status": 200,
+      "headers": {
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Tokens-Consumed": "17",
+        "X-Rate-Remaining": "83"
+      },
+      "body": {
+        "choices": [
+          {
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "protected_material_code": {
+                "detected": false,
+                "filtered": false
+              },
+              "protected_material_text": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            },
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": [],
+              "content": "Hello, other project!",
+              "refusal": null,
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1794162324,
+        "id": "chatcmpl-Ei1rw79s1IdzCkrJLM55gLXMprrAd",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "object": "chat.completion",
+        "prompt_filter_results": [
+          {
+            "prompt_index": 0,
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "jailbreak": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            }
+          }
+        ],
+        "routing": {
+          "serving_pipereplica": "d20261107073155-05b27ce5-default-r1-dp0-default"
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_36de3d5958",
+        "usage": {
+          "completion_tokens": 5,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "latency_checkpoint": {
+            "engine_tbt_ms": 6,
+            "engine_ttft_ms": 23,
+            "engine_ttlt_ms": 56,
+            "pre_inference_ms": 65,
+            "service_tbt_ms": 7,
+            "service_ttft_ms": 426,
+            "service_ttlt_ms": 461,
+            "user_visible_ttft_ms": 362
+          },
+          "prompt_tokens": 12,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+          },
+          "total_tokens": 17
+        }
+      }
+    },
+    {
+      "project": "project-a",
+      "kind": "quota",
+      "status": 200,
+      "headers": {
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Tokens-Consumed": "14",
+        "X-Quota-Remaining": "86"
+      },
+      "body": {
+        "choices": [
+          {
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "protected_material_code": {
+                "detected": false,
+                "filtered": false
+              },
+              "protected_material_text": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            },
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": [],
+              "content": "Hello workshop!",
+              "refusal": null,
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1794162332,
+        "id": "chatcmpl-Ei1s4DG2onNwWrrvz5xZgegpmXE3n",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "object": "chat.completion",
+        "prompt_filter_results": [
+          {
+            "prompt_index": 0,
+            "content_filter_results": {}
+          }
+        ],
+        "routing": {
+          "serving_pipereplica": "d20261107073155-05b27ce5-default-r2-dp0-default"
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_36de3d5958",
+        "usage": {
+          "completion_tokens": 3,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "latency_checkpoint": {
+            "engine_tbt_ms": 6,
+            "engine_ttft_ms": 26,
+            "engine_ttlt_ms": 48,
+            "pre_inference_ms": 72,
+            "service_tbt_ms": 6,
+            "service_ttft_ms": 427,
+            "service_ttlt_ms": 445,
+            "user_visible_ttft_ms": 355
+          },
+          "prompt_tokens": 11,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+          },
+          "total_tokens": 14
+        }
+      }
+    },
+    {
+      "project": "project-a",
+      "kind": "quota",
+      "status": 200,
+      "headers": {
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Tokens-Consumed": "316",
+        "X-Quota-Remaining": "0"
+      },
+      "body": {
+        "choices": [
+          {
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "protected_material_code": {
+                "detected": false,
+                "filtered": false
+              },
+              "protected_material_text": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            },
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": [],
+              "content": "Hello.",
+              "refusal": null,
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1794162340,
+        "id": "chatcmpl-Ei1sCcUvudY8BUSe0gG8DeUWXmgSH",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "object": "chat.completion",
+        "prompt_filter_results": [
+          {
+            "prompt_index": 0,
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "jailbreak": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            }
+          }
+        ],
+        "routing": {
+          "serving_pipereplica": "d20261106083749-52210aa0-default-r0-dp0-default"
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_36de3d5958",
+        "usage": {
+          "completion_tokens": 2,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "latency_checkpoint": {
+            "engine_tbt_ms": 4,
+            "engine_ttft_ms": 28,
+            "engine_ttlt_ms": 40,
+            "pre_inference_ms": 92,
+            "service_tbt_ms": 3,
+            "service_ttft_ms": 279,
+            "service_ttlt_ms": 286,
+            "user_visible_ttft_ms": 187
+          },
+          "prompt_tokens": 314,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+          },
+          "total_tokens": 316
+        }
+      }
+    },
+    {
+      "project": "project-a",
+      "kind": "quota",
+      "status": 403,
+      "headers": {
+        "X-Workshop-Policy": "workshop-token-limit",
+        "X-Workshop-Reason": "OpenAITokenQuotaExceeded",
+        "Retry-After": "2052",
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Quota-Remaining": "0"
+      },
+      "body": {
+        "statusCode": 403,
+        "message": "Token quota is exceeded. Try again in 34 minutes and 12 seconds."
+      }
+    },
+    {
+      "project": "project-b",
+      "kind": "quota",
+      "status": 200,
+      "headers": {
+        "X-Workshop-Counter-Run": "65f95c93ee0e4499ae0560d81c48ef7e",
+        "X-Tokens-Consumed": "17",
+        "X-Quota-Remaining": "83"
+      },
+      "body": {
+        "choices": [
+          {
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "protected_material_code": {
+                "detected": false,
+                "filtered": false
+              },
+              "protected_material_text": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            },
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "annotations": [],
+              "content": "Hello, other project!",
+              "refusal": null,
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1794162356,
+        "id": "chatcmpl-Ei1sSUa6GOKneT4xQYS8HpSpu4514",
+        "model": "gpt-4.1-mini-2025-04-14",
+        "object": "chat.completion",
+        "prompt_filter_results": [
+          {
+            "prompt_index": 0,
+            "content_filter_results": {
+              "hate": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "jailbreak": {
+                "detected": false,
+                "filtered": false
+              },
+              "self_harm": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "sexual": {
+                "filtered": false,
+                "severity": "safe"
+              },
+              "violence": {
+                "filtered": false,
+                "severity": "safe"
+              }
+            }
+          }
+        ],
+        "routing": {
+          "serving_pipereplica": "d20261107073155-05b27ce5-default-r1-dp0-default"
+        },
+        "service_tier": "default",
+        "system_fingerprint": "fp_36de3d5958",
+        "usage": {
+          "completion_tokens": 5,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "rejected_prediction_tokens": 0
+          },
+          "latency_checkpoint": {
+            "engine_tbt_ms": 6,
+            "engine_ttft_ms": 23,
+            "engine_ttlt_ms": 56,
+            "pre_inference_ms": 534,
+            "service_tbt_ms": 4,
+            "service_ttft_ms": 917,
+            "service_ttlt_ms": 934,
+            "user_visible_ttft_ms": 383
+          },
+          "prompt_tokens": 12,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+          },
+          "total_tokens": 17
+        }
+      }
+    }
+  ],
+  "status": "PASS"
+}

@@ -10,9 +10,9 @@ from openai import AzureOpenAI
 
 
 PROMPTS = [
-    "Explain what Microsoft Foundry is in one short sentence.",
-    "In one brief sentence, explain what Microsoft Foundry is.",
-    "Explain what Microsoft Foundry is in one short sentence.",
+    "What is 2 + 2? Reply with the integer only.",
+    "What is two plus two? Reply with the integer only.",
+    "What is 2 + 2? Reply with the integer only.",
 ]
 
 
@@ -41,6 +41,8 @@ def present(client: AzureOpenAI, deployment: str) -> None:
             sleep(2)
         start = perf_counter()
         text, response_id = answer(client, deployment, prompt)
+        if text.strip() != "4":
+            raise RuntimeError(f"Unexpected arithmetic answer {text!r}; expected exactly 4.")
         repeated = response_id in seen_ids
         reused += repeated
         seen_ids.add(response_id)

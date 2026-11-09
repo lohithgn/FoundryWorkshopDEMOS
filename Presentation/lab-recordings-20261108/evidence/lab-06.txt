@@ -1,0 +1,14 @@
+Lab 6: 6-content-safety
+Recorded 2026-11-08T15:12:18+00:00 — 2026-11-08T15:13:35+00:00
+What happens: Analyze text with Azure AI Content Safety and apply a visible severity gate.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Hate: 0
+SelfHarm: 0
+Sexual: 0
+Violence: 0
+Policy: ALLOW (threshold >= 2)

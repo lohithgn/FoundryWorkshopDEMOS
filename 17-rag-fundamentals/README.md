@@ -49,6 +49,9 @@ python demo.py
 ```
 
 Role assignment propagation can take minutes; retry a 403 after checking roles.
+For a newly created embedding deployment, the initial embedding requests
+retry `DeploymentNotFound` for up to five minutes before any Search index is created;
+other errors and a persistently missing deployment remain failures.
 Bicep assigns Foundry User (role ID `53ca6127-db72-4b80-b1b0-d745d6d5456d`,
 formerly Azure AI User), Search Service Contributor (index schema)
 and Search Index Data Contributor (upload/read/delete). Local auth is disabled.
@@ -92,7 +95,8 @@ az bicep build --file infra/main.bicep --stdout > .azure/template.json
 ```
 
 Tests cover lossless chunking, labeled metrics, distinct retrieval modes, citation
-and quote rejection, abstention, model request boundaries and bounded indexing wait.
+and quote rejection, abstention, model request boundaries, bounded model-readiness
+retry and bounded indexing wait.
 They do not prove live service availability, model quality, or Azure permissions.
 
 ## Live rerun (2026-10-26)

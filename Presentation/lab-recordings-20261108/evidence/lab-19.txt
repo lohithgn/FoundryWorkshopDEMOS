@@ -1,0 +1,33 @@
+Lab 19: 19-conversation-state
+Recorded 2026-11-08T16:20:21+00:00 — 2026-11-08T16:21:20+00:00
+What happens: A real model tutor with scoped SQLite history and explicit truncation.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Two logical application users, not an authentication demonstration.
+user=alice thread=lesson-4841e269b542 input_bound=269 reserved_output_tokens=120 removed_messages=0
+Acknowledged, your notebook label is MAPLE-742.
+Resumed persisted Alice conversation using a new SQLite connection.
+user=alice thread=lesson-4841e269b542 input_bound=374 reserved_output_tokens=120 removed_messages=0
+Your notebook label is MAPLE-742.
+user=bob thread=lesson-4841e269b542 input_bound=248 reserved_output_tokens=120 removed_messages=0
+I do not know your notebook label.
+Bob used the same thread ID but a different user scope: no Alice history.
+user=alice thread=lesson-4841e269b542 input_bound=663 reserved_output_tokens=120 removed_messages=4
+Resource cleanup means properly releasing resources like memory, files, or connections after use to prevent leaks and ensure system stability. Practice is key to mastering it.
+user=alice thread=lesson-4841e269b542 input_bound=446 reserved_output_tokens=120 removed_messages=2
+Resource cleanup means freeing or closing resources like files or memory after use to prevent leaks and ensure efficient program operation. Practice helps master this skill.
+user=alice thread=lesson-4841e269b542 input_bound=446 reserved_output_tokens=120 removed_messages=2
+Resource cleanup means freeing memory and closing files after use to prevent leaks and errors. Practice ensures you handle resources correctly every time. Keep practicing!
+user=alice thread=lesson-4841e269b542 input_bound=446 reserved_output_tokens=120 removed_messages=2
+Resource cleanup means freeing or closing resources like files or memory after use to prevent leaks. Practice ensures you handle cleanup correctly in various scenarios.
+user=alice thread=lesson-4841e269b542 input_bound=446 reserved_output_tokens=120 removed_messages=2
+Resource cleanup means freeing memory and closing files after use to prevent leaks and errors. Practice ensures you handle resources correctly and efficiently in your code.
+Opening notebook fact is absent from stored/model history after truncation.
+user=alice thread=lesson-4841e269b542 input_bound=262 reserved_output_tokens=120 removed_messages=2
+I do not know your notebook label.
+Reset Alice to empty history; Bob was unchanged.
+Deleted both demonstration conversations.

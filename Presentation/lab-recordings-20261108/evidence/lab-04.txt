@@ -1,0 +1,15 @@
+Lab 4: 4-agent-tools
+Recorded 2026-11-08T15:07:11+00:00 — 2026-11-08T15:08:45+00:00
+What happens: Publish an Azure Function in Foundry Toolbox and let a local agent call it.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Foundry Toolbox: workshop-tools-79a06bd4 / 1
+Tool result: {"attendees": 12, "currency": "USD", "pricePerAttendee": 25, "total": 300, "source": "workshop-price-tool-v1"}
+
+Agent answer:
+The workshop price for 12 attendees is $25 per attendee, with a total cost of $300 USD.
+Temporary toolbox version deleted.

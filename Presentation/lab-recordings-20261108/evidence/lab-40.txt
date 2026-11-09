@@ -1,0 +1,73 @@
+Lab 40: 40-voice-agent
+Recorded 2026-11-09T10:17:17+00:00 — 2026-11-09T10:20:45+00:00
+What happens: Create a native managed voice prompt agent and verify a real spoken WebSocket turn.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{
+  "stage": "native-voice",
+  "model": "gpt-realtime",
+  "agentName": "workshop-managed-voice",
+  "inputSha256": "0195138c3cb4ea5ad9fed7b20d998a58eeb11e6e8ebac8b3243f864b014e21f8",
+  "agentVersion": "1",
+  "agentKind": "voice",
+  "sessionId": "sess_EiGl8CgJN8kqO6as0kCtf",
+  "conversationId": "conv_0d83e941c550957700tPdxGIB4R6oeB2kf8ti2tB0LflH3BxfD",
+  "events": [
+    "session.created",
+    "session.updated",
+    "input_audio_buffer.speech_started",
+    "input_audio_buffer.speech_stopped",
+    "input_audio_buffer.committed",
+    "conversation.item.added",
+    "conversation.item.done",
+    "response.created",
+    "response.output_item.added",
+    "conversation.item.added",
+    "response.content_part.added",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio_transcript.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.delta",
+    "response.output_audio.done",
+    "response.output_audio_transcript.done",
+    "response.content_part.done",
+    "response.output_item.done",
+    "conversation.item.done",
+    "response.done",
+    "conversation.item.input_audio_transcription.completed"
+  ],
+  "inputTranscript": "The workshop code is 40; please say the workshop code in one short greeting.",
+  "outputTranscript": "The workshop code is 40\u2014welcome, glad to have you here!",
+  "outputBytes": 186000,
+  "responseCompleted": true,
+  "status": "PASS",
+  "persistedTranscript": {
+    "user": "The workshop code is 40; please say the workshop code in one short greeting.",
+    "assistant": "The workshop code is 40\u2014welcome, glad to have you here!"
+  },
+  "persistedRecordingBytes": 1014668
+}

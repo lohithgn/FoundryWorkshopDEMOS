@@ -1,0 +1,86 @@
+Lab 29: 29-toolbox-skill-discovery
+Recorded 2026-11-08T16:58:20+00:00 — 2026-11-08T16:59:43+00:00
+What happens: Discover Foundry Toolbox skills over MCP and load only the relevant instructions.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Created skill: workshop-brief-e56c43b006 / 1
+Created skill: support-triage-e56c43b006 / 1
+Created skill: incident-summary-e56c43b006 / 1
+Discovered metadata (no bodies loaded):
+  workshop-brief-e56c43b006: Entry document for skill 'workshop-brief-e56c43b006'. Read first; lists supporting files via the skill://workshop-brief-e56c43b006/{path} template. [skill://workshop-brief-e56c43b006/SKILL.md]
+  support-triage-e56c43b006: Entry document for skill 'support-triage-e56c43b006'. Read first; lists supporting files via the skill://support-triage-e56c43b006/{path} template. [skill://support-triage-e56c43b006/SKILL.md]
+  incident-summary-e56c43b006: Entry document for skill 'incident-summary-e56c43b006'. Read first; lists supporting files via the skill://incident-summary-e56c43b006/{path} template. [skill://incident-summary-e56c43b006/SKILL.md]
+
+User: Prepare a workshop briefing.
+Response: resp_081c3738914d48e1006af0aa6aeedc8195be46b6616931e479; status: completed
+Usage: {"input_tokens":389,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":30,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":419}
+MCP resources/read: skill://workshop-brief-e56c43b006/SKILL.md
+---
+name: workshop-brief-e56c43b006
+description: Use when asked to prepare a workshop briefing.
+---
+
+Read [the workshop checklist](references/checklist.md) before answering.
+Return only a JSON object with these exact fields, no extra fields or Markdown
+fences: kind ("brief"), before, during, after, reference_code (all four copied
+from the checklist), and skill_code ("BRIEF-29").
+
+Response: resp_081c3738914d48e1006af0aa6d82a481959583ecca69f11ee2; status: completed
+Usage: {"input_tokens":506,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":31,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":537}
+MCP resources/read: skill://workshop-brief-e56c43b006/references/checklist.md
+# Synthetic workshop checklist
+
+before: Sign in with Azure CLI.
+during: Use synthetic data only.
+after: Delete the demo resource group.
+reference_code: CHECKLIST-29
+
+Response: resp_081c3738914d48e1006af0aa6ff88881958df9a77b8af91c4d; status: completed
+Usage: {"input_tokens":581,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":65,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":646}
+Verified: {
+  "kind": "brief",
+  "before": "Sign in with Azure CLI.",
+  "during": "Use synthetic data only.",
+  "after": "Delete the demo resource group.",
+  "reference_code": "CHECKLIST-29",
+  "skill_code": "BRIEF-29"
+}
+
+User: Triage a synthetic support incident.
+Response: resp_0e0c94e66c3eda8b006af0aa72b68081949f114973de8b64dd; status: completed
+Usage: {"input_tokens":391,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":30,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":421}
+MCP resources/read: skill://support-triage-e56c43b006/SKILL.md
+---
+name: support-triage-e56c43b006
+description: Use when asked to triage a synthetic support incident.
+---
+
+This is a synthetic workshop exercise, not operational support guidance.
+Return only this JSON object, with no extra fields or Markdown fences:
+{"kind":"triage","first":"Record the synthetic case ID.","next":"Collect the error text.","skill_code":"TRIAGE-29"}
+
+Response: resp_0e0c94e66c3eda8b006af0aa7451ac8194b7d3c3a2da5b2503; status: completed
+Usage: {"input_tokens":477,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":32,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":509}
+Verified: {"kind":"triage","first":"Record the synthetic case ID.","next":"Collect the error text.","skill_code":"TRIAGE-29"}
+
+User: Summarize a resolved synthetic incident.
+Response: resp_0192571fc57766a4006af0aa76032881979593766e94d5a36e; status: completed
+Usage: {"input_tokens":392,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":28,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":420}
+MCP resources/read: skill://incident-summary-e56c43b006/SKILL.md
+---
+name: incident-summary-e56c43b006
+description: Use when asked to summarize a resolved synthetic incident.
+---
+
+This is a synthetic workshop exercise.
+Return only this JSON object, with no extra fields or Markdown fences:
+{"kind":"summary","status":"Resolved in the synthetic exercise.","follow_up":"Record the lesson learned.","skill_code":"SUMMARY-29"}
+
+Response: resp_0192571fc57766a4006af0aa78afb881979f115db32467c87f; status: completed
+Usage: {"input_tokens":464,"input_tokens_details":{"cache_write_tokens":0,"cached_tokens":0},"output_tokens":30,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":494}
+Verified: {"kind":"summary","status":"Resolved in the synthetic exercise.","follow_up":"Record the lesson learned.","skill_code":"SUMMARY-29"}
+Verified relevant skill loading and on-demand supplementary reference reading.

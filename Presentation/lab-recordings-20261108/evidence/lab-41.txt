@@ -1,0 +1,410 @@
+Lab 41: 41-content-understanding
+Recorded 2026-11-09T10:20:52+00:00 — 2026-11-09T10:24:36+00:00
+What happens: GA native Content Understanding schema extraction with service-grounded evidence.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Configuring native CU model deployment defaults.
+Checking native document analyzer workshop_document_gpt_5_2.
+Submitting real document bytes to GA analyzeBinary.
+Submitted real document CU operation for workshop_document_gpt_5_2.
+Checking native audio analyzer workshop_audio_gpt_5_2.
+Submitting real audio bytes to GA analyzeBinary.
+Submitted real audio CU operation for workshop_audio_gpt_5_2.
+{
+  "status": "PASS",
+  "stage": "GA-native-CU",
+  "apiVersion": "2025-11-01",
+  "modalities": {
+    "document": {
+      "status": "PASS",
+      "analyzerId": "workshop_document_gpt_5_2",
+      "operationId": "31c93d2b-2eae-49da-b9a4-dc9af1aaa2b9",
+      "operationLocation": "https://foundry-cu-mwm43b7kr7w72.services.ai.azure.com/contentunderstanding/analyzerResults/31c93d2b-2eae-49da-b9a4-dc9af1aaa2b9?api-version=2025-11-01",
+      "assetSha256": "54546a8912a65b7790b0bf2f2a36c059c2066fc6475fa367aebda822b8841f47",
+      "fields": {
+        "Workshop": {
+          "value": "Cedar Workshop",
+          "confidence": 0.919,
+          "source": "D(1,2.2577,0.9175,4.1369,0.9242,4.1359,1.2102,2.2567,1.2034)"
+        },
+        "Room": {
+          "value": "Blue Room",
+          "confidence": 0.982,
+          "source": "D(1,1.7966,1.3386,3.0448,1.3412,3.0443,1.5946,1.7961,1.5920)"
+        },
+        "Seats": {
+          "value": 12,
+          "confidence": 0.981,
+          "source": "D(1,1.7931,1.7534,2.0607,1.7531,2.0607,2.0029,1.7934,2.0021)"
+        }
+      }
+    },
+    "audio": {
+      "status": "PASS",
+      "analyzerId": "workshop_audio_gpt_5_2",
+      "operationId": "15acfba1-6475-45ac-acbc-8faf94a76629",
+      "operationLocation": "https://foundry-cu-mwm43b7kr7w72.services.ai.azure.com/contentunderstanding/analyzerResults/15acfba1-6475-45ac-acbc-8faf94a76629?api-version=2025-11-01",
+      "assetSha256": "ada4ba4840313b6846b2167e9d32c892bb1ce2a8b1a6b98ddfea1f41f37de21c",
+      "fields": {
+        "Workshop": {
+          "value": "Cedar Workshop",
+          "confidence": null,
+          "source": null,
+          "confidenceAvailability": "not-emitted-by-GA-audio",
+          "transcriptPhrases": [
+            {
+              "speaker": "Speaker 1",
+              "startTimeMs": 110,
+              "endTimeMs": 7390,
+              "text": "This is a synthetic workshop notice: The workshop is Cedar Workshop the room is Blue Room there are twelve seats.",
+              "confidence": 0.758,
+              "words": [
+                {
+                  "startTimeMs": 110,
+                  "endTimeMs": 270,
+                  "text": "This"
+                },
+                {
+                  "startTimeMs": 270,
+                  "endTimeMs": 430,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 430,
+                  "endTimeMs": 510,
+                  "text": "a"
+                },
+                {
+                  "startTimeMs": 510,
+                  "endTimeMs": 1150,
+                  "text": "synthetic"
+                },
+                {
+                  "startTimeMs": 1150,
+                  "endTimeMs": 1710,
+                  "text": "workshop"
+                },
+                {
+                  "startTimeMs": 1710,
+                  "endTimeMs": 2270,
+                  "text": "notice:"
+                },
+                {
+                  "startTimeMs": 2430,
+                  "endTimeMs": 2590,
+                  "text": "The"
+                },
+                {
+                  "startTimeMs": 2590,
+                  "endTimeMs": 3230,
+                  "text": "workshop"
+                },
+                {
+                  "startTimeMs": 3230,
+                  "endTimeMs": 3350,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 3350,
+                  "endTimeMs": 3710,
+                  "text": "Cedar"
+                },
+                {
+                  "startTimeMs": 3710,
+                  "endTimeMs": 4430,
+                  "text": "Workshop"
+                },
+                {
+                  "startTimeMs": 4590,
+                  "endTimeMs": 4750,
+                  "text": "the"
+                },
+                {
+                  "startTimeMs": 4750,
+                  "endTimeMs": 5070,
+                  "text": "room"
+                },
+                {
+                  "startTimeMs": 5070,
+                  "endTimeMs": 5190,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 5190,
+                  "endTimeMs": 5390,
+                  "text": "Blue"
+                },
+                {
+                  "startTimeMs": 5390,
+                  "endTimeMs": 5870,
+                  "text": "Room"
+                },
+                {
+                  "startTimeMs": 6030,
+                  "endTimeMs": 6270,
+                  "text": "there"
+                },
+                {
+                  "startTimeMs": 6270,
+                  "endTimeMs": 6430,
+                  "text": "are"
+                },
+                {
+                  "startTimeMs": 6430,
+                  "endTimeMs": 6750,
+                  "text": "twelve"
+                },
+                {
+                  "startTimeMs": 6750,
+                  "endTimeMs": 7390,
+                  "text": "seats."
+                }
+              ],
+              "locale": "en-US"
+            }
+          ]
+        },
+        "Room": {
+          "value": "Blue Room",
+          "confidence": null,
+          "source": null,
+          "confidenceAvailability": "not-emitted-by-GA-audio",
+          "transcriptPhrases": [
+            {
+              "speaker": "Speaker 1",
+              "startTimeMs": 110,
+              "endTimeMs": 7390,
+              "text": "This is a synthetic workshop notice: The workshop is Cedar Workshop the room is Blue Room there are twelve seats.",
+              "confidence": 0.758,
+              "words": [
+                {
+                  "startTimeMs": 110,
+                  "endTimeMs": 270,
+                  "text": "This"
+                },
+                {
+                  "startTimeMs": 270,
+                  "endTimeMs": 430,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 430,
+                  "endTimeMs": 510,
+                  "text": "a"
+                },
+                {
+                  "startTimeMs": 510,
+                  "endTimeMs": 1150,
+                  "text": "synthetic"
+                },
+                {
+                  "startTimeMs": 1150,
+                  "endTimeMs": 1710,
+                  "text": "workshop"
+                },
+                {
+                  "startTimeMs": 1710,
+                  "endTimeMs": 2270,
+                  "text": "notice:"
+                },
+                {
+                  "startTimeMs": 2430,
+                  "endTimeMs": 2590,
+                  "text": "The"
+                },
+                {
+                  "startTimeMs": 2590,
+                  "endTimeMs": 3230,
+                  "text": "workshop"
+                },
+                {
+                  "startTimeMs": 3230,
+                  "endTimeMs": 3350,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 3350,
+                  "endTimeMs": 3710,
+                  "text": "Cedar"
+                },
+                {
+                  "startTimeMs": 3710,
+                  "endTimeMs": 4430,
+                  "text": "Workshop"
+                },
+                {
+                  "startTimeMs": 4590,
+                  "endTimeMs": 4750,
+                  "text": "the"
+                },
+                {
+                  "startTimeMs": 4750,
+                  "endTimeMs": 5070,
+                  "text": "room"
+                },
+                {
+                  "startTimeMs": 5070,
+                  "endTimeMs": 5190,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 5190,
+                  "endTimeMs": 5390,
+                  "text": "Blue"
+                },
+                {
+                  "startTimeMs": 5390,
+                  "endTimeMs": 5870,
+                  "text": "Room"
+                },
+                {
+                  "startTimeMs": 6030,
+                  "endTimeMs": 6270,
+                  "text": "there"
+                },
+                {
+                  "startTimeMs": 6270,
+                  "endTimeMs": 6430,
+                  "text": "are"
+                },
+                {
+                  "startTimeMs": 6430,
+                  "endTimeMs": 6750,
+                  "text": "twelve"
+                },
+                {
+                  "startTimeMs": 6750,
+                  "endTimeMs": 7390,
+                  "text": "seats."
+                }
+              ],
+              "locale": "en-US"
+            }
+          ]
+        },
+        "Seats": {
+          "value": 12,
+          "confidence": null,
+          "source": null,
+          "confidenceAvailability": "not-emitted-by-GA-audio",
+          "transcriptPhrases": [
+            {
+              "speaker": "Speaker 1",
+              "startTimeMs": 110,
+              "endTimeMs": 7390,
+              "text": "This is a synthetic workshop notice: The workshop is Cedar Workshop the room is Blue Room there are twelve seats.",
+              "confidence": 0.758,
+              "words": [
+                {
+                  "startTimeMs": 110,
+                  "endTimeMs": 270,
+                  "text": "This"
+                },
+                {
+                  "startTimeMs": 270,
+                  "endTimeMs": 430,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 430,
+                  "endTimeMs": 510,
+                  "text": "a"
+                },
+                {
+                  "startTimeMs": 510,
+                  "endTimeMs": 1150,
+                  "text": "synthetic"
+                },
+                {
+                  "startTimeMs": 1150,
+                  "endTimeMs": 1710,
+                  "text": "workshop"
+                },
+                {
+                  "startTimeMs": 1710,
+                  "endTimeMs": 2270,
+                  "text": "notice:"
+                },
+                {
+                  "startTimeMs": 2430,
+                  "endTimeMs": 2590,
+                  "text": "The"
+                },
+                {
+                  "startTimeMs": 2590,
+                  "endTimeMs": 3230,
+                  "text": "workshop"
+                },
+                {
+                  "startTimeMs": 3230,
+                  "endTimeMs": 3350,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 3350,
+                  "endTimeMs": 3710,
+                  "text": "Cedar"
+                },
+                {
+                  "startTimeMs": 3710,
+                  "endTimeMs": 4430,
+                  "text": "Workshop"
+                },
+                {
+                  "startTimeMs": 4590,
+                  "endTimeMs": 4750,
+                  "text": "the"
+                },
+                {
+                  "startTimeMs": 4750,
+                  "endTimeMs": 5070,
+                  "text": "room"
+                },
+                {
+                  "startTimeMs": 5070,
+                  "endTimeMs": 5190,
+                  "text": "is"
+                },
+                {
+                  "startTimeMs": 5190,
+                  "endTimeMs": 5390,
+                  "text": "Blue"
+                },
+                {
+                  "startTimeMs": 5390,
+                  "endTimeMs": 5870,
+                  "text": "Room"
+                },
+                {
+                  "startTimeMs": 6030,
+                  "endTimeMs": 6270,
+                  "text": "there"
+                },
+                {
+                  "startTimeMs": 6270,
+                  "endTimeMs": 6430,
+                  "text": "are"
+                },
+                {
+                  "startTimeMs": 6430,
+                  "endTimeMs": 6750,
+                  "text": "twelve"
+                },
+                {
+                  "startTimeMs": 6750,
+                  "endTimeMs": 7390,
+                  "text": "seats."
+                }
+              ],
+              "locale": "en-US"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

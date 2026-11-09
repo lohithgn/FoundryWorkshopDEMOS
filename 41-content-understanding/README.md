@@ -16,6 +16,10 @@ Both extract the same known synthetic facts: **Cedar Workshop**, **Blue Room**,
 polls real service operations, and compares every extracted fact to ground truth.
 Each long-running operation has a bounded 600-second deadline; cold-start or
 model-capacity delays are surfaced rather than replaced with local extraction.
+Immediately after ARM deployment, the idempotent defaults configuration retries
+the specific `DeploymentIdNotFound` response for one of the requested deployment
+aliases for up to 180 seconds. Other errors and a persistent missing deployment
+still fail explicitly.
 
 - **Document:** requires service-emitted confidence >= 0.8 for every field,
   actual document source polygons referencing returned pages, and matching
@@ -103,7 +107,8 @@ Bicep build/lint and EastUS2 ARM deployment succeeded, and both GA native
 modalities passed live. Document confidences were **0.919 / 0.982 / 0.981** with
 real page polygons. Audio returned the same three facts with real transcript
 timestamps and explicitly absent per-field confidence. The authoritative replay
-result is `.azure/live-report.json`.
+result is `.azure/live-report.json`. A separate 2026-11-09 recording run also
+passed both modalities and its resource group was verified deleted.
 
 Ignored `.azure/` contains `deployment.json` in
 `{subscription,resourceGroup,outputs}` format, preflight/command logs,
@@ -118,13 +123,14 @@ An HTTP/service/model authorization failure is `BLOCKED`, not a local fallback.
 microphone capture. `python3 generate_assets.py` regenerates PDF and macOS
 Samantha speech; committed bytes work cross-platform. No personal data.
 
-**Resources remain deployed and billable.** CU document pages/audio duration,
+**Deployed resources are billable.** CU document pages/audio duration,
 completion/embedding tokens and retained model deployments can incur charges.
 This template allocates throughput capacity 10 for each deployment, not prepaid
 PTUs. GlobalStandard models bill for token usage, not an idle PTU reservation.
-The live RG also retains the failed `cu-completion` `gpt-5.4-mini` deployment
-and its analyzer for diagnostic evidence; these are not a passing fallback.
-Delete only the isolated lab RG when finished:
+The historical standalone lab resource group was absent after cleanup on
+2026-11-09. It previously retained a failed `cu-completion` `gpt-5.4-mini`
+deployment and analyzer for diagnosis; these were not a passing fallback.
+After a new run, delete only its isolated lab resource group when finished:
 `az group delete --name rg-foundry-content-understanding-demo --yes --no-wait`.
 
 ## Official current references

@@ -47,6 +47,11 @@ python demo.py
    the deployed model as a coherence judge; this is not a local score.
 3. Compare the per-item results and open the reported run/report URL when present.
 
+The first question supplies product context to avoid an ambiguous product name.
+The second specifies supervised training with labeled data rather than implying
+that all training uses labels. These prompts are not factuality checks of the
+generated answers.
+
 The script polls for up to ten minutes. A failed run, errored item, incomplete
 counts, mismatched source rows, missing grader results, or timeout exits nonzero.
 The script checks that output items are `completed` and contain actual completed

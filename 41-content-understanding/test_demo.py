@@ -235,6 +235,52 @@ class ContentTests(unittest.TestCase):
             self.assertEqual(cu.request("GET", "defaults").status_code, 200)
         self.assertEqual(calls, ["GET", "GET"])
 
+    def test_defaults_retry_only_requested_deployment_not_yet_visible(self):
+        credential = Mock()
+        credential.get_token.return_value.token = "unit-test-only-not-a-real-token"
+        calls = []
+
+        def handler(request):
+            calls.append(request)
+            if len(calls) == 1:
+                return httpx.Response(400, json={"error": {"innererror": {
+                    "code": "DeploymentIdNotFound",
+                    "message": "Validation failed: the OpenAI deployment 'completion' does not exist.",
+                }}})
+            return httpx.Response(200, json={"modelDeployments": {"model": "completion"}})
+
+        with httpx.Client(transport=httpx.MockTransport(handler)) as http, patch.object(demo.time, "sleep"):
+            cu = demo.ContentUnderstanding("https://example.services.ai.azure.com", credential, http)
+            self.assertEqual(cu.configure_defaults({"model": "completion"}),
+                             {"modelDeployments": {"model": "completion"}})
+        self.assertEqual([request.method for request in calls], ["PATCH", "PATCH"])
+        self.assertEqual(calls[0].content, calls[1].content)
+
+    def test_defaults_rejects_unrelated_or_persistent_errors(self):
+        cases = (
+            ("OtherError", "OpenAI deployment 'completion' does not exist", 0),
+            ("DeploymentIdNotFound", "OpenAI deployment 'different' does not exist", 0),
+            ("DeploymentIdNotFound", "OpenAI deployment 'completion' does not exist", 181),
+        )
+        for code, message, elapsed in cases:
+            with self.subTest(code=code, message=message, elapsed=elapsed):
+                credential = Mock()
+                credential.get_token.return_value.token = "unit-test-only-not-a-real-token"
+                calls = []
+
+                def handler(request):
+                    calls.append(request.method)
+                    return httpx.Response(400, json={"error": {"innererror": {
+                        "code": code, "message": message,
+                    }}})
+
+                with httpx.Client(transport=httpx.MockTransport(handler)) as http, \
+                        patch.object(demo.time, "monotonic", side_effect=[0, elapsed]):
+                    cu = demo.ContentUnderstanding("https://example.services.ai.azure.com", credential, http)
+                    with self.assertRaisesRegex(RuntimeError, "CU HTTP 400"):
+                        cu.configure_defaults({"model": "completion"})
+                self.assertEqual(calls, ["PATCH"])
+
     def test_transport_retry_budget_is_bounded(self):
         credential = Mock()
         credential.get_token.return_value.token = "unit-test-only-not-a-real-token"

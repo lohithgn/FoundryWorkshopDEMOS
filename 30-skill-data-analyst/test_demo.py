@@ -102,6 +102,37 @@ class AnalystTests(unittest.TestCase):
         )
         self.client.responses.delete.assert_called_once_with("resp-test")
 
+    def test_initial_skill_upload_retries_only_project_not_found(self):
+        def not_found(code, message, status=404):
+            response = Mock(status_code=status, reason="Not Found")
+            response.text.return_value = json.dumps({"error": {"code": code, "message": message}})
+            return demo.ResourceNotFoundError(response=response)
+
+        upload = self.project.beta.skills.create_from_files
+        upload.side_effect = [not_found("NotFound", "Project not found"), SimpleNamespace(version="1")]
+        with patch.object(demo, "monotonic", side_effect=[0, 1]), \
+                patch.object(demo, "sleep") as sleep, redirect_stdout(self.stdout):
+            skill = demo.upload_skill(self.project, "unique-skill", b"archive", timeout=30)
+        self.assertEqual(skill.version, "1")
+        sleep.assert_called_once_with(15)
+        for call in upload.call_args_list:
+            self.assertEqual(call.kwargs["name"], "unique-skill")
+            self.assertEqual(call.kwargs["content"].as_dict()["files"][0][1].read(), b"archive")
+
+        for error, now in (
+            (not_found("NotFound", "A different resource was not found"), 1),
+            (not_found("OtherCode", "Project not found"), 1),
+            (not_found("NotFound", "Project not found", status=403), 1),
+            (not_found("NotFound", "Project not found"), 31),
+        ):
+            upload.side_effect = error
+            with self.subTest(error=str(error), now=now), \
+                    patch.object(demo, "monotonic", side_effect=[0, now]), \
+                    patch.object(demo, "sleep") as sleep:
+                with self.assertRaises(demo.ResourceNotFoundError):
+                    demo.upload_skill(self.project, "unique-skill", b"archive", timeout=30)
+                sleep.assert_not_called()
+
     def test_happy_path_pins_injects_executes_downloads_and_deletes(self):
         with patch.object(Path, "write_bytes") as write:
             self.run_demo()
@@ -122,8 +153,11 @@ class AnalystTests(unittest.TestCase):
         )
         request = self.client.responses.create.call_args.kwargs
         self.assertEqual(request["tool_choice"], "required")
+        self.assertEqual(request["include"], ["code_interpreter_call.outputs"])
         self.assertEqual(request["timeout"], 180.0)
         self.assertEqual(request["extra_body"]["agent_reference"]["version"], "7")
+        self.assertIn("After saving both files", request["input"])
+        self.assertIn("print CSV_ANALYSIS_EXECUTED in the Code Interpreter execution log", request["input"])
         self.assertNotIn("95000", request["input"])
         self.assertNotIn("95000", definition.instructions)
         self.assertEqual(self.client.files.create.call_args.kwargs["file"][1], demo.CSV_DATA)
@@ -134,6 +168,19 @@ class AnalystTests(unittest.TestCase):
         self.assertIn("File citation:", self.stdout.getvalue())
         self.assertIn("SHA256=", self.stdout.getvalue())
         self.assert_all_deleted()
+
+    def test_requests_code_interpreter_outputs_required_for_the_sandbox_marker(self):
+        def create(**kwargs):
+            payload = deepcopy(self.payload)
+            if "code_interpreter_call.outputs" not in kwargs.get("include", []):
+                payload["output"][0]["outputs"] = None
+            return Response.model_validate(payload)
+
+        self.client.responses.create.side_effect = create
+        self.run_demo()
+        self.assertEqual(self.client.responses.create.call_args.kwargs["include"],
+                         ["code_interpreter_call.outputs"])
+        self.assertIn("Sandbox logs:", self.stdout.getvalue())
 
     def test_fixture_oracle_is_independent_and_correct(self):
         rows = list(csv.DictReader(StringIO(demo.CSV_DATA.decode())))
@@ -344,7 +391,7 @@ class AnalystTests(unittest.TestCase):
             (Containers.create, {"name", "file_ids", "expires_after"}),
             (Containers.delete, {"container_id"}),
             (Content.retrieve, {"file_id", "container_id"}),
-            (Responses.create, {"extra_body", "tool_choice", "timeout"}),
+            (Responses.create, {"extra_body", "include", "tool_choice", "timeout"}),
             (Responses.delete, {"response_id"}),
         ]:
             self.assertTrue(names <= set(inspect.signature(method).parameters))

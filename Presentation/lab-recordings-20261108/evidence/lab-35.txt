@@ -1,0 +1,35 @@
+Lab 35: 35-work-iq
+Recorded 2026-11-08T17:21:57+00:00 — 2026-11-08T17:22:59+00:00
+What happens: Persist a native Foundry Work IQ agent and verify the calling user's identity.
+Tests: passed
+Deployment: succeeded
+Demo run: failed or blocked (nonzero exit)
+Status: failed
+
+ACTUAL CAPTURED OUTPUT
+Persistent Foundry agent: work-iq-user-agent, version 1
+Private live report: /Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/.azure/a6fad86a4c0b5d0cacc5-report.json
+Traceback (most recent call last):
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/demo.py", line 302, in <module>
+    main()
+    ~~~~^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/demo.py", line 263, in main
+    check_connection(http, credential, config)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/demo.py", line 105, in check_connection
+    raise RuntimeError("Work IQ OAuth connection is missing. Complete the administrator setup in "
+                       "the lab README and run configure_connection.py. No shared identity fallback is used.")
+RuntimeError: Work IQ OAuth connection is missing. Complete the administrator setup in the lab README and run configure_connection.py. No shared identity fallback is used.
+Persistent Foundry agent: work-iq-user-agent, version 1
+Private live report: /Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/.azure/a6fad86a4c0b5d0cacc5-report.json
+Traceback (most recent call last):
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/demo.py", line 302, in <module>
+    main()
+    ~~~~^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/demo.py", line 263, in main
+    check_connection(http, credential, config)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/michalfu/Dev/FoundryWorkshops102026DEMOS/35-work-iq/demo.py", line 105, in check_connection
+    raise RuntimeError("Work IQ OAuth connection is missing. Complete the administrator setup in "
+                       "the lab README and run configure_connection.py. No shared identity fallback is used.")
+RuntimeError: Work IQ OAuth connection is missing. Complete the administrator setup in the lab README and run configure_connection.py. No shared identity fallback is used.

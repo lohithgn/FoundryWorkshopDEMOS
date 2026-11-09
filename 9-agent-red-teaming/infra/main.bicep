@@ -45,6 +45,7 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
     displayName: 'Agent red teaming demo'
     description: 'A small Foundry managed red teaming scan of a local agent callback.'
   }
+  dependsOn: [model]
 }
 
 resource model 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {

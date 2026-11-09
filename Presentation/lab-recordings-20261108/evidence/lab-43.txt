@@ -1,0 +1,11 @@
+Lab 43: 43-agent-routines
+Recorded 2026-11-08T18:42:45+00:00 — 2026-11-08T18:44:04+00:00
+What happens: Dispatch a native one-time routine, verify identity and response linkage, and delete it.
+Tests: passed
+Deployment: succeeded
+Demo run: failed or blocked (nonzero exit)
+Status: blocked
+
+ACTUAL CAPTURED OUTPUT
+{"status": "BLOCKED", "timer": "BLOCKED", "routine_deleted": true, "blockers": [{"type": "HttpResponseError", "message": "(UserError) Failed to acquire the target agent's agentic identity token for routine dispatch. This is a durable identity or tenant-configuration problem: the target agent's Agent Identity Blueprint may not be installed in the tenant, token issuance may be blocked by a Conditional Access policy, or the target may not have a configured agent identity. Resolve the agent identity configuration and retry.\nCode: UserError\nMessage: Failed to acquire the target agent's agentic identity token for routine dispatch. This is a durable identity or tenant-configuration problem: the target agent's Agent Identity Blueprint may not be installed in the tenant, token issuance may be blocked by a Conditional Access policy, or the target may not have a configured agent identity. Resolve the agent identity configuration and retry."}]}
+{"status": "BLOCKED", "timer": "BLOCKED", "routine_deleted": true, "blockers": [{"type": "HttpResponseError", "message": "(UserError) Failed to acquire the target agent's agentic identity token for routine dispatch. This is a durable identity or tenant-configuration problem: the target agent's Agent Identity Blueprint may not be installed in the tenant, token issuance may be blocked by a Conditional Access policy, or the target may not have a configured agent identity. Resolve the agent identity configuration and retry.\nCode: UserError\nMessage: Failed to acquire the target agent's agentic identity token for routine dispatch. This is a durable identity or tenant-configuration problem: the target agent's Agent Identity Blueprint may not be installed in the tenant, token issuance may be blocked by a Conditional Access policy, or the target may not have a configured agent identity. Resolve the agent identity configuration and retry."}]}

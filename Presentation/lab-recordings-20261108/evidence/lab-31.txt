@@ -1,0 +1,19 @@
+Lab 31: 31-native-agent-memory
+Recorded 2026-11-08T17:04:33+00:00 — 2026-11-08T17:05:48+00:00
+What happens: Extract, recall and forget native Foundry memories for two authenticated users.
+Tests: passed
+Deployment: succeeded
+Demo run: failed or blocked (nonzero exit)
+Status: blocked
+
+ACTUAL CAPTURED OUTPUT
+usage: demo.py [-h] [--preflight] [--tenant TENANT]
+               [--second-config SECOND_CONFIG]
+               [--project-endpoint PROJECT_ENDPOINT] [--deployment DEPLOYMENT]
+               [--embedding-deployment EMBEDDING_DEPLOYMENT]
+demo.py: error: Two-user authentication preflight failed (ValueError). Set AZURE_TENANT_ID and SECOND_AZURE_CONFIG_DIR; sign both real users in. No names-as-auth or synthetic identity fallback.
+usage: demo.py [-h] [--preflight] [--tenant TENANT]
+               [--second-config SECOND_CONFIG]
+               [--project-endpoint PROJECT_ENDPOINT] [--deployment DEPLOYMENT]
+               [--embedding-deployment EMBEDDING_DEPLOYMENT]
+demo.py: error: Two-user authentication preflight failed (ValueError). Set AZURE_TENANT_ID and SECOND_AZURE_CONFIG_DIR; sign both real users in. No names-as-auth or synthetic identity fallback.

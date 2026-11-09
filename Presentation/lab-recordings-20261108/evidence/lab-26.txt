@@ -1,0 +1,15 @@
+Lab 26: 26-multimodal
+Recorded 2026-11-08T16:39:12+00:00 — 2026-11-08T16:40:02+00:00
+What happens: Synthetic receipt understanding: schema validity versus visual truth.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{"image": "clear.png", "truth": {"merchant": "WORKSHOP CAFE", "currency": "USD", "total": 12.5, "uncertainty": []}, "status": "complete", "schema_ok": true, "prediction": {"merchant": "WORKSHOP CAFE", "currency": "USD", "total": 12.5, "uncertainty": []}, "field_matches": {"merchant": true, "currency": true, "total": true, "uncertainty": true}, "correct": true, "serving_model": "gpt-4.1-mini-2025-04-14", "usage": {"completion_tokens": 23, "prompt_tokens": 615, "total_tokens": 638, "completion_tokens_details": {"accepted_prediction_tokens": 0, "audio_tokens": 0, "reasoning_tokens": 0, "rejected_prediction_tokens": 0}, "prompt_tokens_details": {"audio_tokens": 0, "cached_tokens": 0, "image_tokens": 260}, "latency_checkpoint": {"engine_tbt_ms": 7, "engine_ttft_ms": 102, "engine_ttlt_ms": 259, "pre_inference_ms": 192, "service_tbt_ms": 7, "service_ttft_ms": 755, "service_ttlt_ms": 907, "user_visible_ttft_ms": 564}}, "estimated_usd": 0.0002828}
+{"image": "ambiguous.png", "truth": {"merchant": "WORKSHOP CAFE", "currency": null, "total": null, "uncertainty": ["currency_missing", "total_unreadable"]}, "status": "complete", "schema_ok": true, "prediction": {"merchant": "WORKSHOP CAFE", "currency": null, "total": null, "uncertainty": ["currency_missing", "total_unreadable"]}, "field_matches": {"merchant": true, "currency": true, "total": true, "uncertainty": true}, "correct": true, "serving_model": "gpt-4.1-mini-2025-04-14", "usage": {"completion_tokens": 29, "prompt_tokens": 615, "total_tokens": 644, "completion_tokens_details": {"accepted_prediction_tokens": 0, "audio_tokens": 0, "reasoning_tokens": 0, "rejected_prediction_tokens": 0}, "prompt_tokens_details": {"audio_tokens": 0, "cached_tokens": 0, "image_tokens": 260}, "latency_checkpoint": {"engine_tbt_ms": 6, "engine_ttft_ms": 92, "engine_ttlt_ms": 278, "pre_inference_ms": 161, "service_tbt_ms": 6, "service_ttft_ms": 901, "service_ttlt_ms": 1082, "user_visible_ttft_ms": 740}}, "estimated_usd": 0.00029239999999999995}
+{"schema_compliance": 1.0, "exact_visual_accuracy": 1.0}
+Illustrative USD/million tokens: input=0.4, output=1.6.
+Prompt usage includes image tokens where exposed. No cache discount/tax/retry adjustment; not an invoice.
+Valid structure does not prove visual accuracy. Unreadable ink cannot be recovered; do not guess.

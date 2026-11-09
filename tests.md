@@ -8,9 +8,33 @@ The [catalog](./demos.md) describes all 47 labs (numbered 0-46); the
 [backlog](./BACKLOG.md) tracks acceptance criteria.
 
 The documentation review on 2026-11-03 reconciled existing evidence; it did not
-redeploy resources or repeat paid live tests. The latest new-lab offline
-verification is lab 0 below; the latest new-lab live verification is the
-labs 38-46 section.
+redeploy resources or repeat paid live tests. The later recovery checks below
+include new live executions and supersede older results for those runs.
+
+## Recovery verification, 2026-11-09
+
+- **Lab 0:** both comparison models returned the reference answer of 11;
+  all three native batch requests completed. The model's top-p explanation
+  overstates coherence: restricting token selection does not guarantee it.
+- **Lab 7:** all three live gateway answers were `4`. In a separate traced
+  session, the first request reached the backend and the paraphrase reused
+  the response without backend forwarding.
+- **Lab 8:** cloud coherence evaluation passed 2/2 and the answers were
+  factually reviewed. **Lab 17:** all 18 answerable retrieval queries were
+  supported and all six unknown queries abstained.
+- **Lab 30:** the native sandbox produced the correct six-row report and a
+  visually matching chart after correcting its initial file path and integer
+  serialization. **Lab 33:** the live promotion, pinning and rollback passed;
+  the intentionally incorrect USD 40 candidate was rejected.
+- Additional recovery runs passed for labs 2, 9, 14, 18, 23, 24, 38, 40
+  and 41. Lab 14's 401 was an expected authorization denial; lab 24's
+  immediate Activity Log query returned no records. Lab 38 verified model
+  and agent guardrails, not tool boundaries.
+
+These are dated observations, not guarantees of future availability. Each
+deployed recovery run used a separate owned resource group and verified its
+deletion. Labs 10, 12, 20, 21, 31, 32, 35, 37, 43 and 45 did not have a
+complete verified demo in this recording run.
 
 ## Lab 0: introductory model basics, 2026-11-07
 
@@ -37,10 +61,10 @@ and no paid inference or native batch completion was tested.**
 - Relative links in the five directly related README/root documents resolve,
   code fences balance, and `git diff --check` passed.
 
-The native batch implementation only passes after all three downloaded
-responses validate; submission or a pending job is not a live pass. Azure
-availability, account/RBAC creation, real sampling/reasoning responses and
-completed batch results remain unverified.
+As of this 2026-11-07 check, the native batch implementation required all
+three downloaded responses to validate; submission or a pending job is not a
+live pass. Azure availability, account/RBAC creation, real sampling/reasoning
+responses and completed batch results had not yet been verified.
 
 ## Repository documentation review, 2026-11-03
 
@@ -68,11 +92,11 @@ These checks do not prove current Azure availability or resolve native blockers.
 
 | Labs | Latest recorded evidence and limitations |
 | --- | --- |
-| 0 | Introductory sampling/chat/reasoning/native batch implementation; offline checks recorded below, Azure deployment and live batch completion not verified. |
-| 1-13 | Historical baseline and follow-ups below; 3's current two-run comparison, 7's replacement gateway stack and 11's project-enabled template are not live-verified; 12 is identity-blocked. |
-| 14-26 | Twelve live passes and one blocker (21), including the later 14 RBAC and 23 GitHub OIDC follow-ups. |
+| 0 | Sampling, chat/reasoning comparison and all three native batch requests live-verified on 2026-11-09; see the factual caveat above. |
+| 1-13 | Recent live recording passes for 1-9, 11 and 13; 10 lacked verified inference and 12 was identity-blocked. |
+| 14-26 | Live recordings passed for 14-19 and 22-26; 20 lacked a completed human approval and 21 required two real identities. |
 | 27 | Managed ingestion and agent API gates passed; authenticated portal visual check remains unverified. |
-| 28-33 | Offline validation only; native preview and identity/browser setup are not established by unit tests. |
+| 28-33 | Live recordings passed for 28, 29, 30 and 33; 31 and 32 remained blocked by identity or browser/approval prerequisites. |
 | 34 | Document Intelligence twelve-PDF corpus live-verified. |
 | 35 | Deployed; native Work IQ authorization remains blocked. |
 | 36 | Hosted runtime, session behavior and telemetry live-verified. |
@@ -88,15 +112,15 @@ Undated baseline entries are preserved as historical observations, not fresh
 | --- | --- |
 | [1 - Model Router](./1-model-router/README.md) | Passed; dated evidence in backlog F001 (2026-10-25). |
 | [2 - Workflow Agent](./2-workflow-agent/README.md) | Historical pass after retry. |
-| [3 - Web search](./3-webiq-agent/README.md) | Historical with-tool path passed 2026-10-26: default/custom searches, 3/5 citations and agent deletion verified. The current with/without-tool comparison needs its own live smoke test. |
+| [3 - Web search](./3-webiq-agent/README.md) | The 2026-11-08 live comparison made one search with three citations; the tool-free run made none. |
 | [4 - Agent tools](./4-agent-tools/README.md) | Passed 2026-10-26: Windows P0v3 in West US 2; real Function -> Toolbox -> agent. |
 | [5 - Decision Model](./5-decision-model/README.md) | Passed 2026-10-26: DataZoneStandard; 3/3 tickets plus custom request, bounded throttling retries. |
 | [6 - Content Safety](./6-content-safety/README.md) | Historical pass. |
-| [7 - Semantic cache](./7-semantic-cache/README.md) | Replacement APIM Consumption/Managed Redis implementation passed offline tests and Bicep checks; native gateway cache-hit verification pending. Earlier local-cache pass does not cover this stack. |
+| [7 - Semantic cache](./7-semantic-cache/README.md) | Passed 2026-11-09: correct arithmetic responses and a separately traced gateway miss followed by a paraphrase hit. Earlier local-cache evidence does not cover this stack. |
 | [8 - Agent evaluation](./8-agent-evaluation/README.md) | Passed 2026-10-26: real inline-data cloud evaluation, 2/2 coherence passes. |
 | [9 - Red teaming](./9-agent-red-teaming/README.md) | Historical pass after retry. |
 | [10 - Fine-tuning](./10-fine-tuning/README.md) | Managed classification training succeeded 2026-10-26; its inference not run. Local Phi culture/cuisine training verified 2026-11-05: whole-answer audit 1/16 to 11/16, concept rubric 2/16 to 15/16, six controls maintained. |
-| [11 - Foundry IQ](./11-foundry-iq/README.md) | Historical managed retrieval passed 2026-10-26: Search West US 2 / Foundry East US 2, both grounded scenarios. The current project-enabled infrastructure is not covered by that pass. |
+| [11 - Foundry IQ](./11-foundry-iq/README.md) | The project-enabled live recording on 2026-11-08 answered workshop schedule and prerequisite questions with retrieved references. |
 | [12 - Entra Agent ID](./12-entra-agent-id/README.md) | Blocked by interactive identity setup/credentials; fail-fast and mocked cleanup checks are not live inference evidence. |
 | [13 - Orchestrations](./13-agent-orchestrations/README.md) | Historical pass for all four patterns after startup retry. |
 

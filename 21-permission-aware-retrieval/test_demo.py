@@ -1,4 +1,7 @@
 import json
+from pathlib import Path
+import shutil
+import subprocess
 import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -13,6 +16,18 @@ GROUP = "44444444-4444-4444-4444-444444444444"
 
 
 class PermissionsTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("az"), "Azure CLI/Bicep is required for the infrastructure contract.")
+    def test_search_region_can_differ_from_model_region(self):
+        result = subprocess.run(
+            ["az", "bicep", "build", "--file", "infra/main.bicep", "--stdout"],
+            cwd=Path(__file__).parent, check=True, capture_output=True, text=True,
+        )
+        template = json.loads(result.stdout)
+        resources = {resource["type"]: resource for resource in template["resources"]}
+        self.assertEqual(template["parameters"]["searchLocation"]["defaultValue"], "[parameters('location')]")
+        self.assertEqual(resources["Microsoft.Search/searchServices"]["location"], "[parameters('searchLocation')]")
+        self.assertEqual(resources["Microsoft.CognitiveServices/accounts"]["location"], "[parameters('location')]")
+
     def setUp(self):
         # Synthetic claims are ONLY offline fixtures, not a live authentication proof.
         self.first = demo.Identity(TENANT, USER_A, (GROUP,))

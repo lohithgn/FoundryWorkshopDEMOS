@@ -1,0 +1,73 @@
+Lab 45: 45-governed-iq
+Recorded 2026-11-08T18:53:15+00:00 — 2026-11-08T19:04:45+00:00
+What happens: Permission-native retrieval and a real Fabric data-agent smoke test.
+Tests: passed
+Deployment: succeeded
+Demo run: failed or blocked (nonzero exit)
+Status: blocked
+
+ACTUAL CAPTURED OUTPUT
+{
+  "lab": 45,
+  "resourceGroup": "rg-fwrec-20261108-4527c5fe-governed-iq-demo",
+  "nativeIQSetup": {
+    "status": "PASS",
+    "index": "synthetic-governed-source-index",
+    "permissionFields": [
+      "RbacScope"
+    ],
+    "ingestion": "success",
+    "nativeSourcePermissionSync": [
+      "rbacScope"
+    ],
+    "connectionId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-governed-iq-demo/providers/Microsoft.CognitiveServices/accounts/governediq-thwkkzxje5x6q/projects/governed-iq/connections/synthetic-iq-search"
+  },
+  "authorizedSourceRead": {
+    "status": "PASS",
+    "httpStatus": 200
+  },
+  "nativeIQAccess": {
+    "authorizedCaller": "PASS",
+    "authorizedReferences": 1,
+    "missingSourceIdentityDenied": "PASS",
+    "twoRealUsers": "BLOCKED",
+    "twoRealUsersEvidence": "SECOND_AZURE_CONFIG_DIR absent; no secondary CLI user created."
+  },
+  "fabricIQ": {
+    "status": "BLOCKED",
+    "evidence": "Fabric designated synthetic workspace/data agent IDs and FABRIC_SYNTHETIC_ONLY=1 absent; capacity/license probes saved in .azure/fabric-preflight.json."
+  },
+  "status": "BLOCKED"
+}
+{
+  "lab": 45,
+  "resourceGroup": "rg-fwrec-20261108-4527c5fe-governed-iq-demo",
+  "nativeIQSetup": {
+    "status": "PASS",
+    "index": "synthetic-governed-source-index",
+    "permissionFields": [
+      "RbacScope"
+    ],
+    "ingestion": "success",
+    "nativeSourcePermissionSync": [
+      "rbacScope"
+    ],
+    "connectionId": "/subscriptions/1217c203-6c76-47b4-b61c-9bba62dc8e02/resourceGroups/rg-fwrec-20261108-4527c5fe-governed-iq-demo/providers/Microsoft.CognitiveServices/accounts/governediq-thwkkzxje5x6q/projects/governed-iq/connections/synthetic-iq-search"
+  },
+  "authorizedSourceRead": {
+    "status": "PASS",
+    "httpStatus": 200
+  },
+  "nativeIQAccess": {
+    "authorizedCaller": "PASS",
+    "authorizedReferences": 1,
+    "missingSourceIdentityDenied": "PASS",
+    "twoRealUsers": "BLOCKED",
+    "twoRealUsersEvidence": "SECOND_AZURE_CONFIG_DIR absent; no secondary CLI user created."
+  },
+  "fabricIQ": {
+    "status": "BLOCKED",
+    "evidence": "Fabric designated synthetic workspace/data agent IDs and FABRIC_SYNTHETIC_ONLY=1 absent; capacity/license probes saved in .azure/fabric-preflight.json."
+  },
+  "status": "BLOCKED"
+}

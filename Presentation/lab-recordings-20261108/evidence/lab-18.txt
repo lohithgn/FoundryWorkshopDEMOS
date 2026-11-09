@@ -1,0 +1,15 @@
+Lab 18: 18-agent-tracing
+Recorded 2026-11-09T11:03:00+00:00 — 2026-11-09T11:12:54+00:00
+What happens: Export correlated, content-free model/tool spans to Azure Monitor.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+{"request_id": "bd62981092a24e33b59b397205e00290", "trace_id": "415cf2b10d82ef47421a95d01c46f898", "scenario": "normal"}
+{"request_id": "0a4462de9163483596a27a2b4312c149", "trace_id": "abf5e8f01bc60a81d4d7dfd77324ed92", "scenario": "slow"}
+{"request_id": "d0d7e0a746074375adb59ed6872f58b2", "trace_id": "9d8f9e846c59495208e77764fb068a5a", "scenario": "failed"}
+Spans flushed. Verify ingestion in Application Insights; export does not prove ingestion.
+
+Verified real Azure Monitor ingestion and parentage for all three scenarios; the slow tool and recovered tool failure have the expected telemetry.

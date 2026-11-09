@@ -11,8 +11,9 @@ from azure.identity import AzureCliCredential
 
 
 QUESTIONS = [
-    "What is Microsoft Foundry? Explain in two short sentences.",
-    "How is model inference different from model training?",
+    "Microsoft Foundry is an Azure platform for building and operating AI applications and agents. "
+    "What can developers use it for? Explain in two short sentences.",
+    "How is model inference different from supervised model training using labeled data?",
 ]
 
 

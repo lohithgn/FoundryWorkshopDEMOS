@@ -1,0 +1,83 @@
+Lab 13: 13-agent-orchestrations
+Recorded 2026-11-08T15:50:51+00:00 — 2026-11-08T15:52:49+00:00
+What happens: Run four tiny Microsoft Agent Framework orchestration examples on Foundry.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+
+=== SEQUENTIAL ===
+Task: Invite beginners to a free, 30-minute Python workshop on Friday.
+
+Workflow output:
+
+[writer]
+Join us this Friday for a free, 30-minute Python workshop designed just for beginners! Discover the basics and start coding with confidence—no experience needed!
+
+[editor]
+Join our free 30-minute Python workshop for beginners this Friday!
+
+=== CONCURRENT ===
+Task: We are planning a friendly beginner Python workshop.
+
+Workflow output:
+
+[title]
+Python Programming for Beginners: A Friendly Introduction
+
+[snack]
+A simple vegetarian snack idea for your Python workshop is **vegetable sticks with hummus**. It's easy to prepare, healthy, and perfect for a casual learning environment!
+
+[title, snack]
+Python Programming for Beginners: A Friendly IntroductionA simple vegetarian snack idea for your Python workshop is **vegetable sticks with hummus**. It's easy to prepare, healthy, and perfect for a casual learning environment!
+
+=== GROUP-CHAT ===
+Task: Plan a 30-minute beginner Python workshop with exactly two agenda items.
+
+Workflow output:
+
+[planner]
+1. Python Basics: Syntax, Variables, and Data Types (15 minutes)  
+2. Writing and Running Simple Python Programs (15 minutes)
+
+[reviewer]
+Add a 3-minute Q&A or quick exercise after each agenda item to reinforce learning and encourage participant engagement.
+
+[planner]
+1. Introduction to Python: syntax, variables, and data types (15 minutes)  
+2. Hands-on coding: write and run simple Python scripts (15 minutes)
+
+[reviewer]
+1. Python Basics: Syntax, Variables, and Data Types (15 mins)  
+2. Writing and Running Simple Python Programs (15 mins)  
+
+Improvement: Include a brief interactive coding exercise after each item to reinforce learning.
+
+[group_chat_orchestrator]
+The group chat has reached its termination condition.
+
+=== MAGENTIC ===
+Task: Create a tiny card for a beginner Python workshop: one short title and a two-item bring-along checklist. Ask the title_writer for the title and checklist_writer for the checklist, then combine their answers. No research is needed.
+
+Participant updates:
+
+[title_writer]
+Python Power-Up: Jumpstart Your Coding Journey
+
+[checklist_writer]
+1. Laptop  
+2. Charger
+
+Workflow output:
+
+[manager]
+Here's your tiny card for the beginner Python workshop:
+
+**Title:**  
+Python Power-Up: Jumpstart Your Coding Journey
+
+**Bring Along:**  
+- Laptop  
+- Charger

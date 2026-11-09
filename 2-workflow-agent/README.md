@@ -1,5 +1,8 @@
 # Microsoft Foundry - Workflow Agent
 
+The infrastructure deploys the model before the project to avoid concurrent
+Foundry account-child writes failing with `RequestConflict`.
+
 A 3-minute terminal demo: a **writer** drafts a workshop invitation, then an
 **editor** improves it. Both outputs are printed so the handoff is visible.
 Microsoft Agent Framework runs the sequential workflow locally; Microsoft Foundry

@@ -1,0 +1,35 @@
+Lab 7: 7-semantic-cache
+Recorded 2026-11-09T13:56:13+00:00 — 2026-11-09T14:04:28+00:00
+What happens: Send normal chat requests through the APIM semantic-caching AI gateway.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Gateway: https://apim-cache-q5ceisqs2y5jq.azure-api.net/ai; cache session: 7409ef4c-7f88-4c81-9240-dd90b9e2fbfe
+
+NEW RESPONSE ID; 7.14s; id=chatcmpl-EiKGjXJCu67x4gIsipIVWCjS0Ynk1
+What is 2 + 2? Reply with the integer only.
+4
+
+REUSED RESPONSE; 0.32s; id=chatcmpl-EiKGjXJCu67x4gIsipIVWCjS0Ynk1
+What is two plus two? Reply with the integer only.
+4
+
+REUSED RESPONSE; 0.32s; id=chatcmpl-EiKGjXJCu67x4gIsipIVWCjS0Ynk1
+What is 2 + 2? Reply with the integer only.
+4
+
+Chat requests sent to APIM: 3; repeated response IDs: 2.
+APIM owns embedding calls, cache lookup, and storage. Confirm HIT/MISS and backend calls in the APIM portal trace.
+
+=== Independent APIM gateway trace verification ===
+Gateway trace first request, inbound sources: api-inspector, authentication-managed-identity, azure-openai-semantic-cache-lookup, cors, forward-request, graphql-configuration-setup, llm-semantic-cache-lookup, set-backend-service, set-header, validate-azure-ad-token
+Gateway trace first request, backend sources: forward-request
+Gateway trace paraphrase, inbound sources: api-inspector, azure-openai-semantic-cache-lookup, cors, forward-request, graphql-configuration-setup, llm-semantic-cache-lookup, set-backend-service, validate-azure-ad-token
+Gateway trace paraphrase, backend sources: (none)
+Gateway trace for first request: semantic lookup events=2; backend generation forwards=2.
+Gateway trace for paraphrase: semantic lookup events=2; backend generation forwards=0.
+Both successful responses have the same ID and answer: True.
+PASS: real APIM traces verified a semantic cache miss followed by a paraphrase hit.

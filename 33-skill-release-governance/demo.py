@@ -68,7 +68,8 @@ def consume(
     try:
         with project.get_openai_client(agent_name=agent.name, max_retries=0) as client:
             response = client.responses.create(
-                input=f"What is the unit price for the {workshop} workshop?",
+                input=(f'The workshop ID is "{workshop}". What is its unit price? '
+                       "Echo the workshop ID exactly in the workshop field."),
                 tool_choice="none", timeout=90.0,
             )
         if response.status != "completed" or not response.output_text.strip():

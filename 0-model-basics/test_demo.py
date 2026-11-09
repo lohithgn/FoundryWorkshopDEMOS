@@ -2,10 +2,15 @@ import json
 from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 from types import SimpleNamespace as NS
 import unittest
 from unittest.mock import MagicMock, Mock, patch
+
+import httpx
+from openai import OpenAI
 
 import demo
 
@@ -33,6 +38,22 @@ def jsonl(rows):
 
 
 class BasicsTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("az"), "Azure CLI/Bicep is required for the infrastructure contract.")
+    def test_reasoning_deployment_uses_current_gpt5_mini_version(self):
+        result = subprocess.run(
+            ["az", "bicep", "build", "--file", "infra/main.bicep", "--stdout"],
+            cwd=Path(__file__).parent, check=True, capture_output=True, text=True,
+        )
+        deployments = [
+            item for item in json.loads(result.stdout)["resources"]
+            if item["type"] == "Microsoft.CognitiveServices/accounts/deployments"
+        ]
+        reasoning = next(item for item in deployments if "'basics-reasoning'" in item["name"])
+        self.assertEqual(reasoning["properties"]["model"], {
+            "format": "OpenAI", "name": "gpt-5-mini", "version": "2025-08-07",
+        })
+        self.assertEqual(reasoning["sku"]["name"], "GlobalStandard")
+
     def test_temperature_exact_distribution_and_greedy_limit(self):
         probabilities = [0.5, 0.3, 0.15, 0.05]
         self.assertEqual(demo.temperature_distribution(probabilities, 0), [1, 0, 0, 0])
@@ -71,7 +92,8 @@ class BasicsTests(unittest.TestCase):
                 ["--endpoint", "https://example.org", "--deployment", ""],
                 ["--endpoint", "https://example.org", "--reasoning-deployment", ""],
                 ["--endpoint", "https://example.org", "--batch-deployment", ""],
-                ["--batch-id", ""],
+                ["--batch-id", ""], ["--request-interval-seconds", "-1"],
+                ["--request-interval-seconds", "nan"], ["--request-interval-seconds", "inf"],
             ):
                 with self.subTest(arguments=arguments), self.assertRaises(SystemExit):
                     demo.main(arguments)
@@ -90,19 +112,91 @@ class BasicsTests(unittest.TestCase):
             self.assertEqual(call.kwargs["model"], "chat-alias")
             self.assertEqual(call.kwargs["messages"][0]["content"], demo.SAMPLING_PROMPT)
 
+    def test_pacing_bounds_request_starts_without_delaying_slow_calls(self):
+        pacer = demo.RequestPacer(7)
+        with patch("demo.time.monotonic", side_effect=[100, 100, 102, 107, 116, 116]), \
+                patch("demo.time.sleep") as sleep:
+            pacer.wait()
+            pacer.wait()
+            pacer.wait()
+        sleep.assert_called_once_with(5)
+        for value in (-1, float("nan"), float("inf")):
+            with self.assertRaises(ValueError):
+                demo.RequestPacer(value)
+
+    def test_shared_pacer_covers_sampling_and_comparison(self):
+        client = Mock()
+        client.chat.completions.create.return_value = completion('{"minutes":11}')
+        pacer = Mock()
+        with redirect_stdout(StringIO()):
+            demo.sampling(client, "chat", 2, pacer)
+            demo.compare(client, "chat", "reasoning", "medium", pacer)
+        self.assertEqual(pacer.wait.call_count, 14)
+
+    def test_chat_sdk_retries_a_transient_rate_limit_without_changing_request(self):
+        requests = []
+
+        def respond(request):
+            requests.append(json.loads(request.content))
+            if len(requests) == 1:
+                return httpx.Response(429, headers={"retry-after-ms": "1"}, json={
+                    "error": {"code": "rate_limit_exceeded", "message": "Synthetic rate limit"},
+                })
+            return httpx.Response(200, json={
+                "id": "fixture", "object": "chat.completion", "created": 0, "model": "fixture",
+                "choices": [{"index": 0, "finish_reason": "stop",
+                             "message": {"role": "assistant", "content": "Workshop Sparks"}}],
+                "usage": {"prompt_tokens": 2, "completion_tokens": 2, "total_tokens": 4},
+            })
+
+        http_client = httpx.Client(transport=httpx.MockTransport(respond))
+        with OpenAI(api_key="synthetic", base_url="https://example.test/v1",
+                    max_retries=0, http_client=http_client) as client, \
+                patch("openai._base_client.time.sleep"), redirect_stdout(StringIO()):
+            demo.sampling(client.with_options(max_retries=demo.CHAT_MAX_RETRIES), "chat-alias", 1)
+        self.assertEqual(len(requests), 7)
+        self.assertEqual(requests[0], requests[1])
+
     def test_reasoning_omits_unsupported_sampling_and_token_parameters(self):
         client = Mock()
-        client.chat.completions.create.return_value = completion("11")
+        client.chat.completions.create.return_value = completion('{"minutes":11}')
         with redirect_stdout(StringIO()) as output:
             demo.compare(client, "chat-alias", "reasoning-alias", "high")
         chat, reasoning = [call.kwargs for call in client.chat.completions.create.call_args_list]
         self.assertEqual(chat["messages"], reasoning["messages"])
+        self.assertIn("B and C can run at the same time", chat["messages"][0]["content"])
+        self.assertNotIn("11", chat["messages"][0]["content"])
         self.assertEqual(reasoning["model"], "reasoning-alias")
         self.assertEqual(reasoning["reasoning_effort"], "high")
         self.assertEqual(reasoning["max_completion_tokens"], 4096)
+        self.assertEqual(chat["response_format"], reasoning["response_format"])
+        self.assertEqual(chat["response_format"]["type"], "json_schema")
+        self.assertTrue(chat["response_format"]["json_schema"]["strict"])
+        self.assertEqual(chat["response_format"]["json_schema"]["schema"], {
+            "type": "object", "properties": {"minutes": {"type": "integer"}},
+            "required": ["minutes"], "additionalProperties": False,
+        })
         for parameter in ("temperature", "top_p", "max_tokens"):
             self.assertNotIn(parameter, reasoning)
         self.assertIn("Matches reference answer 11: True", output.getvalue())
+
+    def test_comparison_rejects_malformed_or_noninteger_structured_answers(self):
+        client = Mock()
+        for answer in ("{", "11", "{}", '{"minutes":"11"}', '{"minutes":true}',
+                       '{"minutes":-1}', '{"minutes":11,"extra":1}'):
+            client.chat.completions.create.return_value = completion(answer)
+            with self.subTest(answer=answer), redirect_stdout(StringIO()), self.assertRaises(RuntimeError):
+                demo.compare(client, "chat", "reasoning", "medium")
+
+    def test_comparison_schema_does_not_make_an_incorrect_answer_pass(self):
+        client = Mock()
+        client.chat.completions.create.side_effect = [
+            completion('{"minutes":10}'), completion('{"minutes":11}'),
+        ]
+        with redirect_stdout(StringIO()) as output:
+            demo.compare(client, "chat", "reasoning", "medium")
+        self.assertEqual(output.getvalue().count("Matches reference answer 11: True"), 1)
+        self.assertEqual(output.getvalue().count("Matches reference answer 11: False"), 1)
 
     def test_incomplete_answers_fail_and_absent_usage_is_not_fabricated(self):
         for content, finish in (("", "stop"), (None, "stop"), ("partial", "length"),
@@ -119,6 +213,8 @@ class BasicsTests(unittest.TestCase):
 
     def test_batch_jsonl_uses_batch_alias_unique_ids_and_correct_route(self):
         rows = demo.batch_rows("batch-alias")
+        for row in rows[:2]:
+            self.assertIn("language-model", row["body"]["messages"][0]["content"])
         self.assertEqual(len(rows), 3)
         self.assertEqual(len({row["custom_id"] for row in rows}), 3)
         for row, prompt in zip(rows, demo.BATCH_PROMPTS):
@@ -231,10 +327,17 @@ class BasicsTests(unittest.TestCase):
             patch("demo.run_batch") as batch,
         ):
             factory.return_value = MagicMock()
-            self.assertEqual(demo.main(["--samples", "2", "--wait-seconds", "0"]), 0)
+            self.assertEqual(demo.main([
+                "--samples", "2", "--wait-seconds", "0", "--request-interval-seconds", "7",
+            ]), 0)
             client = factory.return_value.__enter__.return_value
-            sampling.assert_called_once_with(client, "chat-alias", 2)
-            compare.assert_called_once_with(client, "chat-alias", "reasoning-alias", "medium")
+            chat_client = client.with_options.return_value
+            client.with_options.assert_called_once_with(max_retries=demo.CHAT_MAX_RETRIES)
+            pacer = sampling.call_args.args[3]
+            self.assertIsInstance(pacer, demo.RequestPacer)
+            self.assertEqual(pacer.interval_seconds, 7)
+            sampling.assert_called_once_with(chat_client, "chat-alias", 2, pacer)
+            compare.assert_called_once_with(chat_client, "chat-alias", "reasoning-alias", "medium", pacer)
             self.assertEqual(batch.call_args.args[:3], (client, "https://example.org", "batch-alias"))
             factory.assert_called_once_with(
                 base_url="https://example.org/openai/v1/", api_key="token", max_retries=0, timeout=120,

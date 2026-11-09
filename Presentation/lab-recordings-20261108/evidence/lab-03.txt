@@ -1,0 +1,55 @@
+Lab 3: 3-webiq-agent
+Recorded 2026-11-08T15:04:22+00:00 — 2026-11-08T15:05:49+00:00
+What happens: Compare a Foundry prompt agent with and without the Web Search tool.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+
+=== WITH WebSearchTool() ===
+Temporary Foundry agent: webiq-demo-1e5a8827 / 1
+
+Response status: completed
+Output types: ['reasoning', 'web_search_call', 'reasoning', 'message']
+Search calls: 1
+Search statuses: ['completed']
+URL citations: 3
+
+Web searches: 1
+
+- Routes each prompt in real time to the most suitable large language model (LLM) to optimize quality, cost, and latency. ([learn.microsoft.com](https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router))  
+  https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router  
+  https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router-how-it-works
+
+- Packaged as a single Foundry model deployment (a drop‑in optimization layer) so you don’t need custom routing logic; you configure which models the router may use. ([learn.microsoft.com](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/model-router))  
+  https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/model-router
+
+- Makes per-request decisions for agents and multi‑turn sessions, with features like session affinity, automatic failover, prompt caching, and observability/metrics. ([learn.microsoft.com](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/model-router-agents))  
+  https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/model-router-agents  
+  https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/monitor-model-router
+
+Sources:
+- Model router for Microsoft Foundry concepts - Microsoft Foundry: https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router
+- How to use model router for Microsoft Foundry - Microsoft Foundry: https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/model-router
+- Use model router with Foundry agents - Microsoft Foundry: https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/model-router-agents
+Temporary agent version deleted.
+
+=== WITHOUT WebSearchTool() ===
+Temporary Foundry agent: webiq-demo-1e5a8827 / 1
+
+Response status: completed
+Output types: ['reasoning', 'message']
+Search calls: 0
+Search statuses: []
+URL citations: 0
+
+I don’t have live web access right now, so I can’t search Microsoft Learn or fetch/verify URLs. Would you like either:
+- a short, memory-based summary (may be out of date), or
+- you can paste the Microsoft Learn link(s) you want summarized and I’ll extract/create three short bullets from them?
+
+No Web Search tool: this run did not retrieve web sources. Any plain-text URLs are not verified search citations.
+Temporary agent version deleted.
+
+Comparison: the same model, instructions, and prompt were used in independent requests. With the tool, the answer has completed searches and structured citations. Without it, instructions alone cannot enable browsing: the model may answer from prior knowledge or explain that it cannot search. This comparison demonstrates source retrieval, not which answer is more accurate.

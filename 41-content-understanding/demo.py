@@ -204,6 +204,29 @@ class ContentUnderstanding:
             raise RuntimeError(f"CU HTTP {response.status_code}: {response.text[:2500]}")
         return response
 
+    def configure_defaults(self, model_deployments: dict, timeout: int = 180) -> dict:
+        deadline = time.monotonic() + timeout
+        while True:
+            response = self.request(
+                "PATCH", "defaults", json={"modelDeployments": model_deployments},
+                allow_status=(400,),
+            )
+            if not response.is_error:
+                return response.json()
+            try:
+                error = response.json().get("error", {}).get("innererror", {})
+            except (ValueError, AttributeError):
+                raise RuntimeError(f"CU HTTP {response.status_code}: {response.text[:2500]}")
+            match = re.search(
+                r"OpenAI deployment '([^']+)' does not exist", str(error.get("message", "")),
+            ) if isinstance(error, dict) else None
+            remaining = deadline - time.monotonic()
+            if (not isinstance(error, dict) or error.get("code") != "DeploymentIdNotFound" or not match
+                    or match.group(1) not in model_deployments.values() or remaining <= 0):
+                raise RuntimeError(f"CU HTTP {response.status_code}: {response.text[:2500]}")
+            print(f"Waiting for deployment {match.group(1)} to become visible to Content Understanding.", flush=True)
+            time.sleep(min(10, remaining))
+
     def ensure_analyzer(self, analyzer_id: str, requested: dict) -> dict:
         existing = self.request("GET", f"analyzers/{analyzer_id}", allow_status=(404,))
         if existing.status_code == 404:
@@ -247,11 +270,11 @@ def live() -> dict:
     with AzureCliCredential() as credential, httpx.Client(timeout=60) as http:
         cu = ContentUnderstanding(endpoint, credential, http)
         print("Configuring native CU model deployment defaults.", flush=True)
-        defaults = cu.request("PATCH", "defaults", json={"modelDeployments": {
+        defaults = cu.configure_defaults({
             completion: deployment, embedding: embedding_deployment,
             "prebuilt-analyzer-completion": deployment, "prebuilt-analyzer-completion-mini": deployment,
             "prebuilt-analyzer-embedding": embedding_deployment,
-        }}).json()
+        })
         (STATE / "defaults.json").write_text(json.dumps(defaults, indent=2))
         for modality, asset, content_type in (
             ("document", "notice.pdf", "application/pdf"), ("audio", "notice.wav", "audio/wav"),

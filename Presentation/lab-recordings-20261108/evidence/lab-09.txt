@@ -1,0 +1,12 @@
+Lab 9: 9-agent-red-teaming
+Recorded 2026-11-09T09:54:38+00:00 — 2026-11-09T09:57:07+00:00
+What happens: Run a small managed Foundry red-team scan against a workshop tutor agent.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Safety note: raw managed red-team prompts and transcripts are not projected.
+Observed exit/status: passed (exit 0)
+Observed error: 

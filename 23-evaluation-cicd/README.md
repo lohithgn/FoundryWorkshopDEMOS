@@ -7,6 +7,8 @@ Versioned synthetic support facts + a JSON-answer prompt + a real Foundry cloud
 regressions a polished/coherent response can hide. Default thresholds are **100%
 exact correctness AND 100% coherence pass rate**. This is a release gate, not a
 claim of statistical coverage or a production deployment pipeline.
+Both prompts explicitly request raw JSON without Markdown fences; the gate still
+rejects fenced or malformed responses rather than silently normalizing them.
 
 ## Deploy / run
 

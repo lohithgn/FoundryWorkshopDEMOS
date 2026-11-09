@@ -139,6 +139,11 @@ registration or resource-group mutation; valid configuration exits **0**, explic
 reminding you that manual connection setup and preview entitlement are still required.
 This is not proof the connection exists or a subscription/region/quota check.
 
+For other modes, command-line values take precedence over environment variables
+and deployment outputs. If all three endpoint/model values are supplied, the
+local deployment file is not read. A malformed file is reported when an output
+from it is needed.
+
 `--verify-services` is the separate **post-deployment** check for the fixture,
 connection lookup, MCP initialization and native tool names/parameter schemas.
 It creates/deletes a temporary toolbox, but **does not create a browser session

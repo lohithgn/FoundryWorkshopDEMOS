@@ -74,6 +74,34 @@ class RagTests(unittest.TestCase):
         with self.assertRaises(TimeoutError):
             demo.wait_for_index(search, 4, timeout=0)
 
+    def test_initial_embeddings_retry_only_missing_deployment_within_deadline(self):
+        class FakeNotFoundError(Exception):
+            def __init__(self, code):
+                self.code = code
+
+        client = Mock()
+        response = SimpleNamespace(data=[SimpleNamespace(embedding=[1.0])])
+        client.embeddings.create.side_effect = [
+            FakeNotFoundError("DeploymentNotFound"),
+            *[response for _ in demo.QUESTIONS],
+        ]
+        with patch.dict("sys.modules", {"openai": SimpleNamespace(NotFoundError=FakeNotFoundError)}), \
+                patch.object(demo, "monotonic", side_effect=[0, 1]), \
+                patch.object(demo, "sleep") as sleep:
+            vectors = demo.initial_query_vectors(client, "embedding", timeout=30)
+        self.assertEqual(len(vectors), len(demo.QUESTIONS))
+        sleep.assert_called_once_with(15)
+
+        for code, now in (("OtherNotFound", 1), ("DeploymentNotFound", 31)):
+            client.embeddings.create.side_effect = FakeNotFoundError(code)
+            with self.subTest(code=code, now=now), \
+                    patch.dict("sys.modules", {"openai": SimpleNamespace(NotFoundError=FakeNotFoundError)}), \
+                    patch.object(demo, "monotonic", side_effect=[0, now]), \
+                    patch.object(demo, "sleep") as sleep:
+                with self.assertRaises(FakeNotFoundError):
+                    demo.initial_query_vectors(client, "embedding", timeout=30)
+                sleep.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

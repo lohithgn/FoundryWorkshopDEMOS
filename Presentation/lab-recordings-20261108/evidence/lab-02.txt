@@ -1,0 +1,16 @@
+Lab 2: 2-workflow-agent
+Recorded 2026-11-09T09:51:43+00:00 — 2026-11-09T09:54:31+00:00
+What happens: Run a writer -> editor Agent Framework workflow against Microsoft Foundry.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+Workflow: writer -> editor
+
+=== Writer draft ===
+Join us this Friday for a free, 45-minute introductory workshop on Microsoft Foundry, designed especially for Python developers! Whether you're new to AI or just curious, no prior experience is needed. Discover how to integrate AI seamlessly into your Python projects with hands-on learning and expert guidance. Don’t miss this chance to expand your skills and connect with fellow developers. Reserve your spot today and take the first step into the future of AI with Microsoft Foundry!
+
+=== Editor final ===
+Python developers are invited to a free, 45-minute introductory Microsoft Foundry workshop on Friday. No prior AI experience is needed. Join us to explore AI integration with Python in this beginner-friendly session!

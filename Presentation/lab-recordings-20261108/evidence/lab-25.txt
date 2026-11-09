@@ -1,0 +1,24 @@
+Lab 25: 25-resilience-cost
+Recorded 2026-11-08T16:36:54+00:00 — 2026-11-08T16:37:47+00:00
+What happens: Bound retries, deadlines, concurrency, and costs without exhausting Azure quota.
+Tests: passed
+Deployment: succeeded
+Demo run: passed (exit 0)
+Status: success
+
+ACTUAL CAPTURED OUTPUT
+RETRY model: RateLimitError; wait 0.10s
+RETRY model: APITimeoutError; wait 0.25s
+timeout: A workshop is an interactive session where participants actively learn and practice new skills or knowledge.
+throttle: A workshop is an interactive session where participants actively learn and practice specific skills or concepts.
+RETRY tool: TimeoutError; wait 0.25s
+Recovered write: synthetic-booking-1; bookings=1 (must be 1)
+RETRY tool: ConnectionError; wait 0.25s
+RETRY tool: ConnectionError; wait 0.50s
+EXPECTED STOP: Tool-call budget reached.; persistent outage did not loop indefinitely.
+EXPECTED PERMANENT FAILURE: HTTP 403 propagated without retry.
+EXPECTED DEADLINE STOP: Overall execution deadline reached.
+Attempts: model=5/6; tool=4/4; concurrency <= 2
+Actual successful usage: input=30; output=34
+ILLUSTRATIVE estimate: USD 0.000066; assumed per-million rates input=0.4, output=1.6. Not a billing report.
+Injected faults never reached Azure. Budget alerts are not hard spending caps.

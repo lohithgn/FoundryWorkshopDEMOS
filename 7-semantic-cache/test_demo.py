@@ -13,7 +13,19 @@ import demo
 
 
 class GatewayTests(unittest.TestCase):
-    def response(self, response_id="chatcmpl-1", content="A workshop answer.", reason="stop"):
+    def test_prompts_use_a_verifiable_fact_for_the_semantic_cache_example(self):
+        self.assertIn("2 + 2", demo.PROMPTS[0])
+        self.assertIn("two plus two", demo.PROMPTS[1].lower())
+        self.assertEqual(demo.PROMPTS[0], demo.PROMPTS[2])
+
+    def test_wrong_arithmetic_answer_is_not_a_successful_cache_demo(self):
+        client = Mock()
+        client.chat.completions.create.return_value = self.response(content="5")
+        with patch("demo.sleep"), patch("sys.stdout", new_callable=io.StringIO):
+            with self.assertRaisesRegex(RuntimeError, "expected exactly 4"):
+                demo.present(client, "chat")
+
+    def response(self, response_id="chatcmpl-1", content="4", reason="stop"):
         return SimpleNamespace(id=response_id, choices=[
             SimpleNamespace(finish_reason=reason, message=SimpleNamespace(content=content)),
         ])
@@ -72,7 +84,7 @@ class GatewayTests(unittest.TestCase):
                     "id": "chatcmpl-cached", "object": "chat.completion",
                     "created": 1, "model": "chat",
                     "choices": [{"index": 0, "finish_reason": "stop",
-                                 "message": {"role": "assistant", "content": "Foundry answer."}}],
+                                 "message": {"role": "assistant", "content": "4"}}],
                 }).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -95,7 +107,7 @@ class GatewayTests(unittest.TestCase):
                 ) as client:
                     for prompt in demo.PROMPTS:
                         self.assertEqual(demo.answer(client, "chat", prompt),
-                                         ("Foundry answer.", "chatcmpl-cached"))
+                                         ("4", "chatcmpl-cached"))
             finally:
                 server.shutdown()
                 worker.join()
