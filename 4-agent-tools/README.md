@@ -5,6 +5,11 @@ The agent discovers a tool through **Foundry Toolbox**, calls a deployed
 **Azure Function**, and explains the returned price: USD 25 per attendee,
 USD 300 total. The script prints the real tool result before the answer.
 
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions. Historical live results below are from
+> the Python version and are not .NET live validation.
+
 ## What runs where
 
 - **Bicep:** a Foundry account/project, `gpt-4.1-mini` Global Standard deployment
@@ -13,10 +18,10 @@ USD 300 total. The script prints the real tool result before the answer.
   and Always On in **West US 2**. Foundry remains in **East US 2**.
   The function's JavaScript is deployed inline by Bicep.
   No zip upload, external code package, or manual portal editing is needed.
-- **Foundry Tools:** Python registers the function's OpenAPI contract in a
+- **Foundry Tools:** C# registers the function's OpenAPI contract in a
   temporary toolbox version. Foundry exposes it as an authenticated MCP endpoint.
-- **Local Python:** an Agent Framework agent uses `FoundryToolbox` to discover and
-  call the tool, with model inference in Foundry. The agent itself is not hosted.
+- **Local .NET:** the app uses the MCP endpoint to discover and call the tool,
+  with model inference in Foundry. The agent itself is not hosted.
   The toolbox version is deleted in `finally`; the Azure resources remain.
 
 This is a read-only, toy pricing tool: no payment, booking, database, or local
@@ -31,11 +36,11 @@ connection string, so no storage keys are read or placed in app settings.
 
 ## Prerequisites
 
-Python 3.10+, Azure CLI with Bicep, an interactive Azure user, model access/quota
+The .NET 10 SDK, Azure CLI with Bicep, an interactive Azure user, model access/quota
 in **East US 2**, and resource-creation plus role-assignment permissions.
-Contributor alone cannot assign roles. Foundry Toolbox is a preview dependency;
-the compatible preview hosting integration is explicitly pinned in requirements.
-The hosting package supplies `FoundryToolbox` even though this agent runs locally.
+Contributor alone cannot assign roles. Foundry Toolbox is a preview service; the
+C# app uses its native REST and MCP contracts. Python requirements are retained
+temporarily only for the staged root-runner migration.
 No local Node.js is needed to run the demo; Node.js is optional for tool tests.
 
 Public endpoints, Global Standard inference, and storage incur charges and are
@@ -49,6 +54,20 @@ API reported P0v3 capacity. Validate deployment, not just the quota listing.
 ## Deploy
 
 From this folder in Bash/Zsh:
+
+Alternatively, the lab-local .NET deploy helper creates billable resources, runs
+the offline tests, and performs a live toolbox/tool call. Use only with separate
+authorization; `--help` is safe and performs no Azure calls.
+
+```bash
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --subscription YOUR_SUBSCRIPTION_ID --location eastus2
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs
+```
+
+Cleanup prompts for the full recorded resource-group name; use `--yes` only for
+separately authorized unattended cleanup.
 
 ```bash
 az login
@@ -88,11 +107,10 @@ cannot be moved to a different region in place.
 # Optional: verify the deployed function independently.
 curl --fail-with-body "$WORKSHOP_TOOL_ENDPOINT/workshop-price?attendees=12"
 
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --attendees 20
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --attendees 20
 ```
 
 The three endpoint/deployment arguments can replace the environment variables.
@@ -102,7 +120,7 @@ this demo and passes both endpoint outputs automatically.
 ### Presenter talk track
 
 1. Show the tiny pricing function and its OpenAPI `getWorkshopPrice` operation.
-2. Show the toolbox registration and the versioned MCP endpoint in Python.
+2. Show the toolbox registration and the versioned MCP endpoint in C#.
 3. Run it: show `Tool result`, the source marker `workshop-price-tool-v1`, and
    the agent answer. For 20 attendees the tool returns USD 500.
 4. Explain that the business rule runs in Azure, not in the model or local Python;
@@ -113,10 +131,18 @@ this demo and passes both endpoint outputs automatically.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
+dotnet restore cleanup.cs
+dotnet build cleanup.cs --no-restore
+dotnet run --file cleanup.cs -- --help
 ```
 
-Tests mock Foundry/MCP calls. When Node.js is installed, they also execute the
+Tests use offline Foundry/MCP fixtures. When Node.js is installed, they also execute the
 actual deployed JavaScript source for valid counts and invalid input boundaries;
 otherwise that one test is explicitly skipped.
 An infrastructure contract test compiles Bicep locally and checks P0v3, the

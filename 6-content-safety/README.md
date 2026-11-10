@@ -5,15 +5,33 @@ for Hate, SelfHarm, Sexual, and Violence, and apply an explicit ALLOW/BLOCK poli
 This is a standalone Content Safety resource, a capability available within the
 Foundry ecosystem, not the model's built-in inference content filter.
 
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions; they are not the current lab commands.
+
 ## Deploy
 
-Requires Python 3.10+, Azure CLI with Bicep, an interactive Azure user with resource
+Requires the .NET 10 SDK, Azure CLI with Bicep, an interactive Azure user with resource
 creation and role-assignment permissions, and Content Safety availability in
 East US 2 (or change `location`). The template creates one S0 Content Safety
 account with a custom subdomain and Cognitive Services User role for the
 presenter. No model deployment is needed. API keys are disabled.
 
 Run from this folder:
+
+Alternatively, the lab-local .NET deploy helper creates billable resources, runs
+the offline tests, and performs a live Content Safety analysis. Use only with
+separate authorization; `--help` is safe and performs no Azure calls.
+
+```bash
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --subscription YOUR_SUBSCRIPTION_ID --location eastus2
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs
+```
+
+Cleanup prompts for the full recorded resource-group name; use `--yes` only for
+separately authorized unattended cleanup.
 
 ```bash
 az login
@@ -35,11 +53,10 @@ it is passed to `ContentSafetyClient`, not an OpenAI client.
 ## Run and present
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --text "Thank you for helping me learn Python." --threshold 4
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --text "Thank you for helping me learn Python." --threshold 4
 ```
 
 The default is deliberately benign. Use only approved, non-sensitive test text
@@ -54,7 +71,15 @@ Offline tests prove both sides of the threshold without including harmful text.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
+dotnet restore cleanup.cs
+dotnet build cleanup.cs --no-restore
+dotnet run --file cleanup.cs -- --help
 az group delete --name "$RESOURCE_GROUP" --yes
 ```
 
@@ -63,5 +88,5 @@ not a production networking design. For 403, check the Azure CLI identity and
 allow for RBAC propagation. Missing categories, invalid scores, and service
 failures are errors, never substituted with an ALLOW.
 
-- [Content Safety Python SDK and Entra authentication](https://learn.microsoft.com/python/api/overview/azure/ai-contentsafety-readme)
+- [Content Safety REST API (2024-09-01) and Entra authentication](https://learn.microsoft.com/rest/api/contentsafety/text-operations/analyze-text?view=rest-contentsafety-2024-09-01)
 - [Feature F006](../BACKLOG.md#f006---microsoft-foundry-content-safety)

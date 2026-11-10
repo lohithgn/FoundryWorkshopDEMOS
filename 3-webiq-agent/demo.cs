@@ -8,10 +8,13 @@ using System.Text.Json.Nodes;
 using Azure.Core;
 using Azure.Identity;
 
-const string defaultPrompt = "Search Microsoft Learn for Microsoft Foundry model router. Explain what it does in three short bullets and cite the source URLs.";
-
 try { return await MainAsync(args); }
-catch (Exception error) when (error is HttpRequestException or JsonException or InvalidOperationException or ArgumentException or Azure.RequestFailedException or OperationCanceledException)
+catch (Exception error) when (error is ArgumentException or FormatException or OverflowException)
+{
+    Console.Error.WriteLine($"ERROR: {error.Message}");
+    return 2;
+}
+catch (Exception error) when (error is HttpRequestException or JsonException or InvalidOperationException or Azure.RequestFailedException or OperationCanceledException)
 {
     Console.Error.WriteLine($"ERROR: {error.Message}");
     return 1;

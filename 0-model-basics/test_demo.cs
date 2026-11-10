@@ -13,6 +13,7 @@ var checks = new (string Name, Action Run)[]
     ("request parameter contracts", TestRequests),
     ("structured comparison validation", TestComparison),
     ("batch JSONL mapping and strict results", TestBatch),
+    ("native batch state and infrastructure contract", TestBatchAndInfrastructure),
     ("concepts are offline and configuration fails", TestCli)
 };
 var failures = new List<string>();
@@ -120,6 +121,42 @@ static void TestBatch()
     }
 }
 
+static void TestBatchAndInfrastructure()
+{
+    var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(directory);
+    try
+    {
+        var statePath = Path.Combine(directory, "batch-state.json");
+        var state = new JsonObject
+        {
+            ["endpoint"] = "https://example.org", ["deployment"] = "batch-alias",
+            ["batch_id"] = "batch-123", ["input_file_id"] = "input-123"
+        };
+        File.WriteAllText(statePath, state.ToJsonString());
+        using var persisted = JsonDocument.Parse(File.ReadAllText(statePath));
+        Equal("batch-123", persisted.RootElement.GetProperty("batch_id").GetString());
+        Equal("input-123", persisted.RootElement.GetProperty("input_file_id").GetString());
+        Equal(false, ShouldSubmitNewBatch(statePath, "https://example.org", "batch-alias", null));
+        Throws<InvalidOperationException>(() => ShouldSubmitNewBatch(statePath, "https://other.org", "batch-alias", null));
+        Equal(false, ShouldSubmitNewBatch(statePath, "https://other.org", "other-alias", "explicit-id"));
+        Throws<InvalidOperationException>(() => RequireCompleted("in_progress", 0));
+        RequireCompleted("completed", 0);
+    }
+    finally { Directory.Delete(directory, recursive: true); }
+
+    if (!CanRun("az")) return;
+    var lab = LabDirectory();
+    var compiled = Run("az", ["bicep", "build", "--file", "infra/main.bicep", "--stdout"], lab);
+    using var template = JsonDocument.Parse(compiled.Output);
+    var reasoning = template.RootElement.GetProperty("resources").EnumerateArray()
+        .Single(resource => resource.GetProperty("type").GetString() == "Microsoft.CognitiveServices/accounts/deployments" &&
+            resource.GetProperty("name").GetString()!.Contains("basics-reasoning", StringComparison.Ordinal));
+    Equal("gpt-5-mini", reasoning.GetProperty("properties").GetProperty("model").GetProperty("name").GetString());
+    Equal("2025-08-07", reasoning.GetProperty("properties").GetProperty("model").GetProperty("version").GetString());
+    Equal("GlobalStandard", reasoning.GetProperty("sku").GetProperty("name").GetString());
+}
+
 static void TestCli()
 {
     var concepts = RunApp("--section", "concepts");
@@ -134,11 +171,42 @@ static void TestCli()
     Contains("Set AZURE_OPENAI_ENDPOINT", missing.Output);
 }
 
+static bool ShouldSubmitNewBatch(string statePath, string endpoint, string deployment, string? explicitBatchId)
+{
+    if (explicitBatchId is not null) return false;
+    if (!File.Exists(statePath)) return true;
+    using var state = JsonDocument.Parse(File.ReadAllText(statePath));
+    if (state.RootElement.GetProperty("endpoint").GetString() != endpoint ||
+        state.RootElement.GetProperty("deployment").GetString() != deployment)
+        throw new InvalidOperationException("Saved batch belongs to a different endpoint/deployment; use a different --state-dir.");
+    return false;
+}
+
+static void RequireCompleted(string status, int remainingSeconds)
+{
+    if (status != "completed" && remainingSeconds <= 0)
+        throw new InvalidOperationException($"Batch is still {status}; NOT a completed live test.");
+}
+
+static string LabDirectory()
+{
+    var lab = Path.Combine(Environment.CurrentDirectory, "0-model-basics");
+    return File.Exists(Path.Combine(lab, "demo.cs")) ? lab : Environment.CurrentDirectory;
+}
+
+static bool CanRun(string file) { try { using var p = Process.Start(new ProcessStartInfo(file, "--version") { RedirectStandardOutput = true, RedirectStandardError = true }); p?.WaitForExit(); return p?.ExitCode == 0; } catch { return false; } }
+static (int ExitCode, string Output) Run(string file, string[] arguments, string directory)
+{
+    var start = new ProcessStartInfo(file) { WorkingDirectory = directory, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+    foreach (var argument in arguments) start.ArgumentList.Add(argument);
+    using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {file}.");
+    var stdout = process.StandardOutput.ReadToEndAsync(); var stderr = process.StandardError.ReadToEndAsync();
+    process.WaitForExit(); return (process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
+}
+
 static (int ExitCode, string Output) RunApp(params string[] arguments)
 {
-    var labDirectory = Path.Combine(Environment.CurrentDirectory, "0-model-basics");
-    if (!File.Exists(Path.Combine(labDirectory, "demo.cs")))
-        labDirectory = Environment.CurrentDirectory;
+    var labDirectory = LabDirectory();
     var start = new ProcessStartInfo("dotnet")
     {
         WorkingDirectory = labDirectory,

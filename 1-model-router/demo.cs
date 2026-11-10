@@ -13,7 +13,12 @@ try
 {
     return await MainAsync(args);
 }
-catch (Exception error) when (error is HttpRequestException or JsonException or InvalidOperationException or ArgumentException or Azure.RequestFailedException)
+catch (Exception error) when (error is ArgumentException or FormatException or OverflowException)
+{
+    Console.Error.WriteLine($"ERROR: {error.Message}");
+    return 2;
+}
+catch (Exception error) when (error is HttpRequestException or JsonException or InvalidOperationException or Azure.RequestFailedException)
 {
     Console.Error.WriteLine($"ERROR: {error.Message}");
     return 1;

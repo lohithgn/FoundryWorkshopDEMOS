@@ -14,18 +14,17 @@ using Azure.Identity;
 const string SamplingPrompt = "Invent one short, playful name for a beginner AI workshop. Return only the name.";
 const string ComparisonPrompt = "Tasks A, B, C, D take 4, 3, 5, 2 minutes respectively. B and C must wait for A; D must wait for both B and C. Two workers are available, each task needs one worker, and tasks cannot be interrupted. B and C can run at the same time after A completes. What is the minimum total duration? Return the minimum duration in minutes.";
 const int ChatMaxRetries = 8;
-string[] BatchPrompts =
-[
-    "Explain the temperature parameter in language-model text generation in one sentence for a beginner.",
-    "Explain the top_p parameter in language-model text generation in one sentence for a beginner.",
-    "Explain when asynchronous batch processing is useful in one sentence."
-];
 
 try
 {
     return await RunAsync(args);
 }
-catch (Exception error) when (error is HttpRequestException or IOException or JsonException or InvalidOperationException or ArgumentException or Azure.RequestFailedException)
+catch (Exception error) when (error is ArgumentException or FormatException or OverflowException)
+{
+    Console.Error.WriteLine($"ERROR: {error.Message}");
+    return 2;
+}
+catch (Exception error) when (error is HttpRequestException or IOException or JsonException or InvalidOperationException or Azure.RequestFailedException)
 {
     Console.Error.WriteLine($"ERROR: {error.Message}");
     return 1;
@@ -441,7 +440,7 @@ static async Task RunBatchAsync(HttpClient client, Uri endpoint, string deployme
             await File.WriteAllTextAsync(Path.Combine(stateDirectory, "batch-output.jsonl"), output);
             foreach (var row in ValidateBatchResults(output))
             {
-                var body = row["response"]!["body"]!;
+                var body = row!["response"]!["body"]!;
                 Console.WriteLine($"{row["custom_id"]} | model: {body["model"]} | usage: {body["usage"]?.ToJsonString() ?? "Not returned by service"}");
                 Console.WriteLine($"Answer: {body["choices"]![0]!["message"]!["content"]}");
             }

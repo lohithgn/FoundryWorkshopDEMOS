@@ -9,7 +9,12 @@ using Azure.Core;
 using Azure.Identity;
 
 try { return await MainAsync(args); }
-catch (Exception error) when (error is HttpRequestException or IOException or JsonException or InvalidOperationException or ArgumentException or Azure.RequestFailedException or OperationCanceledException)
+catch (Exception error) when (error is ArgumentException or FormatException or OverflowException)
+{
+    Console.Error.WriteLine($"ERROR: {error.Message}");
+    return 2;
+}
+catch (Exception error) when (error is HttpRequestException or IOException or JsonException or InvalidOperationException or Azure.RequestFailedException or OperationCanceledException)
 {
     Console.Error.WriteLine($"ERROR: {error.Message}");
     return 1;
@@ -108,7 +113,7 @@ static async Task<int> MainAsync(string[] arguments)
                 var callId = callObject["id"]?.ToString() ?? throw new JsonException("Tool call omitted its ID.");
                 var function = callObject["function"]?.AsObject() ?? throw new JsonException("Tool call omitted its function.");
                 var functionName = function["name"]?.ToString() ?? throw new JsonException("Tool call omitted its name.");
-                var tool = tools.SingleOrDefault(item => item["name"]?.ToString() == functionName)
+                _ = tools.SingleOrDefault(item => item?["name"]?.ToString() == functionName)
                     ?? throw new InvalidOperationException($"Model requested an unknown Toolbox operation: {functionName}");
                 using var argsJson = JsonDocument.Parse(function["arguments"]?.ToString() ?? "{}");
                 var result = await mcp.CallToolAsync(functionName, JsonNode.Parse(argsJson.RootElement.GetRawText())!);
@@ -119,7 +124,6 @@ static async Task<int> MainAsync(string[] arguments)
                 if (string.IsNullOrWhiteSpace(resultText)) throw new InvalidOperationException("Tool call returned no result.");
                 toolResults.Add(resultText);
                 messages.Add(new JsonObject { ["role"] = "tool", ["tool_call_id"] = callId, ["content"] = resultText });
-                _ = tool;
             }
         }
         throw new InvalidOperationException("The agent did not complete after five tool-call turns.");
