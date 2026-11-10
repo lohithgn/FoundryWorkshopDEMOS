@@ -37,14 +37,15 @@ customer records. No external documents are downloaded or copied.
 
 ## Prerequisites and cost
 
-- Python 3.10+, Azure CLI with Bicep, and interactive `az login`.
+- .NET 10 SDK 10.0.300 or later, Azure CLI with Bicep, and interactive `az login`.
 - Permission to create resources and role assignments, including the
   **Foundry Project Manager** role used to create project connections.
 - Quota for `gpt-4.1-mini` (`2025-04-14`, Global Standard) and
   `text-embedding-3-small` (`1`, Standard) in East US 2.
 - Agentic retrieval/semantic ranker and the **`2026-08-01-preview`** Search API
   in the Search region (West US 2 by default). Project connections use
-  `2025-10-01-preview`; agent SDK is pinned to `azure-ai-projects==2.7.0`.
+  `2025-10-01-preview`; agent lifecycle and Responses use the Foundry project
+  REST API (`v1`) with Entra ID.
 - The **new** Foundry portal at <https://ai.azure.com>, not the classic portal.
   Portal paths and preview availability can change.
 
@@ -57,9 +58,13 @@ Foundry; Search identity reads blobs and calls models; project identity has
 Search Index Data Reader. No API keys, SAS URLs, or connection-string secrets.
 The trusted workshop participants all see the same synthetic corpus.
 
-## Deploy and run
+## Deploy and run the .NET 10 implementation
 
-From the repository root:
+### Transitional root-runner deployment (pending issue #1)
+
+This repository-root command belongs to `deploy.py`, not to lab 27's C# app.
+Keep this instruction transitional until issue #1 migrates the root runner; this
+lab does not provide a local C# deployment entrypoint.
 
 ```bash
 az login
@@ -67,13 +72,37 @@ python3 deploy.py --subscription "<subscription-id>" --demo 27 \
   --location eastus2 --search-location westus2
 ```
 
-This compiles/lints Bicep, installs dependencies in the lab's virtual environment,
-runs offline tests, deploys a dedicated resource group, then uploads and reads
-back all eight documents. The **Blob knowledge-source service**, not this Python
-script, creates indexes, indexers, skillsets, chunks, and embeddings. The script
-waits for successful ingestion and visible indexed content, creates the knowledge
+The root runner still uses the transitional Python lab entrypoint. For the C#
+implementation, deploy infrastructure and save outputs as described in the
+standalone steps below (or complete the root deployment first), then run the C#
+file-based app from this folder. It uses `AzureCliCredential` and direct REST
+calls; no `.csproj` or solution is required.
+
+The exact .NET restore, build, safe help, and offline regression commands are:
+
+```bash
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs --no-build -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-build
+```
+
+After standalone infrastructure deployment has written `.azure/deployment.json`,
+run the full workflow with `dotnet run --file demo.cs`. The **Blob knowledge-source
+service**, not the C# application, creates indexes, indexers, skillsets, chunks,
+and embeddings. The app uploads and reads back all eight documents, waits for
+successful managed ingestion and visible indexed content, creates the knowledge
 base and both project connections, creates/reads back an agent version, displays
-actual retrieval activity/references, and invokes the agent through MCP.
+actual retrieval activity/references, and invokes the persistent agent through
+MCP. It preserves the same 15-minute per-source ingestion limit and visible,
+bounded 403 retry behavior.
+
+`demo.py`, `test_demo.py`, and `requirements.txt` remain unchanged as a
+**transitional Python implementation** for existing workflows; the C# files are
+independent implementations, not Python wrappers.
+Python 3.10+ remains necessary only for that transitional workflow.
 
 The default group is `rg-foundry-FoundryIQwithKB-demo`. State is saved in ignored
 `.azure/deployment.json`; actual ingestion, definitions, agent version, retrieval,
@@ -96,10 +125,9 @@ az deployment group create -g "$RG" -n lab27 --template-file infra/main.bicep \
 mkdir -p .azure
 az deployment group show -g "$RG" -n lab27 \
   --query '{outputs:properties.outputs}' -o json > .azure/deployment.json
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
 ```
 
 Reruns use the same blobs/sources/base/connections and call `create_version`
@@ -143,16 +171,16 @@ Suggested prompts:
 
 The last question has no answer in this corpus. Expect
 **"I don't know based on this knowledge base"**, not an invented price/specification.
-The SDK run checks that an actual successful MCP retrieval occurred and that
+The C# run checks that an actual successful MCP retrieval occurred and that
 any cited CASE/KB IDs exist in tool evidence; this is not a full factuality evaluator.
 
 From this folder, query the same persistent agent without re-uploading or
 creating another version:
 
 ```bash
-.venv/bin/python demo.py --ask-only --question \
+dotnet run --file demo.cs -- --ask-only --question \
   "Why did the workshop VPN fail on Surface Laptop 7th Edition? Cite the case and runbook."
-.venv/bin/python demo.py --ask-only --question \
+dotnet run --file demo.cs -- --ask-only --question \
   "What is the exact warranty replacement price and next year's Surface Laptop specification?"
 ```
 
@@ -184,7 +212,7 @@ for a separate permission-aware exercise.
    from KB-SURFACE-002.
 2. Change only that window in [KB-SURFACE-002.txt](./data/surface-kb/KB-SURFACE-002.txt)
    to **1 business day** (retain its synthetic label).
-3. Run `.venv/bin/python demo.py --refresh-only`. The script uploads/readbacks
+3. Run `dotnet run --file demo.cs -- --refresh-only`. The app uploads/readbacks
    the text and requests a managed indexer run, waiting for success. It does not
    manually patch a Search index or recreate the agent. The hourly schedule is
    an alternative to this immediate manual run.
@@ -199,12 +227,18 @@ for a separate permission-aware exercise.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-.venv/bin/python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-build
 ```
 
-Offline tests verify Blob ingestion contracts, source/base and MCP wiring,
-readback/error handling, exact document coverage, polling, and grounded-response validation. They don't
-establish live Azure access or portal rendering.
+Offline C# tests verify Blob ingestion contracts, source/base and MCP wiring,
+readback/error handling, exact document coverage, polling, HTTP retry behavior,
+agent lifecycle requests, and grounded-response validation. They don't establish
+live Azure access or portal rendering. The retained transitional Python tests can
+also be run with `.venv/bin/python -m unittest discover -s . -p 'test_*.py' -v`.
 
 ### Live verification on 2026-10-26
 

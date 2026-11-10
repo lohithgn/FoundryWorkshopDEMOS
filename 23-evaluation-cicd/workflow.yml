@@ -31,22 +31,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-dotnet@v4
         with:
-          python-version: '3.11'
+          dotnet-version: '10.0.x'
       - uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      - run: pip install -r requirements.txt
-      - run: python -m unittest -v
+      - name: Restore and build file-based apps
+        run: |
+          dotnet restore demo.cs --configfile NuGet.Config
+          dotnet build demo.cs --no-restore
+          dotnet restore test_demo.cs --configfile NuGet.Config
+          dotnet build test_demo.cs --no-restore
+      - name: Offline regression tests
+        run: dotnet run --file test_demo.cs --no-build --no-restore
       - name: Cloud evaluation and release gate
         env:
           FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
           AZURE_OPENAI_DEPLOYMENT: ${{ vars.AZURE_OPENAI_DEPLOYMENT }}
           PROMPT: ${{ inputs.prompt || 'baseline' }}
-        run: python demo.py --prompt "$PROMPT" --correctness-threshold 1 --coherence-threshold 1
+        run: dotnet run --file demo.cs --no-build --no-restore -- --prompt "$PROMPT" --correctness-threshold 1 --coherence-threshold 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
