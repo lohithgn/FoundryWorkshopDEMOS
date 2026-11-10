@@ -64,7 +64,7 @@ The caller also needs permission to create/delete role assignments at `projectRe
 
 The historical Python implementation passed native Toolbox search/call and managed harness/immutable skill checks. Its saved response and report are historical evidence only; the .NET live paths remain unverified.
 
-One Toolbox search, one docs call, one agent conversation, one response; no resubmission loop. MCP stage timeout: 180 seconds; response timeout: 180 seconds. Harness restrictions disallow output-token-limit overrides. Files under ignored `.azure/` contain deployment outputs, ARM and live transcripts, read-back definitions, discovered schemas, and results, never authentication tokens.
+One Toolbox search, one docs call, one agent conversation, one response; no resubmission loop. Toolbox workflow deadline: 180 seconds total (150 seconds for requests, up to 30 seconds for cleanup); harness response timeout: 180 seconds. Harness restrictions disallow output-token-limit overrides. Files under ignored `.azure/` contain deployment outputs, ARM and live transcripts, read-back definitions, discovered schemas, and results, never authentication tokens.
 
 ## Cost and cleanup
 

@@ -565,7 +565,10 @@ static JsonObject ToolDefinition() => new() { ["type"] = "function", ["name"] = 
 
 static JsonObject Criterion(string name, string model, JsonObject mapping) => new() {
     ["type"] = "azure_ai_evaluator", ["name"] = name, ["evaluator_name"] = "builtin." + name,
-    ["initialization_parameters"] = new JsonObject { ["model"] = model }, ["data_mapping"] = mapping };
+    ["initialization_parameters"] = name == "tool_call_accuracy"
+        ? new JsonObject { ["deployment_name"] = model }
+        : new JsonObject { ["model"] = model },
+    ["data_mapping"] = mapping };
 
 static string ResponseText(JsonObject response) => string.Concat((response["output"]?.AsArray() ?? new JsonArray())
     .SelectMany(item => item?["content"]?.AsArray() ?? new JsonArray())
@@ -623,6 +626,10 @@ void OfflineTests()
         || optimization["candidate_search_configuration"]?["max_candidates"]?.GetValue<int>() != 1
         || optimization["agent_optimization_space"]?["target_attributes"]?.AsArray().Single()?.ToString() != "instructions")
         throw new InvalidDataException("Native optimizer must pin versions, disjoint holdout, supported model and bounded instruction search.");
+    var toolCallCriterion = Criterion("tool_call_accuracy", "judge-model", new JsonObject());
+    if (toolCallCriterion["initialization_parameters"]?["deployment_name"]?.ToString() != "judge-model"
+        || toolCallCriterion["initialization_parameters"]?["model"] is not null)
+        throw new InvalidDataException("Native tool-call accuracy requires its deployment_name parameter.");
     var originalDataset = JsonNode.Parse("""{"id":"native-id","name":"generated","version":"1","type":"uri_file","data_uri":"azureai://source","tags":{"lab":"44","securityControl":"Ignore","custom":"kept"}}""")!.AsObject();
     var taggedDataset = DatasetWithRequiredTags(originalDataset);
     if (taggedDataset["tags"]?["lab"]?.ToString() != "44" || taggedDataset["tags"]?["custom"]?.ToString() != "kept"

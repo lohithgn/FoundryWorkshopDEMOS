@@ -16,7 +16,7 @@ if (ValidateArguments(args, ["--self-test", "--help", "-h", "--preflight"], []) 
     Environment.ExitCode = 2;
     return;
 }
-if (args.Contains("--self-test")) { OfflineTests(); return; }
+if (args.Contains("--self-test")) { await OfflineTests(); return; }
 if (args.Contains("--help") || args.Contains("-h"))
 {
     Console.WriteLine("Verify a managed Copilot harness, immutable native skill, and Toolbox search.\nUsage: dotnet run --file demo.cs -- [--preflight]");
@@ -151,6 +151,7 @@ async Task ToolboxSearch(NativeProject project, JsonObject config, string token,
 {
     var suffix = Guid.NewGuid().ToString("N")[..10];
     var name = "native-search-" + suffix;
+    using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(150));
     try
     {
         var body = new JsonObject { ["description"] = "Read-only official Learn connector with native deferred discovery.",
@@ -158,17 +159,17 @@ async Task ToolboxSearch(NativeProject project, JsonObject config, string token,
                 new JsonObject { ["type"] = "mcp", ["server_label"] = "learn", ["server_url"] = LearnMcp,
                     ["require_approval"] = "never" },
                 new JsonObject { ["type"] = "tool_search" }) };
-        var toolbox = await project.Send(HttpMethod.Post, $"toolboxes/{name}/versions", body);
+        var toolbox = await project.Send(HttpMethod.Post, $"toolboxes/{name}/versions", body, deadline.Token);
         var version = toolbox["version"]?.ToString() ?? throw new InvalidDataException("Native toolbox response has no immutable version.");
         report["toolbox"] = toolbox.DeepClone();
         await Save(report);
-        var readback = await project.Get($"toolboxes/{name}/versions/{Uri.EscapeDataString(version)}");
+        var readback = await project.Get($"toolboxes/{name}/versions/{Uri.EscapeDataString(version)}", deadline.Token);
         if (!(readback["tools"]?.AsArray() ?? new JsonArray()).Any(t => t?["type"]?.ToString() == "toolbox_search"))
             throw new InvalidOperationException("Service read-back lacks the native toolbox_search definition.");
         var mcpUrl = config["projectEndpoint"]!.ToString().TrimEnd('/') +
             $"/toolboxes/{Uri.EscapeDataString(name)}/versions/{Uri.EscapeDataString(version)}/mcp?api-version=v1";
         await using var mcp = new StreamableMcp(mcpUrl, token);
-        var listing = await mcp.InitializeAndList();
+        var listing = await mcp.InitializeAndList(deadline.Token);
         var tools = listing["tools"]?.AsArray() ?? new JsonArray();
         VerifyMetaTools(tools.Select(t => t?["name"]?.ToString() ?? ""));
         report["initial_tools"] = listing.DeepClone();
@@ -178,7 +179,7 @@ async Task ToolboxSearch(NativeProject project, JsonObject config, string token,
         var properties = searchSchema["properties"]?.AsObject() ?? new JsonObject();
         var queryKey = properties.ContainsKey("query") ? "query" : properties.ContainsKey("search_query") ? "search_query" : null;
         if (queryKey is null) throw new InvalidDataException($"Unsupported native search schema: {searchSchema}");
-        var result = await mcp.Call("tool_search", new JsonObject { [queryKey] = "microsoft_docs_search official Foundry Copilot harness documentation" });
+        var result = await mcp.Call("tool_search", new JsonObject { [queryKey] = "microsoft_docs_search official Foundry Copilot harness documentation" }, deadline.Token);
         report["tool_search"] = result.DeepClone();
         var tool = FindTool(result);
         var callSchema = tools.First(t => t?["name"]?.ToString() == "call_tool")?["inputSchema"]?.AsObject()
@@ -190,15 +191,24 @@ async Task ToolboxSearch(NativeProject project, JsonObject config, string token,
         var discoveredName = tool["name"]?.ToString() ?? tool["tool_name"]?.ToString()
             ?? throw new InvalidDataException("Discovered tool is missing its name.");
         var called = await mcp.Call("call_tool", new JsonObject { [nameKey] = discoveredName,
-            [argsKey] = new JsonObject { ["query"] = "Microsoft Foundry Copilot harness" } });
+            [argsKey] = new JsonObject { ["query"] = "Microsoft Foundry Copilot harness" } }, deadline.Token);
         if (called["isError"]?.GetValue<bool>() == true || called["content"] is not JsonArray { Count: > 0 })
             throw new InvalidOperationException("Native call_tool did not return official documentation.");
         report["call_tool"] = called.DeepClone();
         report["tool_search_status"] = "PASS";
     }
+    catch (OperationCanceledException error) when (deadline.IsCancellationRequested)
+    {
+        throw new TimeoutException("Native Toolbox search exceeded its 150-second work deadline (180 seconds including cleanup).", error);
+    }
     finally
     {
-        try { await project.Send(HttpMethod.Delete, $"toolboxes/{name}"); report["toolbox_deleted"] = true; }
+        try
+        {
+            using var cleanupDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await project.Send(HttpMethod.Delete, $"toolboxes/{name}", cancellationToken: cleanupDeadline.Token);
+            report["toolbox_deleted"] = true;
+        }
         catch (Exception error) { report["toolbox_cleanup_error"] = error.Message; throw; }
         await Save(report);
     }
@@ -260,14 +270,20 @@ async Task ManagedHarness(NativeProject project, JsonObject config, JsonObject r
     }
     finally
     {
+        var cleanups = new List<(string Key, Func<Task> Action)>();
         if (conversation is not null)
-            await OpenAIRequest(config["endpoint"]!.ToString(), HttpMethod.Delete, $"conversations/{Uri.EscapeDataString(conversation)}", null);
+            cleanups.Add(("conversation", async () => { await OpenAIRequest(config["endpoint"]!.ToString(),
+                HttpMethod.Delete, $"conversations/{Uri.EscapeDataString(conversation)}", null); }));
         if (agentCreated)
-            await project.Send(HttpMethod.Delete, $"agents/{Uri.EscapeDataString(agentName)}");
+            cleanups.Add(("agent", async () => { await project.Send(HttpMethod.Delete, $"agents/{Uri.EscapeDataString(agentName)}"); }));
         if (skillCreated)
-            await project.Send(HttpMethod.Delete, $"skills/{Uri.EscapeDataString(skillName)}");
+            cleanups.Add(("skill", async () => { await project.Send(HttpMethod.Delete, $"skills/{Uri.EscapeDataString(skillName)}"); }));
         if (roleId is not null)
-            await AzCli.Run("role", "assignment", "delete", "--ids", roleId, "-o", "none");
+            cleanups.Add(("role", async () => { await AzCli.Run("role", "assignment", "delete", "--ids", roleId, "-o", "none"); }));
+        var cleanupErrors = await AttemptCleanup(report, cleanups);
+        await Save(report);
+        if (cleanupErrors.Count > 0)
+            throw new InvalidOperationException($"BLOCKED cleanup requires attention: {string.Join("; ", cleanupErrors)}");
     }
 }
 
@@ -306,7 +322,7 @@ static async Task Save(JsonObject report)
     File.Move(temporary, path, true);
 }
 
-void OfflineTests()
+async Task OfflineTests()
 {
     var definition = new JsonObject { ["harness"] = new JsonObject { ["type"] = "microsoft_copilot_preview" },
         ["skills"] = new JsonArray(new JsonObject { ["name"] = "brief", ["version"] = "1" }) };
@@ -329,7 +345,30 @@ void OfflineTests()
             || !skill.Contains("NATIVE-SKILL-42", StringComparison.Ordinal))
             throw new InvalidDataException("Native immutable skill package contract failed.");
     }
+    var cleanupReport = new JsonObject();
+    var laterCleanupAttempted = false;
+    var cleanupFailures = await AttemptCleanup(cleanupReport, [
+        ("first", (Func<Task>)(() => Task.FromException(new InvalidOperationException("simulated cleanup failure")))),
+        ("second", (Func<Task>)(() => { laterCleanupAttempted = true; return Task.CompletedTask; }))
+    ]);
+    if (cleanupFailures.Count != 1 || !laterCleanupAttempted || cleanupReport["second_deleted"]?.GetValue<bool>() != true)
+        throw new InvalidDataException("Cleanup must continue after an individual resource deletion failure.");
     Console.WriteLine("PASS: harness, pinned skill, tool-discovery and restricted meta-tool offline contracts.");
+}
+
+static async Task<List<string>> AttemptCleanup(JsonObject report, IEnumerable<(string Key, Func<Task> Action)> actions)
+{
+    var errors = new List<string>();
+    foreach (var (key, action) in actions)
+    {
+        try { await action(); report[$"{key}_deleted"] = true; }
+        catch (Exception error)
+        {
+            report[$"{key}_cleanup_error"] = error.Message;
+            errors.Add($"{key}: {error.Message}");
+        }
+    }
+    return errors;
 }
 
 static void ExpectFailure(Action action, string message)
@@ -342,14 +381,16 @@ static void ExpectFailure(Action action, string message)
 sealed class NativeProject(string endpoint, string token)
 {
     private readonly Uri _endpoint = new(endpoint.TrimEnd('/') + "/");
-    public Task<JsonObject> Get(string path) => Send(HttpMethod.Get, path);
-    public async Task<JsonObject> Send(HttpMethod method, string path, JsonObject? payload = null)
+    public Task<JsonObject> Get(string path, CancellationToken cancellationToken = default)
+        => Send(HttpMethod.Get, path, cancellationToken: cancellationToken);
+    public async Task<JsonObject> Send(HttpMethod method, string path, JsonObject? payload = null,
+        CancellationToken cancellationToken = default)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(180) };
         using var request = new HttpRequestMessage(method, AddVersion(path));
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (payload is not null) request.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
-        using var response = await http.SendAsync(request);
+        using var response = await http.SendAsync(request, cancellationToken);
         var body = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException($"Native project API {method} {path}: HTTP {(int)response.StatusCode}, {ErrorCode(body)}");
         return body.Length == 0 ? new JsonObject() : JsonNode.Parse(body)!.AsObject();
@@ -384,29 +425,29 @@ sealed class StreamableMcp(string url, string token) : IAsyncDisposable
     private readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(180) };
     private string? _session;
     private int _id;
-    public async Task<JsonObject> InitializeAndList()
+    public async Task<JsonObject> InitializeAndList(CancellationToken cancellationToken)
     {
         var init = await Send("initialize", new JsonObject { ["protocolVersion"] = "2025-03-26",
-            ["capabilities"] = new JsonObject(), ["clientInfo"] = new JsonObject { ["name"] = "lab42-file-app", ["version"] = "1.0" } });
+            ["capabilities"] = new JsonObject(), ["clientInfo"] = new JsonObject { ["name"] = "lab42-file-app", ["version"] = "1.0" } }, cancellationToken);
         if (init["protocolVersion"] is null) throw new InvalidDataException("MCP server did not complete initialization.");
-        await Notify("notifications/initialized", new JsonObject());
-        return await Send("tools/list", new JsonObject());
+        await Notify("notifications/initialized", new JsonObject(), cancellationToken);
+        return await Send("tools/list", new JsonObject(), cancellationToken);
     }
-    public Task<JsonObject> Call(string name, JsonObject arguments)
-        => Send("tools/call", new JsonObject { ["name"] = name, ["arguments"] = arguments });
-    private async Task Notify(string method, JsonObject parameters)
+    public Task<JsonObject> Call(string name, JsonObject arguments, CancellationToken cancellationToken)
+        => Send("tools/call", new JsonObject { ["name"] = name, ["arguments"] = arguments }, cancellationToken);
+    private async Task Notify(string method, JsonObject parameters, CancellationToken cancellationToken)
     {
         using var request = CreateRequest(new JsonObject { ["jsonrpc"] = "2.0", ["method"] = method, ["params"] = parameters });
-        using var response = await _http.SendAsync(request);
+        using var response = await _http.SendAsync(request, cancellationToken);
         if (response.StatusCode is not (System.Net.HttpStatusCode.Accepted or System.Net.HttpStatusCode.OK))
             throw new InvalidOperationException($"MCP notification failed with HTTP {(int)response.StatusCode}.");
         SetSession(response);
     }
-    private async Task<JsonObject> Send(string method, JsonObject parameters)
+    private async Task<JsonObject> Send(string method, JsonObject parameters, CancellationToken cancellationToken)
     {
         var id = ++_id;
         using var request = CreateRequest(new JsonObject { ["jsonrpc"] = "2.0", ["id"] = id, ["method"] = method, ["params"] = parameters });
-        using var response = await _http.SendAsync(request);
+        using var response = await _http.SendAsync(request, cancellationToken);
         var body = await response.Content.ReadAsStringAsync();
         SetSession(response);
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException($"MCP {method} failed with HTTP {(int)response.StatusCode}.");
