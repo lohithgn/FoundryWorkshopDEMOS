@@ -44,6 +44,7 @@ public static class Program
             new JsonObject{["finish_reason"]="stop",["message"]=new JsonObject{["content"]="{\"answer\":\"Insufficient evidence.\",\"citations\":[],\"quotes\":[]}"}}) });},
             "deployment","Unknown?",[]);
         Equal("deployment",captured!["model"]!.GetValue<string>());
+        Equal("json_object",captured["response_format"]!["type"]!.GetValue<string>());
         True(captured["messages"]![1]!["content"]!.GetValue<string>().Contains("\"evidence\":[]",StringComparison.Ordinal));
         True(!captured["messages"]![1]!["content"]!.GetValue<string>().Contains("expected",StringComparison.Ordinal));
 

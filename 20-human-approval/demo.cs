@@ -174,15 +174,17 @@ public static class Demo
 
     public static async Task<int> RunAsync(string[] args)
     {
-        var options=new Options(args);
+        Options options;
+        try { options=new Options(args); }
+        catch (ArgumentException error) { throw new CliException(error.Message); }
         if(options.Help){options.Usage();return 0;}
         if((options.Approve is not null||options.Reject is not null)&&string.IsNullOrEmpty(options.Digest))
-            throw new ArgumentException("Approval/rejection requires the exact --digest.");
+            throw new CliException("Approval/rejection requires the exact --digest.");
         if(options.Attendees<1||options.Attendees>20||string.IsNullOrWhiteSpace(options.Deployment))
-            throw new ArgumentException("Use 1-20 attendees and a nonempty deployment.");
+            throw new CliException("Use 1-20 attendees and a nonempty deployment.");
         if(options.Approve is null&&options.Reject is null&&
             (!Uri.TryCreate(options.Endpoint,UriKind.Absolute,out var endpoint)||endpoint.Scheme!="https"))
-            throw new ArgumentException("Set AZURE_OPENAI_ENDPOINT to the Bicep endpoint output.");
+            throw new CliException("Set AZURE_OPENAI_ENDPOINT to the Bicep endpoint output.");
         var credential=new AzureCliCredential();
         var token=await credential.GetTokenAsync(new TokenRequestContext([Scope]));
         var actor=ActorFromToken(token.Token);
@@ -198,11 +200,19 @@ public static class Demo
         var proposal=Propose(db,actor,action,DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0);
         Console.WriteLine($"PROPOSED ONLY (expires in 15 minutes): {action.ToJsonString()}");
         Console.WriteLine($"Proposal: {proposal.Id}\nDigest: {proposal.Digest}");
-        Console.WriteLine($"Approve: dotnet run --file demo.cs -- --approve {proposal.Id} --digest {proposal.Digest}");
-        Console.WriteLine($"Reject:  dotnet run --file demo.cs -- --reject {proposal.Id} --digest {proposal.Digest}");
+        Console.WriteLine("Approve: "+DecisionCommand(proposal.Id,proposal.Digest,true,options.Database));
+        Console.WriteLine("Reject:  "+DecisionCommand(proposal.Id,proposal.Digest,false,options.Database));
         Console.WriteLine("No booking has been made. Review the exact action before approving.");
         return 0;
     }
+
+    public static string DecisionCommand(string proposalId,string digest,bool approve,string database)
+    {
+        var action=approve?"--approve":"--reject";
+        return $"dotnet run --file demo.cs -- {action} {proposalId} --digest {digest} --database {QuoteShell(database)}";
+    }
+
+    private static string QuoteShell(string value)=>"'"+value.Replace("'","'\\''",StringComparison.Ordinal)+"'";
 
     public sealed class Options
     {
@@ -237,7 +247,7 @@ public static class Demo
 
 public sealed class OpenAiClient:IDisposable
 {
-    private readonly TokenCredential credential;private readonly HttpClient http=new(){Timeout=TimeSpan.FromSeconds(45)};private readonly Uri baseUri;
+    private readonly TokenCredential credential;private readonly HttpClient http=new(){Timeout=Timeout.InfiniteTimeSpan};private readonly Uri baseUri;
     public OpenAiClient(string endpoint,TokenCredential credential){this.credential=credential;baseUri=new Uri(endpoint.TrimEnd('/')+"/openai/v1/");}
     public async Task<JsonObject> PostAsync(JsonObject body,CancellationToken cancellationToken=default)
     {
@@ -245,8 +255,10 @@ public sealed class OpenAiClient:IDisposable
         using var request=new HttpRequestMessage(HttpMethod.Post,new Uri(baseUri,"chat/completions"))
         {Content=new StringContent(body.ToJsonString(),Encoding.UTF8,"application/json")};
         request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",token.Token);
-        using var response=await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,cancellationToken);
-        var text=await response.Content.ReadAsStringAsync(cancellationToken);
+        using var timeout=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(45));
+        using var response=await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,timeout.Token);
+        var text=await response.Content.ReadAsStringAsync(timeout.Token);
         if(!response.IsSuccessStatusCode)throw new HttpRequestException($"HTTP {(int)response.StatusCode}: {text}",null,response.StatusCode);
         return JsonNode.Parse(text)?.AsObject()??throw new JsonException("Service returned empty JSON.");
     }
@@ -256,6 +268,13 @@ public sealed class OpenAiClient:IDisposable
 #if !TEST_HARNESS
 public static class Program
 {
-    public static async Task<int> Main(string[] args){try{return await Demo.RunAsync(args);}catch(Exception error){Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}");return 1;}}
+    public static async Task<int> Main(string[] args)
+    {
+        try{return await Demo.RunAsync(args);}
+        catch(CliException error){Console.Error.WriteLine($"ArgumentException: {error.Message}");return 2;}
+        catch(Exception error){Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}");return 1;}
+    }
 }
 #endif
+
+public sealed class CliException(string message) : ArgumentException(message) { }

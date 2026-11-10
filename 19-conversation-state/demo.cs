@@ -153,10 +153,12 @@ public static class Demo
 
     public static async Task<int> RunAsync(string[] args)
     {
-        var options=new Options(args);
+        Options options;
+        try { options=new Options(args); }
+        catch (ArgumentException error) { throw new CliException(error.Message); }
         if(options.Help){options.Usage();return 0;}
         if(!(1<=options.Reserve&&options.Reserve<options.Budget))
-            throw new ArgumentException("Require 1 <= reserve < budget.");
+            throw new CliException("Require 1 <= reserve < budget.");
         var store=new Store(options.State);
         if(options.Action=="show")
         {
@@ -169,7 +171,7 @@ public static class Demo
         else
         {
             if(!Uri.TryCreate(options.Endpoint,UriKind.Absolute,out var endpoint)||endpoint.Scheme!="https")
-                throw new ArgumentException("Set AZURE_OPENAI_ENDPOINT to the deployed HTTPS inference endpoint.");
+                throw new CliException("Set AZURE_OPENAI_ENDPOINT to the deployed HTTPS inference endpoint.");
             var credential=new AzureCliCredential();
             using var client=new OpenAiClient(endpoint.ToString(),credential);
             if(options.Action=="demo")await DemonstrationAsync(store,client.PostAsync,options.Deployment,options.Budget,options.Reserve);
@@ -253,6 +255,13 @@ public sealed class OpenAiClient:IDisposable
 #if !TEST_HARNESS
 public static class Program
 {
-    public static async Task<int> Main(string[] args){try{return await Demo.RunAsync(args);}catch(Exception error){Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}");return 1;}}
+    public static async Task<int> Main(string[] args)
+    {
+        try{return await Demo.RunAsync(args);}
+        catch(CliException error){Console.Error.WriteLine($"ArgumentException: {error.Message}");return 2;}
+        catch(Exception error){Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}");return 1;}
+    }
 }
 #endif
+
+public sealed class CliException(string message) : ArgumentException(message) { }

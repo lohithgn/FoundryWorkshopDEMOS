@@ -84,15 +84,18 @@ public static class Demo
 
     public static async Task<int> RunAsync(string[] args)
     {
-        var options = new Options(args);
+        Options options;
+        try { options = new Options(args); }
+        catch (ArgumentException error) { throw new CliException(error.Message); }
         if (options.Help)
         {
             options.Usage();
             return 0;
         }
         if (string.IsNullOrWhiteSpace(options.Endpoint))
-            throw new ArgumentException("Set AZURE_OPENAI_ENDPOINT or pass --endpoint.");
-        ValidateIdentity(options.TenantId, options.ClientId, options.CertificatePath);
+            throw new CliException("Set AZURE_OPENAI_ENDPOINT or pass --endpoint.");
+        try { ValidateIdentity(options.TenantId, options.ClientId, options.CertificatePath); }
+        catch (ArgumentException error) { throw new CliException(error.Message); }
 
         var credential = CreateCredential(options.TenantId, options.ClientId, options.CertificatePath);
         Console.WriteLine("Inference identity: " +
@@ -210,9 +213,7 @@ public sealed class OpenAiClient : IDisposable
         var token = await credential.GetTokenAsync(new TokenRequestContext([ "https://cognitiveservices.azure.com/.default" ]),
             cancellationToken);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.CancelAfter(timeout);
-        return await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+        return await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
     }
 
     public async Task<JsonObject> PostAsync(string path, JsonObject body, CancellationToken cancellationToken = default)
@@ -221,8 +222,10 @@ public sealed class OpenAiClient : IDisposable
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        using var response = await SendAsync(request, cancellationToken);
-        var text = await response.Content.ReadAsStringAsync(cancellationToken);
+        using var timeoutToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutToken.CancelAfter(timeout);
+        using var response = await SendAsync(request, timeoutToken.Token);
+        var text = await response.Content.ReadAsStringAsync(timeoutToken.Token);
         if (!response.IsSuccessStatusCode)
             throw new ServiceException((int)response.StatusCode, text);
         return JsonNode.Parse(text)?.AsObject() ?? throw new JsonException("Service returned an empty JSON object.");
@@ -235,14 +238,16 @@ public sealed class OpenAiClient : IDisposable
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        using var response = await SendAsync(request, cancellationToken);
+        using var timeoutToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutToken.CancelAfter(timeout);
+        using var response = await SendAsync(request, timeoutToken.Token);
         if (!response.IsSuccessStatusCode)
             throw new ServiceException((int)response.StatusCode,
-                await response.Content.ReadAsStringAsync(cancellationToken));
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                await response.Content.ReadAsStringAsync(timeoutToken.Token));
+        await using var stream = await response.Content.ReadAsStreamAsync(timeoutToken.Token);
         using var reader = new StreamReader(stream);
         JsonObject? usage = null;
-        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        while (await reader.ReadLineAsync(timeoutToken.Token) is { } line)
         {
             if (!line.StartsWith("data:", StringComparison.Ordinal))
                 continue;
@@ -283,12 +288,15 @@ public sealed class OpenAiClient : IDisposable
     public void Dispose() => http.Dispose();
 }
 
+public sealed class CliException(string message) : ArgumentException(message) { }
+
 #if !TEST_HARNESS
 public static class Program
 {
     public static async Task<int> Main(string[] args)
     {
         try { return await Demo.RunAsync(args); }
+        catch (CliException error) { Console.Error.WriteLine($"ArgumentException: {error.Message}"); return 2; }
         catch (Exception error) { Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}"); return 1; }
     }
 }

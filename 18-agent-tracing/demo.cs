@@ -134,14 +134,16 @@ public static class Demo
 
     public static async Task<int> RunAsync(string[] args)
     {
-        var options=new Options(args);
+        Options options;
+        try { options=new Options(args); }
+        catch (ArgumentException error) { throw new CliException(error.Message); }
         if(options.Help){options.Usage();return 0;}
         var connection=ReadConnectionString(options.ConnectionString,
             Path.Combine(".azure","deployment.json"));
         if(string.IsNullOrWhiteSpace(options.Endpoint)||!options.Endpoint.StartsWith("https://",StringComparison.OrdinalIgnoreCase)||string.IsNullOrWhiteSpace(connection))
-            throw new ArgumentException("Set AZURE_OPENAI_ENDPOINT and APPLICATIONINSIGHTS_CONNECTION_STRING (or use deployment state).");
+            throw new CliException("Set AZURE_OPENAI_ENDPOINT and APPLICATIONINSIGHTS_CONNECTION_STRING (or use deployment state).");
         if(!double.IsFinite(options.SlowSeconds)||options.SlowSeconds<0||options.SlowSeconds>30)
-            throw new ArgumentException("--slow-seconds must be between 0 and 30");
+            throw new CliException("--slow-seconds must be between 0 and 30");
 
         var credential=new DefaultAzureCredential();
         using var provider=CreateProvider(connection,credential);
@@ -223,6 +225,13 @@ public sealed class OpenAiClient:IDisposable
 #if !TEST_HARNESS
 public static class Program
 {
-    public static async Task<int> Main(string[] args){try{return await Demo.RunAsync(args);}catch(Exception error){Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}");return 1;}}
+    public static async Task<int> Main(string[] args)
+    {
+        try{return await Demo.RunAsync(args);}
+        catch(CliException error){Console.Error.WriteLine($"ArgumentException: {error.Message}");return 2;}
+        catch(Exception error){Console.Error.WriteLine($"{error.GetType().Name}: {error.Message}");return 1;}
+    }
 }
 #endif
+
+public sealed class CliException(string message) : ArgumentException(message) { }

@@ -23,6 +23,8 @@ public static class Program
         try
         {
             var path=Path.Combine(directory,"bookings.db");
+            var decision=Demo.DecisionCommand("proposal","digest",true,"path with spaces/it's.sqlite");
+            True(decision.Contains("--database 'path with spaces/it'\\''s.sqlite'",StringComparison.Ordinal));
             using var db=Demo.Connect(path);
             var action=Action();
             var proposal=Demo.Propose(db,"tenant/alice",action,100);
