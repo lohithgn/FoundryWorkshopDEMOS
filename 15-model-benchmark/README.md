@@ -1,12 +1,16 @@
 # 15 — Repeatable model selection
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 Run the **same six labeled synthetic support tickets** against GPT-4.1-mini,
 GPT-4.1, and actual Azure **Model Router**, three times each. There is no local
 router stand-in and no fabricated live success. Default run: **54 requests**.
 
 ## Prerequisites and deployment
 
-Python 3.10+, Azure CLI/Bicep, `az login`, model access and sufficient quota.
+.NET 10 SDK, Azure CLI/Bicep, `az login`, model access and sufficient quota.
 The deploying identity needs resource creation and role-assignment rights
 (Contributor plus User Access Administrator, or equivalent). Inference uses
 `DefaultAzureCredential` and scoped **Cognitive Services OpenAI User**; no keys
@@ -42,11 +46,14 @@ az deployment group create --name lab15 -g "$RG" --template-file infra/main.bice
   --query properties.outputs -o json > deployment.json
 export AZURE_OPENAI_ENDPOINT=$(az deployment group show -g "$RG" -n lab15 --query properties.outputs.endpoint.value -o tsv)
 export AZURE_OPENAI_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab15 --query properties.outputs.deployment.value -o tsv)
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python -m unittest discover -s . -p 'test_demo.py' -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live benchmark requests (not part of offline validation):
+dotnet run --file demo.cs
 az bicep build --file infra/main.bicep --stdout >/dev/null
 ```
 
@@ -61,7 +68,7 @@ Each ticket requires exactly `category` (billing/access/outage/null) and `priori
 (low/high/null). **Current unresolved** problems take precedence over historical
 incidents. High means multiple users currently blocked; low means explicitly only
 one affected or nobody blocked; unstated impact is null. Embedded instructions
-are untrusted data. `CASES` in `demo.py` includes all ground truth and difficulty.
+are untrusted data. `Cases` in `demo.cs` includes all ground truth and difficulty.
 
 All slots receive identical rules, messages, temperature 0, and token budget.
 We use instruction-based JSON rather than strict response format so every
@@ -108,7 +115,7 @@ For your own explicit assumptions, save `rates.json` locally:
 ```
 
 ```bash
-python demo.py --rates rates.json --repeats 3 --output results.json
+dotnet run --file demo.cs -- --rates rates.json --repeats 3 --output results.json
 ```
 
 The router numbers above are **hypothetical blended assumptions**, not published
