@@ -8,13 +8,17 @@ A 3-minute terminal demo: a **writer** drafts a workshop invitation, then an
 Microsoft Agent Framework runs the sequential workflow locally; Microsoft Foundry
 runs the model inference. This is not a portal-authored or hosted workflow.
 
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions; they are not the current lab commands.
+
 ## Infrastructure and prerequisites
 
 The standalone Bicep template creates a Foundry account, project, `gpt-4.1-mini`
 Global Standard deployment (`2025-04-14`), and Foundry User role for the presenter.
 API keys are disabled; authentication uses the same interactive `az login` user.
 
-Requires Python 3.10+, Azure CLI with Bicep, model access/quota in **East US 2**,
+Requires the .NET 10 SDK, Azure CLI with Bicep, model access/quota in **East US 2**,
 and permissions to create resources and assign roles. Contributor alone is not
 enough to assign roles. Public endpoints and Global Standard processing make
 this a workshop setup, not a production networking or data-residency design.
@@ -22,6 +26,20 @@ this a workshop setup, not a production networking or data-residency design.
 ## Deploy
 
 Run from this folder in Bash/Zsh:
+
+The lab-local .NET deploy helper is an alternative to the manual steps below. It
+creates billable resources, runs the offline tests, then runs live inference; use
+it only with separate authorization. `--help` is safe and performs no Azure calls.
+
+```bash
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --subscription YOUR_SUBSCRIPTION_ID --location eastus2
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs
+```
+
+Cleanup prompts for the full recorded resource-group name; use `--yes` only for
+separately authorized unattended cleanup.
 
 ```bash
 az login
@@ -49,11 +67,10 @@ default model is unavailable in your subscription. Match the name and version.
 ## Run
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --prompt "Invite developers to a 30-minute beginner Python workshop."
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --prompt "Invite developers to a 30-minute beginner Python workshop."
 ```
 
 Alternatively, use `--project-endpoint` and `--deployment`. To deploy and run
@@ -61,7 +78,7 @@ Alternatively, use `--project-endpoint` and `--deployment`. To deploy and run
 
 ### Presenter talk track
 
-1. Show `SequentialBuilder(participants=[writer, editor])` in the Python script.
+1. Show the .NET `WorkflowBuilder` and its writer-to-editor edge.
 2. Run it and compare **Writer draft** with **Editor final**.
 3. Explain that ordering and handoff are deterministic, while the wording is not.
    Both agents use the same deployed model; no second model is needed.
@@ -74,7 +91,15 @@ sent, or published. The workflow and agents exist only in the local process.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
+dotnet restore cleanup.cs
+dotnet build cleanup.cs --no-restore
+dotnet run --file cleanup.cs -- --help
 ```
 
 Tests are offline; Azure deployment and inference require a separate live run.
@@ -92,6 +117,6 @@ Delete only the dedicated resource group:
 az group delete --name "$RESOURCE_GROUP" --yes
 ```
 
-- [Agent Framework sequential workflows](https://learn.microsoft.com/agent-framework/workflows/orchestrations/sequential?pivots=programming-language-python)
+- [Agent Framework sequential workflows](https://learn.microsoft.com/agent-framework/workflows/orchestrations/sequential?pivots=programming-language-csharp)
 - [Foundry workflow migration guidance](https://learn.microsoft.com/azure/foundry/agents/how-to/workflow)
 - [Feature F002](../BACKLOG.md#f002---microsoft-foundry-workflow-agent)

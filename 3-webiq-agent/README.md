@@ -8,19 +8,24 @@ Here, the historical workshop label "WebIQ" means Foundry's built-in **Web Searc
 tool, not the separate [Microsoft Web IQ APIs](https://learn.microsoft.com/web-iq/resources/faq)
 or a private enterprise search integration.
 
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions. Historical live results below are from
+> the Python version and are not .NET live validation.
+
 ## Infrastructure and prerequisites
 
 Bicep creates a Foundry account, project, `gpt-5-mini` Global Standard deployment
-(`2025-08-07`), and a Foundry User role for the presenter. The Python script
-creates and invokes a temporary server-side prompt-agent version with
-`WebSearchTool`, then repeats with an otherwise identical definition using
-`tools=[]`. Each version is deleted in `finally`, even on inference failure,
-before the next version is created. A failure stops the comparison.
+(`2025-08-07`), and a Foundry User role for the presenter. The C# app uses the
+Foundry REST API to create and invoke a temporary server-side prompt-agent version
+with native Web Search, then repeats with an otherwise identical definition using
+no tools. Each version is deleted even on inference failure, before the next
+version is created. A failure stops the comparison.
 No separate Bing resource, connection, or API key is required for this path.
 The template serializes model and project creation to avoid Azure `RequestConflict`
 from concurrent writes to the same account.
 
-Requires Python 3.10+, Azure CLI with Bicep, model access/quota in **East US 2**,
+Requires the .NET 10 SDK, Azure CLI with Bicep, model access/quota in **East US 2**,
 and permissions to create resources and assign roles. Your organization must
 permit Web Search; access policies can disable it independently of deployment.
 Contributor alone cannot assign roles.
@@ -35,6 +40,20 @@ processing are intentional workshop simplifications.
 ## Deploy
 
 From this folder in Bash/Zsh:
+
+The lab-local .NET deploy helper is an alternative to the manual steps below. It
+creates billable resources, runs the offline tests, then runs live Web Search and
+model requests; use it only with separate authorization. `--help` is safe.
+
+```bash
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --subscription YOUR_SUBSCRIPTION_ID --location eastus2
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs
+```
+
+Cleanup prompts for the full recorded resource-group name; use `--yes` only for
+separately authorized unattended cleanup.
 
 ```bash
 az login
@@ -62,28 +81,27 @@ model is unavailable. Select a model that supports Web Search.
 ## Run
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --prompt "Search Microsoft Learn for Foundry Agent Service and summarize its purpose with citations."
-python demo.py --debug-response
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --prompt "Search Microsoft Learn for Foundry Agent Service and summarize its purpose with citations."
+dotnet run --file demo.cs -- --debug-response
 ```
 
 `--project-endpoint` and `--deployment` can replace environment variables.
 The default deployment name is `gpt-5-mini`. Redeploy the Bicep template to create
-the new model deployment; changing the Python deployment name alone does not
+the new model deployment; changing the C# deployment name alone does not
 upgrade an existing `gpt-4.1-mini` deployment. Refresh the environment variables
 from the deployment outputs afterward, especially if a previous session set
 `AZURE_OPENAI_DEPLOYMENT` to the old name.
-From the repository root, `python3 deploy.py --demo 3` deploys and executes this
-lab. The [root runner](../README.md) selects all discovered labs if `--demo` is
+The [root runner](../README.md) is temporarily Python during the staged migration;
+issue #1 owns converting it. It selects all discovered labs if `--demo` is
 omitted; it is not limited to the original four demos.
 
 ### Presenter talk track
 
-1. Show that the agent definition contains `WebSearchTool()` and that the request
-   sets `tool_choice="required"`.
+1. Show that the native Foundry prompt-agent definition enables Web Search and
+   that the request sets `tool_choice="required"`.
 2. Run the example. Under **WITH WebSearchTool()**, point out the actual
    web-search call count and structured source citations.
 3. Under **WITHOUT WebSearchTool()**, show the otherwise identical definition
@@ -110,10 +128,18 @@ Neither run substitutes a made-up answer on failure.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
+dotnet restore cleanup.cs
+dotnet build cleanup.cs --no-restore
+dotnet run --file cleanup.cs -- --help
 ```
 
-Tests mock service calls and use real SDK response objects. They do not prove
+Tests use offline response fixtures. They do not prove
 subscription access; perform a separate live smoke test before presenting.
 Every response prints its status, output item types, search-call count/statuses,
 and structured URL-citation count before validation, including on failure.
@@ -165,7 +191,8 @@ cleanup. Nine offline tests and Bicep build/lint passed separately.
 Ignored evidence is retained in `.azure/live-default-2026-10-26.log`,
 `.azure/live-custom-2026-10-26.log`, and `.azure/live-2026-10-26.json`.
 The previous lab deployment had been deleted; the new group remains deployed.
-Its state is recorded for the existing `cleanup.py` helper.
+Its state is recorded for the staged Python cleanup helper; use the .NET
+`cleanup.cs` only for records created by the C# deploy helper.
 
 ## Cleanup
 

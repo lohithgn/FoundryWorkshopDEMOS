@@ -4,6 +4,10 @@ Start here before the routing and agent labs. Use a local probability exercise,
 then real Microsoft Foundry model calls to understand sampling and execution
 choices. Authentication uses **Microsoft Entra ID, never an API key**.
 
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions; they are not the current lab commands.
+
 ## Learning goals
 
 - Explain what `temperature` and `top_p` change, and vary one at a time.
@@ -77,7 +81,7 @@ sentences for accuracy rather than treating batch completion as factual proof.
 
 ## Prerequisites and availability
 
-The local concepts section only needs Python 3.10+. Cloud sections additionally
+The local concepts section only needs the .NET 10 SDK. Cloud sections additionally
 need Azure CLI/Bicep, `az login`, a subscription, and availability/quota for
 GPT-4.1-mini `2025-04-14` in **GlobalStandard and GlobalBatch**, plus gpt-5-mini
 `2025-08-07` in GlobalStandard. The previously used o4-mini version is
@@ -108,7 +112,9 @@ cost limit; GlobalBatch uses enqueued-token capacity rather than online TPM.
 No-cloud walkthrough, from this directory:
 
 ```bash
-python3 demo.py --section concepts
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --section concepts
 ```
 
 Cloud deployment and environment setup, also from this directory:
@@ -129,33 +135,34 @@ export AZURE_OPENAI_ENDPOINT=$(az deployment group show -g "$RG" -n lab0 --query
 export AZURE_OPENAI_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab0 --query properties.outputs.deployment.value -o tsv)
 export AZURE_OPENAI_REASONING_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab0 --query properties.outputs.reasoningDeployment.value -o tsv)
 export AZURE_OPENAI_BATCH_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab0 --query properties.outputs.batchDeployment.value -o tsv)
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m unittest discover -s . -p 'test_demo.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
 az bicep build --file infra/main.bicep --stdout >/dev/null
-python demo.py --section sampling --samples 3
-python demo.py --section compare --reasoning-effort medium
-python demo.py --section batch --wait-seconds 120
+dotnet run --file demo.cs -- --section sampling --samples 3
+dotnet run --file demo.cs -- --section compare --reasoning-effort medium
+dotnet run --file demo.cs -- --section batch --wait-seconds 120
 ```
 
-`python demo.py` runs all sections: 18 sampling requests, two comparison
+`dotnet run --file demo.cs` runs all sections: 18 sampling requests, two comparison
 requests and one three-request native batch. All cloud operations are paid;
 the code does not fabricate service responses or silently skip failures.
-Sampling and comparison use up to eight OpenAI SDK retries for transient
-inference errors such as HTTP 429; the SDK honors a reasonable service
+Sampling and comparison use up to eight HTTP retries for transient
+inference errors such as HTTP 429; the client honors a reasonable service
 `Retry-After` value. Batch submission uses no automatic retries, so a failed
 request is not silently resubmitted as a second paid job.
 If the online deployment's request rate is limited, use
-`python demo.py --request-interval-seconds 7` to space online request starts;
+`dotnet run --file demo.cs -- --request-interval-seconds 7` to space online request starts;
 adjust the interval for your actual quota. Pacing adds wall-clock time but is
 excluded from the printed individual request latency and does not apply to batch.
 Equivalent model flags are `--deployment`, `--reasoning-deployment` and
 `--batch-deployment`; these are deployment aliases, not catalog model names.
-`DefaultAzureCredential` disables interactive browser fallback; check which
+``DefaultAzureCredential` disables interactive browser fallback; check which
 CLI/managed identity is active.
 
-From the repository root, the shared runner discovers number **0**:
+The root runner is temporarily Python during the staged integration in issue #1.
+From the repository root, it can still discover number **0**:
 
 ```bash
 python3 deploy.py --subscription YOUR_SUBSCRIPTION_ID --demo 0
@@ -169,8 +176,8 @@ saved endpoint/deployment exports (or values in the root runner's ignored
 deployment record):
 
 ```bash
-python demo.py --section batch --wait-seconds 120
-python demo.py --section batch --batch-id YOUR_EXISTING_BATCH_ID --wait-seconds 0
+dotnet run --file demo.cs -- --section batch --wait-seconds 120
+dotnet run --file demo.cs -- --section batch --batch-id YOUR_EXISTING_BATCH_ID --wait-seconds 0
 ```
 
 The first form reads `.azure/batch-state.json` and never submits a second job
@@ -210,7 +217,7 @@ nonempty text and a `stop` finish reason. Output order can differ from input.
 6. Choose an approach for live customer chat, overnight tagging and a difficult
    scheduling problem. Explain why reasoning and batching can be combined.
 
-Offline tests use explicitly synthetic SDK fixtures. They check probability
+Offline tests use explicitly synthetic fixtures. They check probability
 math, parameter isolation, unsupported reasoning parameters, JSONL shape,
 keyless/environment wiring, persisted resumption and strict result/failure
 handling. They are not evidence of current Azure access or model quality.
