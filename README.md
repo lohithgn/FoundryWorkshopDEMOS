@@ -2,7 +2,7 @@
 
 A collection of **47 standalone labs (numbered 0-46)** for Microsoft Foundry and Microsoft
 Agent Framework. Each lab combines a small synthetic scenario, deployable
-infrastructure, Python code, tests, and presentation/cleanup instructions.
+infrastructure, .NET 10 file-based C# apps, tests, and presentation/cleanup instructions.
 Some orchestration runs locally; other labs create managed prompt agents,
 hosted runtimes, or service-native tools. These are deliberately distinguished
 in the lab descriptions.
@@ -33,13 +33,12 @@ integration is not a general publication lab.
 
 ## Deploy and test selected labs
 
-Requires Python 3.10-3.13 for running all demos (the red-teaming SDK restricts
-Python versions), Azure CLI, Bicep (`az bicep version`), and an interactive
-Azure user with resource creation and role-assignment permissions. See each
-demo's prerequisites for model quota and access requirements.
+Requires the .NET 10 SDK, Azure CLI, Bicep (`az bicep version`), and an
+interactive Azure user with resource creation and role-assignment permissions.
+See each demo's prerequisites for model quota and access requirements.
 
-The shared runner uses POSIX virtual-environment paths (`.venv/bin/python`);
-run it on macOS, Linux or WSL. Lab 12's separate tenant setup additionally uses
+The shared runner executes .NET file-based apps directly and does not require a
+solution or project file. Lab 12's separate tenant setup additionally uses
 PowerShell. Windows users should follow each lab's platform-specific guidance
 rather than assuming every Bash example runs unchanged in PowerShell.
 
@@ -48,9 +47,9 @@ deploying every resource and running every paid operation at once:
 
 ```bash
 az login
-python3 deploy.py --subscription "<subscription-id>" --demo 0
-python3 deploy.py --subscription "<subscription-id>" --demo 1
-python3 deploy.py --subscription "<subscription-id>" --demo 20 --demo 25
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 0
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 1
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 20 --demo 25
 ```
 
 `--demo` accepts a demo number or exact folder name and can be repeated. Selected
@@ -77,8 +76,8 @@ and saving outputs, but before paid agent/dataset/optimizer runs. Lab 42 must
 be selected separately with a supported location, for example:
 
 ```bash
-python3 deploy.py --demo 42 --location swedencentral
-python3 deploy.py --demo 43 --demo 44
+dotnet run --file deploy.cs -- --demo 42 --location swedencentral
+dotnet run --file deploy.cs -- --demo 43 --demo 44
 ```
 
 Their model/project access checks do not prove advance permission to create
@@ -112,8 +111,8 @@ these prerequisites before any Azure changes and passes only the non-secret
 agent ID to Bicep. The blueprint secret is not a deployment parameter or output.
 Labs 21 and 31 additionally require `AZURE_TENANT_ID` and `SECOND_AZURE_CONFIG_DIR`,
 an isolated Azure CLI configuration authenticated as a different real user in
-the same tenant. The runner invokes each selected lab's `--preflight` after installing
-its dependencies but before provider registration or resource creation. Its
+the same tenant. The runner invokes each selected lab's `--preflight` after its
+offline file-app tests but before provider registration or resource creation. Its
 README documents the Graph checks; lab 21 also covers optional restricted-group setup.
 Labs 23 and 24 require their documented evaluation/publishing permissions and
 regional API support. Lab 23's workflow, protected environment, scoped managed
@@ -143,7 +142,7 @@ separate supported region. Live lab 17 required West US 2 Search because East
 US 2 lacked capacity:
 
 ```bash
-python3 deploy.py --demo 17 --location eastus2 --search-location westus2
+dotnet run --file deploy.cs -- --demo 17 --location eastus2 --search-location westus2
 ```
 
 Keep this override on subsequent deployments to that resource group: Azure
@@ -176,16 +175,16 @@ updates. Tag values must retain the exact casing shown above.
 
 The script:
 
-1. Discovers every immediate demo folder containing `infra/main.bicep` or
-   `requirements.txt`, rejecting incomplete folders rather than silently skipping them.
-2. Compiles/lints Bicep, creates/reuses each demo's `.venv`, installs its
-   requirements, and runs its local unit tests before making Azure changes.
+1. Discovers every immediate demo folder containing `infra/main.bicep` and
+   rejects any lab missing its `demo.cs` or `test_demo.cs` entrypoint.
+2. Compiles/lints Bicep and runs each lab's `test_*.cs` file app before making
+   Azure changes.
 3. Registers the resource providers referenced by the compiled templates and creates a dedicated resource group
    named `<prefix>-<demo-folder-without-number-prefix>-demo` for each demo.
 4. Deploys the existing template, passing `principalId` and `location`.
 5. Saves deployment outputs to `<demo>/.azure/deployment.json`, maps the `endpoint`
    output plus optional `deployment`, `embeddingDeployment`, `projectEndpoint`, and `toolEndpoint`
-   outputs to the demo's environment, and runs `demo.py`.
+   outputs to the demo's environment, and runs `demo.cs`.
    Foundry IQ also uses `searchEndpoint`; Entra Agent ID uses `agentIdentityId`.
    Prompt injection uses `contentSafetyEndpoint` for its separate safety classifier.
    Fundamentals uses `deniedEndpoint` for its intentional authorization failure;
@@ -228,9 +227,9 @@ Red-team reports/SDK logs may contain disturbing safety-test text; do not
 project raw transcripts or commit them.
 
 To add another demo, use the same folder convention: `infra/main.bicep`,
-`requirements.txt`, `demo.py`, and `test_demo.py`. Templates must accept `principalId`
+`demo.cs`, and `test_demo.cs`. Templates must accept `principalId`
 and `location` and expose a string output `endpoint`, plus `deployment` when
-using an inference model; Python demos consume `AZURE_OPENAI_DEPLOYMENT` when
+using an inference model; C# demos consume `AZURE_OPENAI_DEPLOYMENT` when
 applicable and the endpoint appropriate to their API, exit
 nonzero on failure, and validate the live response. Account-level inference uses
 `AZURE_OPENAI_ENDPOINT`; project APIs use `FOUNDRY_PROJECT_ENDPOINT` from
@@ -308,7 +307,7 @@ Lab 27 additionally uses `searchResourceId`, `storageEndpoint`, and
 - [Cross-project fleet governance](./46-fleet-governance/README.md)
 - [Backlog](./BACKLOG.md)
 
-Each demo has standalone Bicep, local Python code, dependencies, tests, and manual
+Each demo has standalone Bicep, a local C# file app, tests, and manual
 deployment/cleanup instructions. Model names, versions, SKUs and capacities are
 lab-specific: consult the lab's template and README rather than assuming one
 shared model default. Model Router and Microsoft Decision use specialized
@@ -335,7 +334,7 @@ release governance. Skills are reusable instructions, not executable tools:
 the execution and persistence capabilities come from the respective Foundry tools.
 Lab 31 uses the low-level native Memory Store API with explicit injection of
 search results into fresh prompt-agent conversations, not an attached auto-writing
-memory tool. The Python orchestration/providers still run locally; these labs do not silently
+memory tool. The C# orchestration/providers still run locally; these labs do not silently
 claim hosted-container deployment. Read lab 31's scope/identity requirements and
 lab 32's remote-browser/controlled-site setup before selecting them. Browser
 submission requires explicit approval and is not enabled by the all-demo runner.
@@ -372,15 +371,15 @@ Search and monitoring resources can have ongoing charges while provisioned.
 ## Test the runner without Azure
 
 ```bash
-python3 -m unittest discover -s . -p 'test_deploy.py' -v
+dotnet run --file test_deploy.cs
 ```
 
 These shared tests check discovery, configuration and deployment contracts;
-they do not call live Azure services. Each lab also has a `test_demo.py` suite.
-Run that suite from its lab folder after following its dependency setup.
-The latest recorded shared run is 37/38 passing, with one pre-existing
-lab-13 infrastructure tag-layout assertion failure; the new labs have
-178/178 passing local tests. See [results](./tests.md) for dates and limitations.
+they do not call live Azure services. Each lab's `test_*.cs` apps can be run with
+`dotnet run --file <test-file>.cs` from its folder. The .NET 10 shared runner
+harness has 16 passing offline checks; no Azure deployment or live workload was
+run for this migration. Historical Python baseline results remain in
+[verification results](./tests.md) and do not count as .NET passes.
 
 ## Presenter reference material
 

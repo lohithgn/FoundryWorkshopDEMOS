@@ -11,6 +11,28 @@ The documentation review on 2026-11-03 reconciled existing evidence; it did not
 redeploy resources or repeat paid live tests. The later recovery checks below
 include new live executions and supersede older results for those runs.
 
+## Shared runner .NET migration, 2026-11-10
+
+- **Offline passed:** .NET SDK 10.0.403 compiled `deploy.cs` and
+  `test_deploy.cs`; all 16 shared regression checks passed, and the runner's
+  `--help` smoke check passed. The checks use mocked Azure CLI responses and
+  temporary lab folders; they do not require Azure credentials.
+- **Infrastructure unchanged:** no Bicep, deployment, cleanup, resource, or
+  hosted-runtime infrastructure files were changed.
+- **Live not run:** no Azure login, resource deployment/deletion, paid model
+  request, or hosted workload was attempted.
+- **Integration blocked:** the seven lab conversion issues (#2, #3, #4, #5,
+  #8, #9, and #11) have not yet been integrated into this checkout. Until their
+  C# apps land, the runner's all-lab file-app validation and final full offline
+  regression pass cannot be completed.
+- **Packaging blocker:** lab 36's unchanged `runtime/Dockerfile` is based on
+  `python:3.12-slim` and starts `agent.py`. Running its converted hosted agent
+  requires maintainer authorization for a packaging exception to the
+  unchanged-infrastructure constraint. The migration is not complete while
+  that Python runtime remains.
+- **Review and merge pending:** an independent review of the final integrated
+  commit and human readiness/approval/merge actions remain required.
+
 ## Recovery verification, 2026-11-09
 
 - **Lab 0:** both comparison models returned the reference answer of 11;

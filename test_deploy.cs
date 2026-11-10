@@ -3,11 +3,14 @@
 #:include deploy.cs
 
 using System.Text.Json;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 var failures = new List<string>();
 var passed = 0;
-var root = Directory.GetCurrentDirectory();
+var root = Path.GetDirectoryName(Path.GetFullPath(TestSourcePath()))!;
+
+string TestSourcePath([CallerFilePath] string sourceFile = "") => sourceFile;
 
 void Check(string name, Action test)
 {

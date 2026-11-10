@@ -1,6 +1,7 @@
 #!/usr/bin/env dotnet
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -51,7 +52,7 @@ internal static class DeployRunner
         ("storageResourceId", "AZURE_STORAGE_RESOURCE_ID"),
     ];
 
-    internal static int Execute(string[] argv)
+    internal static int Execute(string[] argv, [CallerFilePath] string sourceFile = "")
     {
         try
         {
@@ -62,11 +63,12 @@ internal static class DeployRunner
             }
 
             var options = ParseArguments(argv);
-            RunWorkshop(options, Directory.GetCurrentDirectory());
+            RunWorkshop(options, Path.GetDirectoryName(Path.GetFullPath(sourceFile))!);
             return 0;
         }
         catch (RunnerArgumentException error)
         {
+            PrintUsage(Console.Error);
             Console.Error.WriteLine($"deploy.cs: error: {error.Message}");
             return 2;
         }
@@ -143,6 +145,14 @@ internal static class DeployRunner
         foreach (var line in UsageLines())
         {
             Console.WriteLine(line);
+        }
+    }
+
+    private static void PrintUsage(TextWriter writer)
+    {
+        foreach (var line in UsageLines())
+        {
+            writer.WriteLine(line);
         }
     }
 
