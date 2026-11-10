@@ -1,5 +1,10 @@
 # Lab 41: GA schema-based Content Understanding
 
+> **Migration status:** .NET 10 file-based C# is the current lab workflow.
+> Original Python sources and requirements are retained unchanged temporarily
+> for the staged root-runner integration; Python-era evidence below is historical
+> and does not validate the .NET port. No .NET live Azure validation is claimed.
+
 Uses **native Azure Content Understanding GA API `2025-11-01`**, not Document
 Intelligence `prebuilt-invoice` and not an LLM guessing from a local PDF.
 Creates two custom field-schema analyzers based on native CU
@@ -32,7 +37,7 @@ still fail explicitly.
 
 ## Dependencies and location
 
-- Python 3.10+, Azure CLI/Bicep, `az login` user allowed to create resources and
+- .NET 10 SDK, Azure CLI/Bicep, `az login` user allowed to create resources and
   role assignments. Only Entra authentication, no stored keys or credentials.
 - A Foundry `AIServices` resource with model deployment defaults configured.
   The lab deploys `gpt-5.2` **`2025-12-11`**, verified against the actual
@@ -55,42 +60,38 @@ still fail explicitly.
 
 ## Run
 
-From the repository root:
+From this lab directory, restore/build and exercise the safe help path, then run
+the offline regression harness:
 
 ```bash
-python3 deploy.py --demo 41 --location eastus2
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore generate_assets.cs
+dotnet build generate_assets.cs --no-restore
+dotnet run --file generate_assets.cs -- --help
 ```
 
-The root runner installs the lab `.venv`, runs tests, deploys and calls the
-bounded noninteractive `demo.py`. Standard output mappings:
+`generate_assets.cs` rewrites the committed PDF/WAV fixtures when run without
+`--help`; audio regeneration requires macOS `say`. After an authorized deployment,
+run the service preflight and live demo using the existing output mappings:
+
+```bash
+dotnet run --file demo.cs -- --preflight --location eastus2
+dotnet run --file demo.cs
+```
+
+Standard output mappings:
 `endpoint -> AZURE_OPENAI_ENDPOINT`, `projectEndpoint -> FOUNDRY_PROJECT_ENDPOINT`,
 `deployment -> AZURE_OPENAI_DEPLOYMENT`,
 `embeddingDeployment -> AZURE_OPENAI_EMBEDDING_DEPLOYMENT`.
 The script reads root-shaped `.azure/deployment.json` directly, including model
 names, so replay requires no manual runtime output exports.
 
-```bash
-cd 41-content-understanding
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m unittest -v
-.venv/bin/python demo.py --preflight --location eastus2
-az bicep build --file infra/main.bicep --stdout
-az bicep lint --file infra/main.bicep
-mkdir -p .azure
-az group create --name rg-foundry-content-understanding-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create --resource-group rg-foundry-content-understanding-demo --name content-understanding-demo --template-file infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)" -o json > .azure/arm-deployment.json
-.venv/bin/python - <<'PY'
-import json, subprocess
-from pathlib import Path
-arm = json.loads(Path(".azure/arm-deployment.json").read_text())
-subscription = subprocess.check_output(["az", "account", "show", "--query", "id", "-o", "tsv"], text=True).strip()
-Path(".azure/deployment.json").write_text(json.dumps({"subscription": subscription, "resourceGroup": "rg-foundry-content-understanding-demo", "outputs": arm["properties"]["outputs"]}, indent=2))
-PY
-.venv/bin/python demo.py
-```
-
-Use the root runner to save deployment outputs automatically. For an existing
+For an existing
 standalone resource, set `CONTENT_UNDERSTANDING_ENDPOINT`,
 `AZURE_OPENAI_DEPLOYMENT` (completion deployment), and
 `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` (embedding deployment).
@@ -102,7 +103,7 @@ Model overrides must stay compatible with the GA supported-model list.
 
 ## Evidence, fixtures and costs
 
-Verified in this subscription on 2026-11-03: **32 offline tests passed**,
+**Historical Python validation only (2026-11-03):** 32 Python offline tests passed,
 Bicep build/lint and EastUS2 ARM deployment succeeded, and both GA native
 modalities passed live. Document confidences were **0.919 / 0.982 / 0.981** with
 real page polygons. Audio returned the same three facts with real transcript
@@ -120,7 +121,7 @@ An HTTP/service/model authorization failure is `BLOCKED`, not a local fallback.
 
 [notice.pdf](assets/notice.pdf) is a deterministic, single-page synthetic PDF;
 [notice.wav](assets/notice.wav) is locally synthesized benign speech, not a
-microphone capture. `python3 generate_assets.py` regenerates PDF and macOS
+microphone capture. Running `dotnet run --file generate_assets.cs` regenerates PDF and macOS
 Samantha speech; committed bytes work cross-platform. No personal data.
 
 **Deployed resources are billable.** CU document pages/audio duration,

@@ -1,6 +1,11 @@
 # 46 — Native two-project fleet governance
 
-> **Current status: API workflow PASS; Operate portal NOT_VERIFIED.**
+> **Migration status:** .NET 10 file-based C# is the current lab workflow.
+> Original Python sources and requirements are retained unchanged temporarily
+> for staged root-runner integration. Python-era evidence below is historical
+> and does not validate the .NET port; no .NET live Azure validation is claimed.
+>
+> **Historical Python status: API workflow PASS; Operate portal NOT_VERIFIED.**
 > Defender/Purview remain OPTIONAL_NOT_CONFIGURED. Cloud API/trace/policy evidence
 > is not visual verification of the full Control Plane experience.
 
@@ -8,7 +13,7 @@ Deploys **two Foundry projects**, two real persistent prompt agents, a native
 external-agent registration, shared Entra-authenticated Application Insights and
 an **isolated RG-scoped Azure Policy Audit assignment**. Native agents/connections
 are inventoried across both projects. Actual prompt-agent invocations and an
-actual synthetic external Python runtime emit OpenTelemetry spans; ingested
+actual synthetic external C# runtime emit OpenTelemetry spans; ingested
 Azure Monitor rows are correlated by project ID, agent name, telemetry ID and run.
 
 This is fleet governance, not a claim that every Microsoft security service or
@@ -16,27 +21,33 @@ every Foundry Control Plane portal screen has been configured.
 
 ## Deploy and run
 
-Python 3.11+, Azure CLI/Bicep, signed-in Entra user with deployment, role-assignment
+.NET 10 SDK, Azure CLI/Bicep, signed-in Entra user with deployment, role-assignment
 and RG policy-assignment rights, model quota and external-agent preview access.
 All resources are eastus2; one `gpt-5.4-mini` GlobalStandard deployment at capacity
 **5**, shared between the projects. Application Insights/Log Analytics are billable.
 No gateway, Defender plan, Purview subscription or broad tenant identity changes.
 
-From repository root (no manual runtime output exports required):
+From this lab directory, restore/build and run safe help and offline checks:
 
 ```bash
-python3 deploy.py --demo 46
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
 ```
 
-Standalone:
+After confirming subscription, location, user permissions, and charges, deploy
+using the standalone ownership-checked helper. `--infra-only` still creates
+billable Azure resources; without it, the helper also runs live gates:
 
 ```bash
-python3 -m venv 46-fleet-governance/.venv
-46-fleet-governance/.venv/bin/pip install -r 46-fleet-governance/requirements.txt
-46-fleet-governance/.venv/bin/python 46-fleet-governance/deploy_lab.py --infra-only
-cd 46-fleet-governance
-.venv/bin/python -m unittest -v
-.venv/bin/python demo.py --timeout 600
+dotnet run --file deploy_lab.cs -- --infra-only
+dotnet run --file demo.cs -- --timeout 600
 ```
 
 The wrapper creates and records its group in `.azure/lab-deployment.json`.
@@ -65,8 +76,8 @@ output-to-environment mappings. Resources remain deployed for presentation.
   with `allow_preview=True` registers the actual synthetic external runtime.
   SDK readback must retain that telemetry ID.
 * Registration **does not host a runtime, proxy requests, configure APIM or apply
-  gateway-based blocking**. The external runtime is the real `external_runtime`
-  Python function called under an instrumented server span, not a fake cloud agent.
+  gateway-based blocking**. The external runtime is the real C# function called
+  under an instrumented server span, not a fake cloud agent.
 * Two real native Responses API calls must complete with `36 months`.
 * Azure Monitor exporter uses `AzureCliCredential`, with Application Insights
   `DisableLocalAuth=true`; the connection string is fetched in memory and never
@@ -123,7 +134,7 @@ with feature-specific BLOCKED evidence. Portal and optional integrations retain
 their separate status even when API workflow succeeds.
 Offline tests are contract tests only. No access tokens, keys or secrets are logged.
 
-Official facts verified with installed `azure-ai-projects==2.7.0` signatures:
+Official API facts were historically verified with Python SDK `azure-ai-projects==2.7.0`:
 
 * [Control Plane scope and portal](https://learn.microsoft.com/azure/foundry/control-plane/overview)
 * [External native registration and telemetry boundary](https://learn.microsoft.com/azure/foundry/control-plane/migrate-custom-to-external-agent)
@@ -131,8 +142,8 @@ Official facts verified with installed `azure-ai-projects==2.7.0` signatures:
 * [Policy state evaluation API](https://learn.microsoft.com/rest/api/policy/policy-states/trigger-resource-group-evaluation)
 * [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
 
-Pylance transport was unavailable; runtime SDK facts, syntax compilation and focused
-unittest provide verification. See ignored live report for execution-specific results.
+The historical live report contains execution-specific Python evidence; it does not
+establish .NET live behavior.
 
 ## Cleanup
 
@@ -149,10 +160,10 @@ az group delete --name rg-foundry-fleet-governance-demo --yes --no-wait
 Do not delete shared Monitor workspaces or change tenant Defender/Purview settings
 to clean up this isolated lab. Local ignored reports remain after RG deletion.
 
-## Live verification — 2026-11-03
+## Historical Python live verification — 2026-11-03
 
-**16 offline tests PASS**. Actual ARM deployment and full implemented API workflow
-**PASS** in `rg-foundry-fleet-governance-demo`, eastus2:
+**Historical Python validation only:** 16 offline tests passed. Actual ARM deployment and full API workflow
+passed in `rg-foundry-fleet-governance-demo`, eastus2:
 two native agent responses completed with the expected synthetic answer; external
 registration/readback and actual external runtime completed; native two-project
 inventory and **three actual Azure Monitor trace groups** correlated by exact
@@ -162,5 +173,5 @@ Current Bicep build/lint have only two **BCP036 schema-drift warnings** for
 `ProjectManagedIdentity` connections; ARM accepted those connections and SDK
 inventory verified them. The Operate portal remains **NOT_VERIFIED** and
 Defender/Purview **OPTIONAL_NOT_CONFIGURED**, not implied by API workflow PASS.
-Evidence: `.azure/live-report.json`; final verified run
+Historical evidence: `.azure/live-report.json`; final verified run
 `c8772476-9c24-4fa0-9e72-b43bdf1f4ce8`.
