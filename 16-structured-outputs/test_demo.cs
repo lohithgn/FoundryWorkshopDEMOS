@@ -28,8 +28,14 @@ public static class Program
         Equal(basic[0]!.ToJsonString(),few[0]!.ToJsonString());
         Equal(basic[^1]!.ToJsonString(),few[^1]!.ToJsonString());
         Equal(basic.Count+4,few.Count);
-        Equal("json_schema", "json_schema");
         True(Demo.Schema["required"]!.AsArray().Count==3);
+        JsonObject? capturedRequest=null;
+        await Demo.CallAsync((body,_)=>{capturedRequest=body;return Task.FromResult(new JsonObject
+            { ["choices"]=new JsonArray(new JsonObject{["finish_reason"]="stop",
+                ["message"]=new JsonObject{["content"]=Demo.Cases[0].Expected.ToJsonString()}}) });},
+            "model","structured","ticket",Demo.Cases[0].Expected);
+        Equal("json_schema",capturedRequest!["response_format"]!["type"]!.GetValue<string>());
+        True(capturedRequest["response_format"]!["json_schema"]!["strict"]!.GetValue<bool>());
 
         var timeout=await Demo.CallAsync((_,_)=>throw new TimeoutException("offline fixture"),
             "alias","structured","ticket");
@@ -45,6 +51,9 @@ public static class Program
         var invalidSchema=await Demo.CallAsync((_,_)=>throw new ServiceException(400,"""{"code":"invalid_json_schema"}"""),
             "alias","structured","ticket");
         Equal("request_error",invalidSchema["status"]!.GetValue<string>());
+        Equal(1,Demo.ExitCode([invalidSchema]));
+        var filteredStatus=new JsonObject{["status"]="content_filter"};
+        Equal(0,Demo.ExitCode([filteredStatus]));
 
         var offlineOutput=new StringWriter();
         var original=Console.Out;

@@ -40,6 +40,19 @@ public static class Program
         Equal(1,summary["transport_failures"]!.GetValue<int>());
         Equal<JsonNode?>(null,summary["estimated_usd"]);
         Equal<JsonNode?>(null,summary["latency_successful_http_seconds"]!["p50"]);
+        Equal(1,Demo.ExitCode([failed]));
+        var successful=await Demo.RunOneAsync((_,_)=>Task.FromResult(new JsonObject
+            { ["model"]="serving-model",["choices"]=new JsonArray(new JsonObject
+                { ["finish_reason"]="stop",["message"]=new JsonObject{["content"]="{\"category\":\"access\",\"priority\":\"low\"}"} }),
+              ["usage"]=new JsonObject{["prompt_tokens"]=10,["completion_tokens"]=2} }),
+            "alias",Demo.Cases[0],[1,2]);
+        Equal(0,Demo.ExitCode([failed,successful]));
+        var successRow=Demo.RecordJson(("mini","alias",1,Demo.Cases[0],successful));
+        True(successRow.ContainsKey("prediction"));True(successRow.ContainsKey("raw"));
+        True(!successRow.ContainsKey("transport_error"));
+        var failedRow=Demo.RecordJson(("mini","alias",1,Demo.Cases[0],failed));
+        True(failedRow.ContainsKey("transport_error"));True(!failedRow.ContainsKey("raw"));
+        True(!failedRow.ContainsKey("error"));
 
         try { await Demo.RunAsync(["--endpoint","https://example.org","--repeats","1"]); throw new InvalidOperationException("Accepted one repeat."); }
         catch (ArgumentException) { assertions++; }

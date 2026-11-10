@@ -1,5 +1,9 @@
 # 16 — Prompt design and structured outputs
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 Extract category, priority, and a short summary from four labeled synthetic
 support tickets. Compare instructions alone, few-shot examples, and real
 **strict JSON Schema** using GPT-4.1-mini `2025-04-14`. The default CLI is
@@ -7,7 +11,7 @@ noninteractive and makes **14 real requests** (12 comparisons plus two probes).
 
 ## Prerequisites, deploy, run, test
 
-Python 3.10+, Azure CLI/Bicep, `az login`, model access/quota. Deployment requires
+.NET 10 SDK, Azure CLI/Bicep, `az login`, model access/quota. Deployment requires
 resource-creation and role-assignment privileges, such as Contributor plus User
 Access Administrator. Inference uses `DefaultAzureCredential` and **Cognitive
 Services OpenAI User**, never API keys or an interactive browser.
@@ -33,12 +37,15 @@ az deployment group create --name lab16 -g "$RG" --template-file infra/main.bice
   --query properties.outputs -o json > deployment.json
 export AZURE_OPENAI_ENDPOINT=$(az deployment group show -g "$RG" -n lab16 --query properties.outputs.endpoint.value -o tsv)
 export AZURE_OPENAI_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab16 --query properties.outputs.deployment.value -o tsv)
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py --offline-errors
-python demo.py
-python -m unittest discover -s . -p 'test_demo.py' -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --offline-errors
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live model requests (not part of offline validation):
+dotnet run --file demo.cs
 az bicep build --file infra/main.bicep --stdout >/dev/null
 ```
 
@@ -57,7 +64,7 @@ This pause is outside inference and does not retry or hide failed requests.
 
 ## Schema and independent labels
 
-The schema in `demo.py` uses only the supported subset: a root object, required
+The schema in `demo.cs` uses only the supported subset: a root object, required
 properties, nullable strings, enums, and `additionalProperties: false`.
 All three fields are required; **missing information is represented by null**,
 not omitted or invented. Priorities follow an explicit rule: multiple users
@@ -94,7 +101,7 @@ tickets remain the same across modes.
   neither a model refusal nor valid extracted data. The CLI says when no API
   refusal occurred; it does not falsify one.
 * Explicit offline refusal, `length`, and `content_filter` fixtures in
-  `python demo.py --offline-errors` and `test_demo.py` make handling these branches repeatable, without presenting
+  `dotnet run --file demo.cs -- --offline-errors` and `test_demo.cs` make handling these branches repeatable, without presenting
   mocked data as live cloud output. Refusals are not ordinary null-valued records.
 
 The CLI prints raw output, service-reported usage, schema compliance, per-field

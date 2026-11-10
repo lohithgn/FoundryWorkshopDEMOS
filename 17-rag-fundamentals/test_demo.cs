@@ -61,15 +61,15 @@ public static class Program
         catch(TimeoutException){assertions++;}
 
         var attempts=0;
-        var eventual=await Demo.RetryEmbeddingSetupAsync<int>(_=>
+        var eventual=await Demo.InitialQueryVectorsAsync<int>([new("first","x"),new("second","y")],(question,_)=>
         {
-            if(attempts++==0)return Task.FromException<int>(new ServiceException(404,"""{"error":{"code":"DeploymentNotFound"}}"""));
-            return Task.FromResult(9);
+            if(question=="first"&&attempts++==0)return Task.FromException<int>(new ServiceException(404,"""{"error":{"code":"DeploymentNotFound"}}"""));
+            return Task.FromResult(question=="first"?9:10);
         },TimeSpan.FromSeconds(2),TimeSpan.Zero);
-        Equal(9,eventual);Equal(2,attempts);
+        Equal(9,eventual["first"]);Equal(10,eventual["second"]);Equal(2,attempts);
         foreach(var error in new[]{new ServiceException(404,"""{"code":"OtherNotFound"}"""),new ServiceException(403,"""{"code":"DeploymentNotFound"}""")})
         {
-            try{await Demo.RetryEmbeddingSetupAsync<int>(_=>Task.FromException<int>(error),TimeSpan.Zero,TimeSpan.Zero);throw new InvalidOperationException("Retried unrelated error.");}
+            try{await Demo.InitialQueryVectorsAsync<int>([new("question","x")],(_,_)=>Task.FromException<int>(error),TimeSpan.Zero,TimeSpan.Zero);throw new InvalidOperationException("Retried unrelated error.");}
             catch(ServiceException){assertions++;}
         }
         True(Demo.IsServiceRoot("https://example.search.windows.net/"));

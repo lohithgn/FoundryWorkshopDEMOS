@@ -73,28 +73,6 @@ public static class Demo
                 "Restricted inference requires --tenant-id, --client-id, and --certificate-path together.");
     }
 
-    public static async Task<(int Status, string Body)> ProbeAsync(
-        Func<string, CancellationToken, Task<(int Status, string Body)>> send,
-        string deployment, int? expectedStatus, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var response = await send(deployment, cancellationToken);
-            Console.WriteLine("Probe succeeded unexpectedly: check inherited inference roles or deployment names.");
-            return (response.Status, response.Body);
-        }
-        catch (ServiceException error)
-        {
-            Console.WriteLine($"Actual HTTP {error.Status}: {error.Body}");
-            var matched = IsExpectedFailure(error.Status, error.Body, expectedStatus);
-            if (!matched)
-                Console.WriteLine(expectedStatus is null
-                    ? "Expected an explicit inference RBAC PermissionDenied (HTTP 401 or 403)."
-                    : $"Expected HTTP {expectedStatus}.");
-            return (matched ? error.Status : 0, error.Body);
-        }
-    }
-
     public static TokenCredential CreateCredential(string? tenant, string? client, string? certificate)
     {
         ValidateIdentity(tenant, client, certificate);

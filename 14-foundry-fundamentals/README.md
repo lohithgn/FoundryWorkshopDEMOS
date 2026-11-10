@@ -1,12 +1,16 @@
 # 14 — Foundry fundamentals
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 Create a Foundry account, project, and GPT-4.1-mini deployment; use **Microsoft
 Entra ID, never an API key**, for a first answer and a streamed answer with usage.
 Default execution is noninteractive and makes real cloud calls.
 
 ## Prerequisites and availability
 
-Python 3.10+, Azure CLI with Bicep, `az login`, an Azure subscription, and model
+.NET 10 SDK, Azure CLI with Bicep, `az login`, an Azure subscription, and model
 quota are required. The deploying identity needs resource creation and role
 assignment rights (for example Contributor plus User Access Administrator).
 Creating the restricted inference identity also requires permission to register
@@ -50,8 +54,8 @@ az ad sp create-for-rbac --name "foundry-lab14-inference-$(date +%Y%m%d%H%M%S)" 
   --cert @.azure/lab14-inference-public.pem \
   --query '{clientId:appId,tenantId:tenant}' -o json > .azure/restricted-identity.json
 # No RBAC roles/scopes are assigned by the service-principal creation command.
-export WORKSHOP_INFERENCE_CLIENT_ID=$(python3 -c 'import json; print(json.load(open(".azure/restricted-identity.json"))["clientId"])')
-export WORKSHOP_INFERENCE_TENANT_ID=$(python3 -c 'import json; print(json.load(open(".azure/restricted-identity.json"))["tenantId"])')
+export WORKSHOP_INFERENCE_CLIENT_ID=$(jq -r '.clientId' .azure/restricted-identity.json)
+export WORKSHOP_INFERENCE_TENANT_ID=$(jq -r '.tenantId' .azure/restricted-identity.json)
 export WORKSHOP_INFERENCE_CERTIFICATE_PATH="$PWD/.azure/lab14-inference.pem"
 PRINCIPAL_ID=$(az ad sp show --id "$WORKSHOP_INFERENCE_CLIENT_ID" --query id -o tsv)
 az group create --name "$RG" --location "$LOCATION" --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
@@ -63,15 +67,18 @@ export AZURE_OPENAI_ENDPOINT=$(az deployment group show -g "$RG" -n lab14 --quer
 export AZURE_OPENAI_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab14 --query properties.outputs.deployment.value -o tsv)
 export FOUNDRY_PROJECT_ENDPOINT=$(az deployment group show -g "$RG" -n lab14 --query properties.outputs.projectEndpoint.value -o tsv)
 export WORKSHOP_DENIED_ENDPOINT=$(az deployment group show -g "$RG" -n lab14 --query properties.outputs.deniedEndpoint.value -o tsv)
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python -m unittest discover -s . -p 'test_demo.py' -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live model/probe calls (not part of offline validation):
+dotnet run --file demo.cs -- --skip-negative-probes
 az bicep build --file infra/main.bicep --stdout >/dev/null
 ```
 
-Tests are offline: stream aggregation and explicitly labeled SDK error fixtures
+The C# test harness is offline: stream aggregation and explicit HTTP error fixtures
 do not authenticate or call Azure. No test fixture is presented as a live answer.
 Allow several minutes for new RBAC assignments to propagate, then rerun if needed.
 The template serializes the primary model and project writes: concurrent account

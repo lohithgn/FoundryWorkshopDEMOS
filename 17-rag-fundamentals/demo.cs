@@ -59,8 +59,8 @@ public static class Demo
     {
         if(mode is not ("keyword" or "vector" or "hybrid"))
             throw new ArgumentException("Unknown retrieval mode.");
-        var request=new JsonObject { ["search"]=mode=="vector"?null:question,
-            ["select"]="id,source,content",["top"]=3 };
+        var request=new JsonObject { ["select"]="id,source,content",["top"]=3 };
+        if(mode!="vector")request["search"]=question;
         if(mode!="keyword")
             request["vectorQueries"]=new JsonArray(new JsonObject
                 { ["kind"]="vector",["vector"]=new JsonArray(vector.Select(v=>(JsonNode?)JsonValue.Create(v)).ToArray()),
@@ -157,23 +157,33 @@ public static class Demo
         throw new TimeoutException("Azure Search indexing did not become queryable.");
     }
 
-    public static async Task<T> RetryEmbeddingSetupAsync<T>(Func<CancellationToken,Task<T>> request,
+    public static async Task<Dictionary<string,T>> InitialQueryVectorsAsync<T>(
+        IEnumerable<Question> questions,Func<string,CancellationToken,Task<T>> embedding,
         TimeSpan? timeout=null,TimeSpan? interval=null,CancellationToken cancellationToken=default)
     {
         var timer=Stopwatch.StartNew();
         var max=timeout??TimeSpan.FromSeconds(300);
         var wait=interval??TimeSpan.FromSeconds(15);
-        while(true)
+        var result=new Dictionary<string,T>(StringComparer.Ordinal);
+        foreach(var question in questions)
         {
-            try{return await request(cancellationToken);}
-            catch(ServiceException error) when(IsDeploymentNotFound(error))
+            while(true)
             {
-                var remaining=max-timer.Elapsed;
-                if(remaining<=TimeSpan.Zero)throw;
-                Console.WriteLine("Embedding deployment is not ready; retrying before creating indexes.");
-                await Task.Delay(remaining<wait?remaining:wait,cancellationToken);
+                try
+                {
+                    result[question.Text]=await embedding(question.Text,cancellationToken);
+                    break;
+                }
+                catch(ServiceException error) when(IsDeploymentNotFound(error))
+                {
+                    var remaining=max-timer.Elapsed;
+                    if(remaining<=TimeSpan.Zero)throw;
+                    Console.WriteLine("Embedding deployment is not ready; retrying before creating indexes.");
+                    await Task.Delay(remaining<wait?remaining:wait,cancellationToken);
+                }
             }
         }
+        return result;
     }
 
     private static bool IsDeploymentNotFound(ServiceException error)
@@ -197,12 +207,8 @@ public static class Demo
         var credential=new AzureCliCredential();
         using var openai=new OpenAiClient(options.Endpoint!,credential);
         using var search=new SearchClient(options.SearchEndpoint!,credential);
-        var vectors=new Dictionary<string,double[]>(StringComparer.Ordinal);
-        foreach(var question in Questions)
-        {
-            vectors[question.Text]=await RetryEmbeddingSetupAsync(
-                token=>openai.EmbeddingAsync(options.Embeddings,question.Text,token));
-        }
+        var vectors=await InitialQueryVectorsAsync(Questions,
+            (text,token)=>openai.EmbeddingAsync(options.Embeddings,text,token));
 
         var summary=new JsonArray();
         foreach(var size in new[]{12,48})
@@ -269,16 +275,31 @@ public static class Demo
 
 public sealed class OpenAiClient:IDisposable
 {
-    private readonly TokenCredential credential;private readonly HttpClient http=new(){Timeout=TimeSpan.FromSeconds(60)};private readonly Uri baseUri;
+    private readonly TokenCredential credential;private readonly HttpClient http=new(){Timeout=Timeout.InfiniteTimeSpan};private readonly Uri baseUri;
     public OpenAiClient(string endpoint,TokenCredential credential){this.credential=credential;baseUri=new Uri(endpoint.TrimEnd('/')+"/openai/v1/");}
     public async Task<JsonObject> PostAsync(string route,JsonObject body,CancellationToken cancellationToken=default)
     {
-        var token=await credential.GetTokenAsync(new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]),cancellationToken);
-        using var request=new HttpRequestMessage(HttpMethod.Post,new Uri(baseUri,route)){Content=new StringContent(body.ToJsonString(),Encoding.UTF8,"application/json")};
-        request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",token.Token);
-        using var response=await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,cancellationToken);var text=await response.Content.ReadAsStringAsync(cancellationToken);
-        if(!response.IsSuccessStatusCode)throw new ServiceException((int)response.StatusCode,text);
-        return JsonNode.Parse(text)?.AsObject()??throw new JsonException("Service returned empty JSON.");
+        for(var attempt=0;;attempt++)
+        {
+            try
+            {
+                var token=await credential.GetTokenAsync(new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]),cancellationToken);
+                using var request=new HttpRequestMessage(HttpMethod.Post,new Uri(baseUri,route)){Content=new StringContent(body.ToJsonString(),Encoding.UTF8,"application/json")};
+                request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",token.Token);
+                using var timeout=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(route=="chat/completions"?TimeSpan.FromSeconds(60):TimeSpan.FromMinutes(10));
+                using var response=await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,timeout.Token);
+                var text=await response.Content.ReadAsStringAsync(timeout.Token);
+                if(!response.IsSuccessStatusCode)throw new ServiceException((int)response.StatusCode,text);
+                return JsonNode.Parse(text)?.AsObject()??throw new JsonException("Service returned empty JSON.");
+            }
+            catch(ServiceException error) when(attempt<2&&!cancellationToken.IsCancellationRequested&&IsTransient(error.Status))
+            {await Task.Delay(TimeSpan.FromMilliseconds(500*(attempt+1)),cancellationToken);}
+            catch(HttpRequestException) when(attempt<2&&!cancellationToken.IsCancellationRequested)
+            {await Task.Delay(TimeSpan.FromMilliseconds(500*(attempt+1)),cancellationToken);}
+            catch(TaskCanceledException) when(attempt<2&&!cancellationToken.IsCancellationRequested)
+            {await Task.Delay(TimeSpan.FromMilliseconds(500*(attempt+1)),cancellationToken);}
+        }
     }
     public async Task<double[]> EmbeddingAsync(string deployment,string text,CancellationToken token=default)
     {var reply=await PostAsync("embeddings",new JsonObject{["model"]=deployment,["input"]=text},token);
@@ -288,6 +309,7 @@ public sealed class OpenAiClient:IDisposable
         return (reply["data"] as JsonArray??[]).OrderBy(item=>item?["index"]?.GetValue<int>()??0).Select(item=>ReadVector(item?["embedding"])).ToArray();}
     private static double[] ReadVector(JsonNode? node)=>node is JsonArray array?array.Select(value=>value!.GetValue<double>()).ToArray():throw new JsonException("Embedding vector is missing.");
     public async Task<JsonObject> ChatAsync(JsonObject body,CancellationToken token=default)=>await PostAsync("chat/completions",body,token);
+    private static bool IsTransient(int status)=>status is 408 or 409 or 429||status>=500;
     public void Dispose()=>http.Dispose();
 }
 
@@ -298,13 +320,26 @@ public sealed class SearchClient:IDisposable
     public SearchClient(string url,TokenCredential credential){this.credential=credential;endpoint=new Uri(url.TrimEnd('/')+"/");}
     private async Task<JsonNode?> SendAsync(HttpMethod method,string path,JsonNode? body=null,CancellationToken cancellationToken=default)
     {
-        var token=await credential.GetTokenAsync(new TokenRequestContext(["https://search.azure.com/.default"]),cancellationToken);
-        var uri=new Uri(endpoint,path+(path.Contains('?')?"&":"?")+"api-version="+ApiVersion);
-        using var request=new HttpRequestMessage(method,uri);request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",token.Token);
-        if(body is not null)request.Content=new StringContent(body.ToJsonString(),Encoding.UTF8,"application/json");
-        using var response=await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,cancellationToken);var text=await response.Content.ReadAsStringAsync(cancellationToken);
-        if(!response.IsSuccessStatusCode)throw new ServiceException((int)response.StatusCode,text);
-        return string.IsNullOrWhiteSpace(text)?null:JsonNode.Parse(text);
+        for(var attempt=0;;attempt++)
+        {
+            try
+            {
+                var token=await credential.GetTokenAsync(new TokenRequestContext(["https://search.azure.com/.default"]),cancellationToken);
+                var uri=new Uri(endpoint,path+(path.Contains('?')?"&":"?")+"api-version="+ApiVersion);
+                using var request=new HttpRequestMessage(method,uri);request.Headers.Authorization=new AuthenticationHeaderValue("Bearer",token.Token);
+                if(body is not null)request.Content=new StringContent(body.ToJsonString(),Encoding.UTF8,"application/json");
+                using var response=await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,cancellationToken);
+                var text=await response.Content.ReadAsStringAsync(cancellationToken);
+                if(!response.IsSuccessStatusCode)throw new ServiceException((int)response.StatusCode,text);
+                return string.IsNullOrWhiteSpace(text)?null:JsonNode.Parse(text);
+            }
+            catch(ServiceException error) when(attempt<3&&IsTransient(error.Status)&&!cancellationToken.IsCancellationRequested)
+            {await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2,attempt)),cancellationToken);}
+            catch(HttpRequestException) when(attempt<3&&!cancellationToken.IsCancellationRequested)
+            {await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2,attempt)),cancellationToken);}
+            catch(TaskCanceledException) when(attempt<3&&!cancellationToken.IsCancellationRequested)
+            {await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2,attempt)),cancellationToken);}
+        }
     }
     private static string Index(string name)=>"indexes/"+Uri.EscapeDataString(name);
     public async Task CreateIndexAsync(string name,JsonObject definition)=>await SendAsync(HttpMethod.Put,Index(name),definition);
@@ -334,6 +369,7 @@ public sealed class SearchClient:IDisposable
     private static string RequiredString(JsonNode? node,string key)=>node?[key] is JsonValue value&&
         value.TryGetValue<string>(out var text)?text:throw new JsonException($"Search result is missing {key}.");
     public async Task DeleteIndexAsync(string name)=>await SendAsync(HttpMethod.Delete,Index(name));
+    private static bool IsTransient(int status)=>status is 408 or 429||status>=500;
     public void Dispose()=>http.Dispose();
 }
 
