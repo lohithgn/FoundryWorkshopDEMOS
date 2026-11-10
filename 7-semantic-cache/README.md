@@ -6,8 +6,13 @@ Redis**, using a Foundry embeddings deployment to find similar prompts.
 The application sends normal chat requests; it contains no cache, vector
 comparison, Redis client, or embedding calls.
 
+> **Migration note:** The Python files and requirements are temporarily retained
+> unchanged for the repository-wide Python runner. Use the .NET 10 commands below;
+> the Python instructions are transitional until the integration issue removes
+> that compatibility path.
+
 ```text
-Python / any chat client
+.NET 10 / any chat client
   -> APIM Consumption: validate caller, semantic-cache-lookup
        -> Foundry text-embedding-3-small -> Azure Managed Redis / RediSearch
        -> HIT: return the stored response
@@ -41,7 +46,7 @@ lookup. Check regional availability and current prices before deploying.
 
 ## Deploy
 
-Requires Python 3.10+, Azure CLI/Bicep, a signed-in user with resource creation
+Requires the .NET 10 SDK, Azure CLI/Bicep, a signed-in user with resource creation
 and role-assignment permissions, APIM Consumption and Managed Redis availability,
 and quota for `gpt-4.1-mini` (`2025-04-14`, Global Standard) and
 `text-embedding-3-small` (`1`, Global Standard). Endpoints are public for this workshop.
@@ -79,20 +84,22 @@ semantic lookup and storage. Redeploy the updated template to register the
 registration, which can be removed from APIM after validation without deleting
 Redis.
 
-From this folder, the standalone runner provisions resources, runs offline tests,
-and runs the live demo; its recorded group can later be removed with `cleanup.py`:
+From this folder, the standalone .NET runner provisions resources, runs offline
+tests, and runs the live demo; its recorded group can later be removed with `cleanup.cs`:
 
 ```bash
 az login
-python3 deploy_lab.py --location eastus2
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs
+dotnet run --file deploy_lab.cs -- --location eastus2
 ```
 
 If Azure reports `CacheCapacityUnavailable` for `Balanced_B0`, you can explicitly
 try a larger Balanced SKU in the same region:
 
 ```bash
-python3 deploy_lab.py --location eastus2 --redis-sku Balanced_B1
-python3 deploy_lab.py --location swedencentral --redis-sku Balanced_B1
+dotnet run --file deploy_lab.cs -- --location eastus2 --redis-sku Balanced_B1
+dotnet run --file deploy_lab.cs -- --location swedencentral --redis-sku Balanced_B1
 ```
 
 Supported workshop choices are `Balanced_B0` (default), `Balanced_B1`,
@@ -140,17 +147,17 @@ export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RESOURCE_GROUP" 
 **The endpoint output now points to APIM (`https://...azure-api.net/ai`),
 not directly to Foundry.** Existing deployments must be redeployed and their
 environment variables refreshed. The repository-wide runner already maps these
-outputs; `python3 ../deploy.py --demo 7` also deploys and exercises this lab.
+outputs; the root `deploy.py` invocation below is transitional until issue #1
+converts the shared runner.
 
 ## Run and present
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --session workshop-1
-python demo.py --session workshop-1
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet run --file demo.cs --
+dotnet run --file demo.cs -- --session workshop-1
+dotnet run --file demo.cs -- --session workshop-1
 ```
 
 Each normal run uses a fresh cache-session partition, so its first request starts
@@ -215,7 +222,12 @@ Semantic similarity can still return an incorrect, stale, or unsafe answer.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs
+dotnet run --file test_demo.cs
+dotnet restore test_deploy_lab.cs
+dotnet build test_deploy_lab.cs
+dotnet run --file test_deploy_lab.cs
 ```
 
 Offline tests verify ordinary gateway requests, response-ID observations,
@@ -235,10 +247,18 @@ Delete resources promptly to stop standing charges:
 
 ```bash
 # Standalone runner deployment only:
-python3 cleanup.py
+dotnet restore cleanup.cs
+dotnet build cleanup.cs
+dotnet run --file cleanup.cs --
 # Manual deployment only (deletes the entire dedicated workshop group):
 az group delete --name "$RESOURCE_GROUP" --yes
 ```
+
+`dotnet run --file deploy_lab.cs -- --help`, `dotnet run --file demo.cs -- --help`,
+and `dotnet run --file cleanup.cs -- --help` are safe help-only smoke checks.
+Do not run deployment or cleanup commands without authorization for their Azure
+side effects. The legacy `python3 ../deploy.py --demo 7` root-runner command is
+transitional and is not the .NET validation path.
 
 - [APIM semantic caching setup and supported tiers](https://learn.microsoft.com/azure/api-management/azure-openai-enable-semantic-caching)
 - [Semantic cache lookup policy](https://learn.microsoft.com/azure/api-management/llm-semantic-cache-lookup-policy)
