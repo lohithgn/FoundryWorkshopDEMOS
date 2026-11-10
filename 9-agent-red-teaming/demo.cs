@@ -113,7 +113,7 @@ public static class AgentRedTeamingDemo
                 ["source"] = new JsonObject
                 {
                     ["type"] = "file_content",
-                    ["content"] = new JsonObject { ["item"] = item }
+                    ["content"] = new JsonArray(new JsonObject { ["item"] = item })
                 }
             },
             ["testing_criteria"] = new JsonArray(new JsonObject

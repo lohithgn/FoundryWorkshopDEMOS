@@ -59,9 +59,13 @@ foreach (var malformed in new[] { "{}", """{"objectives":[]}""", """[{"messages"
 }
 
 var evaluationPayload = AgentRedTeamingDemo.BuildEvaluationPayload("sample objective", "sample tutor answer");
+var contentRows = evaluationPayload["data_source"]!["source"]!["content"]!.AsArray();
 Check(evaluationPayload["testing_criteria"]![0]!["evaluator_name"]!.GetValue<string>() == "builtin.hate_unfairness" &&
-      evaluationPayload["data_source"]!["source"]!["content"]!["item"]!["response"]!.GetValue<string>() == "sample tutor answer",
-    "Risk evaluator or target response mapping changed.");
+      evaluationPayload["data_source"]!["type"]!.GetValue<string>() == "jsonl" &&
+      evaluationPayload["data_source"]!["source"]!["type"]!.GetValue<string>() == "file_content" &&
+      contentRows.Count == 1 && contentRows[0]!["item"]!["query"]!.GetValue<string>() == "sample objective" &&
+      contentRows[0]!["item"]!["response"]!.GetValue<string>() == "sample tutor answer",
+    "Risk evaluator or exact one-row JSONL content mapping changed.");
 
 var infra = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "infra", "main.bicep"));
 Check(infra.Contains("dependsOn: [model]", StringComparison.Ordinal) &&
