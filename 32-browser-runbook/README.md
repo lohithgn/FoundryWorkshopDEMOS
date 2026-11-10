@@ -201,7 +201,7 @@ Complete the manual connection/preview prerequisites before the runner's live st
 From the repository root, the runner command is:
 
 ```bash
-BROWSER_AUTOMATION_CONNECTION_NAME=browser-workspace python3 deploy.py --demo 32 --location eastus
+BROWSER_AUTOMATION_CONNECTION_NAME=browser-workspace dotnet run --file deploy.cs -- --demo 32 --location eastus
 ```
 
 Before that command mutates providers/groups, the runner automatically invokes

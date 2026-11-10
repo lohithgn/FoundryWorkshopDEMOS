@@ -63,7 +63,7 @@ quota: capacity 3 for the model baseline plus 5 for the agent baseline.
 `deploy_lab.py` restores dependencies, compiles/lints Bicep, tests, deploys and
 runs live evidence. Resources stay deployed for presentation.
 
-From the repository root: `python3 deploy.py --demo 38`.
+From the repository root: `dotnet run --file deploy.cs -- --demo 38`.
 From the lab folder, the standalone alternative is
 `python3 deploy_lab.py --prefix rg-foundry`.
 

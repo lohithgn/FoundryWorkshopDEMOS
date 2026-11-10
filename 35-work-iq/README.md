@@ -55,7 +55,7 @@ accounts. Do not query real mail or files during this identity-only exercise.
 From the repository root:
 
 ```bash
-python3 deploy.py --demo 35
+dotnet run --file deploy.cs -- --demo 35
 ```
 
 On the **first** run without tenant setup, Azure infrastructure is deployed and

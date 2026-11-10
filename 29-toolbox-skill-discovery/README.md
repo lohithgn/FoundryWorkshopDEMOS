@@ -49,7 +49,7 @@ From the repository root:
 
 ```bash
 az login
-python3 deploy.py --subscription "<subscription-id>" --demo 29
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 29
 ```
 
 Or from this folder:

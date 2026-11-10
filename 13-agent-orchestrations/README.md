@@ -102,7 +102,7 @@ outputs are read from Azure, not written to the local state; `cleanup.py` still
 tracks and deletes the prepared group.
 
 This lifecycle experiment is limited to Lab 13's script and the prepared manual
-commands above. The repository-wide `deploy.py` and direct Bicep deployments
+commands above. The repository-wide `deploy.cs` and direct Bicep deployments
 without `accountName` retain their existing deterministic naming behavior.
 Other labs are unchanged. Resources created using the old manual instructions
 are not adopted: inspect and delete their old group separately if necessary.

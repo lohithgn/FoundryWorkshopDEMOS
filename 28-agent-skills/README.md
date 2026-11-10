@@ -54,7 +54,7 @@ From the repository root, the existing runner discovers this folder:
 
 ```bash
 az login
-python3 deploy.py --subscription "<subscription-id>" --demo 28
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 28
 ```
 
 The runner installs dependencies, runs offline tests, builds/deploys Bicep, and

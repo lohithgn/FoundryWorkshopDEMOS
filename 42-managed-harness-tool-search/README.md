@@ -19,7 +19,7 @@ read-only external service; network access to it is required.
 From the repository root:
 
 ```bash
-python3 deploy.py --demo 42 --location swedencentral
+dotnet run --file deploy.cs -- --demo 42 --location swedencentral
 ```
 
 Manual equivalent:

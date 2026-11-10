@@ -119,7 +119,7 @@ After the preflight succeeds, from the repository root, retain both exported
 identity variables and use the existing runner:
 
 ```bash
-python3 deploy.py --subscription "<subscription-id>" --demo 31
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 31
 ```
 
 The root runner automatically runs `demo.py --preflight` before provider

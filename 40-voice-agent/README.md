@@ -36,7 +36,7 @@ with exit status 1; text-only or simulated execution never passes this smoke.
 From the repository root:
 
 ```bash
-python3 deploy.py --demo 40 --location eastus2
+dotnet run --file deploy.cs -- --demo 40 --location eastus2
 ```
 
 The root runner installs requirements, runs offline tests, deploys and calls

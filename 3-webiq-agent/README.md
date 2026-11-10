@@ -76,7 +76,7 @@ the new model deployment; changing the Python deployment name alone does not
 upgrade an existing `gpt-4.1-mini` deployment. Refresh the environment variables
 from the deployment outputs afterward, especially if a previous session set
 `AZURE_OPENAI_DEPLOYMENT` to the old name.
-From the repository root, `python3 deploy.py --demo 3` deploys and executes this
+From the repository root, `dotnet run --file deploy.cs -- --demo 3` deploys and executes this
 lab. The [root runner](../README.md) selects all discovered labs if `--demo` is
 omitted; it is not limited to the original four demos.
 

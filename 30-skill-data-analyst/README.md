@@ -86,7 +86,7 @@ From the repository root:
 
 ```bash
 az login
-python3 deploy.py --subscription "<subscription-id>" --demo 30
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 30
 ```
 
 The root runner discovers this folder; Bicep exposes `endpoint`, `deployment`,

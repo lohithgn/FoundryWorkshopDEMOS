@@ -92,7 +92,7 @@ From the repository root:
 
 ```bash
 az login
-python3 deploy.py --demo 34
+dotnet run --file deploy.cs -- --demo 34
 ```
 
 The shared runner discovers the lab, builds/lints Bicep, installs its isolated

@@ -24,7 +24,8 @@ include new live executions and supersede older results for those runs.
 - **Integration blocked:** the seven lab conversion issues (#2, #3, #4, #5,
   #8, #9, and #11) have not yet been integrated into this checkout. Until their
   C# apps land, the runner's all-lab file-app validation and final full offline
-  regression pass cannot be completed.
+  regression pass cannot be completed. The evaluation workflow now uses the
+  lab 23 file-app commands and cannot run until issue #5 supplies those files.
 - **Packaging blocker:** lab 36's unchanged `runtime/Dockerfile` is based on
   `python:3.12-slim` and starts `agent.py`. Running its converted hosted agent
   requires maintainer authorization for a packaging exception to the

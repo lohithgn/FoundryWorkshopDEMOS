@@ -63,7 +63,7 @@ From the repository root:
 
 ```bash
 az login
-python3 deploy.py --subscription "<subscription-id>" --demo 27 \
+dotnet run --file deploy.cs -- --subscription "<subscription-id>" --demo 27 \
   --location eastus2 --search-location westus2
 ```
 

@@ -58,7 +58,7 @@ still fail explicitly.
 From the repository root:
 
 ```bash
-python3 deploy.py --demo 41 --location eastus2
+dotnet run --file deploy.cs -- --demo 41 --location eastus2
 ```
 
 The root runner installs the lab `.venv`, runs tests, deploys and calls the

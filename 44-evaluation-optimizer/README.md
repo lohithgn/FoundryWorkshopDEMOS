@@ -18,7 +18,7 @@ quotas below, and native dataset-generation/evaluation/optimizer availability.
 SDK serialization and successful deployment alone do not prove preview access.
 
 ```bash
-python3 deploy.py --demo 44 --location eastus2
+dotnet run --file deploy.cs -- --demo 44 --location eastus2
 ```
 
 Manual path:
@@ -68,7 +68,7 @@ Native evaluator breadth: **PASS**, run `evalrun_15901f904d41452ea0ecc66e2587244
 
 The root optimizer job `opt_0c96c7916fed469ca3d0908dd59d340b` reported `succeeded`, but its only nonbaseline candidate actually **failed** with `candidate_screening_stalled`: “Candidate screening stopped without an accepted improvement before this candidate completed full validation.” Its baseline already scored 1.0, leaving no higher bounded score to accept. This was **BLOCKED**, not a completed comparison or a cancellation. The current baseline deliberately has instruction-quality headroom; its facts are unchanged and no candidate is fabricated locally. Native job status, termination reason, candidate summary, and actual candidate failures are persisted and included in blocker messages. A service-level `succeeded` with no completed generated candidate cannot pass the feature gate.
 
-**Final exact root replay: PASS, exit 0.** One `python3 deploy.py --demo 44` invocation deployed infrastructure, passed 27 offline tests/preflight, and completed all native stages:
+**Final exact root replay: PASS, exit 0.** One `dotnet run --file deploy.cs -- --demo 44` invocation deployed infrastructure, passed 27 offline tests/preflight, and completed all native stages:
 
 - Generated dataset `catalog-qna-c2326d0c54`, version `1.0`, job `datagen-c52f05e7284b41ffbc203ddd6df58897`. Native metadata PUT/GET preserved the dataset identity/content URI and persisted both exact mandatory tags. All three retained generated dataset versions were independently verified tagged.
 - Cloud evaluator breadth run `evalrun_f9db715eca1e4cfda422229877f13832` passed all required scores.
