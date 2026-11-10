@@ -10,6 +10,19 @@ using its REST API pattern with a much smaller, synthetic dataset. The three
 documents are included directly in the script, so no downloads are needed.
 It uses the real managed knowledge-base API, **not a local RAG imitation**.
 
+> **Migration note:** Python sources and requirements are temporarily retained
+> unchanged for the repository-wide runner. Use the .NET 10 file-app commands;
+> Python runner references are transitional until issue #1 completes integration.
+
+Restore and build each .NET 10 file app from this folder:
+
+```bash
+dotnet restore demo.cs && dotnet build demo.cs
+dotnet restore deploy_lab.cs && dotnet build deploy_lab.cs
+dotnet restore cleanup.cs && dotnet build cleanup.cs
+dotnet restore test_demo.cs && dotnet build test_demo.cs
+```
+
 To keep it small, this example uses a text index and semantic ranker rather than
 the quickstart's vector index/NASA corpus. No embedding model, storage account,
 hosted agent, Foundry portal connection, or UI is needed. It demonstrates the
@@ -18,7 +31,7 @@ IQ deployment.
 
 ## Deploy
 
-Requires Python 3.10+, Azure CLI with Bicep, an interactive Azure user with resource
+Requires the .NET 10 SDK, Azure CLI with Bicep, an interactive Azure user with resource
 creation and role-assignment permissions, a region supporting agentic retrieval,
 and `gpt-4.1-mini` quota. The template deploys:
 
@@ -96,24 +109,36 @@ choose another supported Search region if Azure rejects provisioning.
 An existing Search service cannot be moved to a different region in place:
 use a new dedicated resource group when changing its region.
 
-The root runner supports the same override:
+The root runner supports the same override. This Python command is transitional
+until the shared runner in issue #1 is converted:
 
 ```bash
 python3 deploy.py --demo 11 --location eastus2 --search-location westus2
 ```
 
-Run that command from the repository root. The lab-specific `deploy_lab.py`
+Run that command from the repository root. The lab-specific .NET runner
 also uses the template's West US 2 Search default; its `--location` changes
 the Foundry/resource-group region, not Search.
 
 ## Run and present
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --question "Is the workshop free, and do I need prior AI experience?"
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet run --file demo.cs --
+dotnet run --file demo.cs -- --question "Is the workshop free, and do I need prior AI experience?"
+```
+
+The standalone .NET lifecycle entry points are:
+
+```bash
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs
+dotnet run --file deploy_lab.cs -- --location eastus2
+dotnet restore cleanup.cs
+dotnet build cleanup.cs
+# Destructive; only with separate authorization:
+dotnet run --file cleanup.cs --
 ```
 
 1. Show the three fact sheets and the index -> knowledge source -> knowledge base
@@ -162,13 +187,26 @@ This historical run does not verify the new project-enabled template.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
-az group delete --name "$RESOURCE_GROUP" --yes
 ```
 
 Offline tests check account/project identities, project RBAC and endpoint
 outputs, account -> project -> model dependencies, independent Search region,
 and that displaying a project does not redirect retrieval away from Search.
+
+Use the following offline harness and safe smoke paths:
+
+```bash
+dotnet restore test_demo.cs
+dotnet build test_demo.cs
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file cleanup.cs -- --help
+```
+
+The 2026-10-26 live-verification record above predates this .NET implementation;
+it is historical Python evidence, not live validation of the .NET app or the
+project-enabled template. No live Azure validation is claimed for this migration.
 
 **Basic Search has ongoing charges while provisioned**, even with no queries.
 Agentic retrieval and planning/answer synthesis can also incur usage charges;
