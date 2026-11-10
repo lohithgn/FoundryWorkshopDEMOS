@@ -41,7 +41,7 @@ static async Task<int> MainAsync(string[] arguments)
         throw new ArgumentException("--prefix must contain 1-50 letters, numbers, underscores, or hyphens.");
     var lab = Environment.CurrentDirectory;
     var labName = Path.GetFileName(lab.TrimEnd(Path.DirectorySeparatorChar));
-    foreach (var required in new[] { "infra/main.bicep", "demo.cs", "test_demo.cs", "demo.py", "test_demo.py", "requirements.txt" })
+    foreach (var required in new[] { "infra/main.bicep", "demo.cs", "test_demo.cs" })
         if (!File.Exists(Path.Combine(lab, required))) throw new ArgumentException($"Missing lab input: {required}");
     var statePath = Path.Combine(lab, ".azure", "lab-deployment.json");
     var accountArgs = new List<string> { "account", "show", "-o", "json" };
