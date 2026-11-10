@@ -12,13 +12,23 @@ if (args.Contains("--help") || args.Contains("-h"))
     Console.WriteLine("Deploy only this recorded, owned synthetic lab resource group.\nUsage: dotnet run --file deploy_lab.cs -- [--subscription ID] [--principal-id ID] [--prefix PREFIX] [--location REGION] [--infra-only]");
     return;
 }
+if (ValidateArguments(args) is { } argumentError)
+{
+    Console.Error.WriteLine($"ERROR: {argumentError}");
+    Environment.ExitCode = 2;
+    return;
+}
 var subscriptionArg = Option(args, "--subscription");
 var principalArg = Option(args, "--principal-id");
 var prefix = Option(args, "--prefix");
 var location = Option(args, "--location") ?? "eastus2";
 var infraOnly = args.Contains("--infra-only");
 if (prefix is not null && !Regex.IsMatch(prefix, "^[a-zA-Z0-9_-]{1,50}$"))
-    throw new ArgumentException("--prefix must contain 1-50 letters, numbers, underscores, or hyphens.");
+{
+    Console.Error.WriteLine("ERROR: --prefix must contain 1-50 letters, numbers, underscores, or hyphens.");
+    Environment.ExitCode = 2;
+    return;
+}
 var state = Path.Combine(lab, ".azure");
 var recordPath = Path.Combine(state, "lab-deployment.json");
 var accountArgs = new List<string> { "account", "show", "-o", "json" };
@@ -97,6 +107,21 @@ static string? Option(string[] values, string option)
     if (index < 0) return null;
     if (index + 1 >= values.Length) throw new ArgumentException($"{option} requires a value.");
     return values[index + 1];
+}
+
+static string? ValidateArguments(string[] values)
+{
+    var flags = new HashSet<string>(["--infra-only"], StringComparer.Ordinal);
+    var options = new HashSet<string>(["--subscription", "--principal-id", "--prefix", "--location"], StringComparer.Ordinal);
+    for (var index = 0; index < values.Length; index++)
+    {
+        if (flags.Contains(values[index])) continue;
+        if (!options.Contains(values[index])) return $"Unknown option: {values[index]}";
+        if (index + 1 >= values.Length || values[index + 1].StartsWith("--", StringComparison.Ordinal))
+            return $"{values[index]} requires a value.";
+        index++;
+    }
+    return null;
 }
 
 static async Task Run(string executable, string[] arguments, string directory, IDictionary<string, string?>? env = null)

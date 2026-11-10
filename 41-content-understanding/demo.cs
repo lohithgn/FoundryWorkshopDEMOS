@@ -18,6 +18,12 @@ var supportedRegions = new[] { "australiaeast", "canadacentral", "eastus", "east
     "southeastasia", "swedencentral", "uksouth", "westeurope", "westus", "westus3" };
 var expected = new Dictionary<string, object> { ["Workshop"] = "Cedar Workshop", ["Room"] = "Blue Room", ["Seats"] = 12 };
 
+if (ValidateArguments(args, ["--self-test", "--help", "-h", "--preflight"], ["--location"]) is { } argumentError)
+{
+    Console.Error.WriteLine($"ERROR: {argumentError}");
+    Environment.ExitCode = 2;
+    return;
+}
 if (args.Contains("--self-test"))
 {
     RunOfflineTests();
@@ -63,6 +69,19 @@ static string? Option(string[] arguments, string option)
     if (index + 1 >= arguments.Length || arguments[index + 1].StartsWith("--", StringComparison.Ordinal))
         throw new ArgumentException($"{option} requires a value.");
     return arguments[index + 1];
+}
+
+static string? ValidateArguments(string[] values, string[] switches, string[] options)
+{
+    for (var index = 0; index < values.Length; index++)
+    {
+        if (switches.Contains(values[index], StringComparer.Ordinal)) continue;
+        if (!options.Contains(values[index], StringComparer.Ordinal)) return $"Unknown option: {values[index]}";
+        if (index + 1 >= values.Length || values[index + 1].StartsWith("--", StringComparison.Ordinal))
+            return $"{values[index]} requires a value.";
+        index++;
+    }
+    return null;
 }
 
 async Task<JsonObject> Preflight(string region, string completion, string embedding)

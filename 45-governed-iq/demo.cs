@@ -15,13 +15,26 @@ var lab = Environment.CurrentDirectory;
 var state = Path.Combine(lab, ".azure");
 if (!File.Exists(Path.Combine(lab, "infra", "main.bicep")))
     throw new DirectoryNotFoundException("Run this file from 45-governed-iq.");
+if (ValidateArguments(args, ["--self-test", "--help", "-h"], ["--timeout"]) is { } argumentError)
+{
+    Console.Error.WriteLine($"ERROR: {argumentError}");
+    Environment.ExitCode = 2;
+    return;
+}
 if (args.Contains("--self-test")) { OfflineTests(); return; }
 if (args.Contains("--help") || args.Contains("-h"))
 {
     Console.WriteLine("Permission-native Blob/Search and Fabric data-agent smoke tests.\nUsage: dotnet run --file demo.cs -- [--timeout 600]");
     return;
 }
-var timeout = ParseTimeout(args);
+int timeout;
+try { timeout = ParseTimeout(args); }
+catch (ArgumentException error)
+{
+    Console.Error.WriteLine($"ERROR: {error.Message}");
+    Environment.ExitCode = 2;
+    return;
+}
 Directory.CreateDirectory(state);
 JsonObject config;
 try { config = Config(state); }
@@ -67,6 +80,19 @@ static int ParseTimeout(string[] args)
     if (index + 1 >= args.Length || !int.TryParse(args[index + 1], out var value) || value <= 0)
         throw new ArgumentException("--timeout must be a positive integer.");
     return value;
+}
+
+static string? ValidateArguments(string[] values, string[] switches, string[] options)
+{
+    for (var index = 0; index < values.Length; index++)
+    {
+        if (switches.Contains(values[index], StringComparer.Ordinal)) continue;
+        if (!options.Contains(values[index], StringComparer.Ordinal)) return $"Unknown option: {values[index]}";
+        if (index + 1 >= values.Length || values[index + 1].StartsWith("--", StringComparison.Ordinal))
+            return $"{values[index]} requires a value.";
+        index++;
+    }
+    return null;
 }
 
 static JsonObject Config(string state)

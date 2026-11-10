@@ -13,9 +13,20 @@ if (args.Contains("--help") || args.Contains("-h"))
 }
 var state = Path.Combine(lab, ".azure");
 var statePath = Path.Combine(state, "lab-deployment.json");
-var options = Parse(args);
+Dictionary<string, string> options;
+try { options = Parse(args); }
+catch (ArgumentException error)
+{
+    Console.Error.WriteLine($"ERROR: {error.Message}");
+    Environment.ExitCode = 2;
+    return;
+}
 if (options.GetValueOrDefault("--prefix") is { } prefix && !Regex.IsMatch(prefix, "^[a-zA-Z0-9_-]{1,50}$"))
-    throw new ArgumentException("--prefix must contain 1-50 letters, numbers, underscores, or hyphens.");
+{
+    Console.Error.WriteLine("ERROR: --prefix must contain 1-50 letters, numbers, underscores, or hyphens.");
+    Environment.ExitCode = 2;
+    return;
+}
 var accountArgs = new List<string> { "account", "show", "-o", "json" };
 if (options.TryGetValue("--subscription", out var requestedSubscription))
     accountArgs.AddRange(["--subscription", requestedSubscription]);

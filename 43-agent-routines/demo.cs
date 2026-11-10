@@ -10,6 +10,12 @@ var lab = Environment.CurrentDirectory;
 var state = Path.Combine(lab, ".azure");
 if (!File.Exists(Path.Combine(lab, "infra", "main.bicep")))
     throw new DirectoryNotFoundException("Run this file from 43-agent-routines.");
+if (ValidateArguments(args, ["--self-test", "--help", "-h", "--preflight"], ["--dispatch-identity"]) is { } argumentError)
+{
+    Console.Error.WriteLine($"ERROR: {argumentError}");
+    Environment.ExitCode = 2;
+    return;
+}
 if (args.Contains("--self-test"))
 {
     OfflineTests();
@@ -23,7 +29,11 @@ if (args.Contains("--help") || args.Contains("-h"))
 var preflight = args.Contains("--preflight");
 var dispatchIdentity = Option(args, "--dispatch-identity") ?? "creator";
 if (dispatchIdentity is not ("creator" or "agent"))
-    throw new ArgumentException("--dispatch-identity must be creator or agent; service default is not permitted.");
+{
+    Console.Error.WriteLine("ERROR: --dispatch-identity must be creator or agent; service default is not permitted.");
+    Environment.ExitCode = 2;
+    return;
+}
 Directory.CreateDirectory(state);
 var report = new JsonObject { ["status"] = "BLOCKED", ["timer_status"] = "NOT_RUN",
     ["blockers"] = new JsonArray(), ["dispatch_identity"] = dispatchIdentity };
@@ -72,6 +82,19 @@ static string? Option(string[] values, string option)
     return values[index + 1];
 }
 
+static string? ValidateArguments(string[] values, string[] switches, string[] options)
+{
+    for (var index = 0; index < values.Length; index++)
+    {
+        if (switches.Contains(values[index], StringComparer.Ordinal)) continue;
+        if (!options.Contains(values[index], StringComparer.Ordinal)) return $"Unknown option: {values[index]}";
+        if (index + 1 >= values.Length || values[index + 1].StartsWith("--", StringComparison.Ordinal))
+            return $"{values[index]} requires a value.";
+        index++;
+    }
+    return null;
+}
+
 static JsonObject Settings(string state)
 {
     var saved = File.Exists(Path.Combine(state, "deployment.json"))
@@ -87,7 +110,7 @@ static JsonObject Settings(string state)
             ? value : saved[key]?["value"]?.ToString();
     foreach (var key in mappings.Keys)
         if (string.IsNullOrWhiteSpace(result[key]?.ToString()))
-            throw new InvalidOperationException($"BLOCKED: missing {key}; deploy with dotnet run --file deploy_lab.cs -- --infra-only");
+            throw new InvalidOperationException($"BLOCKED: missing {key}; deploy infra/main.bicep and save its outputs in .azure/deployment.json or set the documented environment variables.");
     return result;
 }
 

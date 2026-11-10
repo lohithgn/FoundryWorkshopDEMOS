@@ -1,5 +1,10 @@
 # 44 — Cloud evaluator breadth and native agent optimizer
 
+> **Migration status:** .NET 10 file-based C# is the current lab workflow.
+> Original Python sources and requirements are retained unchanged temporarily
+> for staged root-runner integration. Python-era evidence below is historical
+> and does not validate the .NET port; no .NET live Azure validation is claimed.
+
 Three independently reported **native cloud** stages:
 
 1. Generate exactly two synthetic pricing Q&A samples through `datasets.begin_create_generation_job`; read back the registered immutable dataset version. If generation changes the required security-tag keys' casing, update the same version through native `datasets.create_or_update` and require an independent GET to retain the exact mandatory tags, ID, version, and content URI.
@@ -12,35 +17,32 @@ If generation is unavailable, the optimizer still attempts the documented two-ro
 
 ## Run
 
-Requires Python 3.10+, Azure CLI/Bicep, a signed-in Entra user with resource
+Requires the .NET 10 SDK, Azure CLI/Bicep, a signed-in Entra user with resource
 creation/role-assignment rights and Foundry User (assigned by Bicep), both model
 quotas below, and native dataset-generation/evaluation/optimizer availability.
 SDK serialization and successful deployment alone do not prove preview access.
 
-```bash
-python3 deploy.py --demo 44 --location eastus2
-```
-
-Manual path:
+From this lab directory, restore/build and run safe help and offline checks:
 
 ```bash
-cd 44-evaluation-optimizer
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python -m unittest -q
-az login
-az account set --subscription "<subscription-id>"
-mkdir -p .azure
-az group create --name rg-foundry-evaluation-optimizer-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create --resource-group rg-foundry-evaluation-optimizer-demo --template-file infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)" \
-  --query '{outputs:properties.outputs}' -o json > .azure/deployment.json
-.venv/bin/python demo.py --preflight
-.venv/bin/python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
 ```
 
-Root invocation needs no manual runtime exports: the root supplies existing outputs, and the script reads its own `.azure/deployment.json` `{subscription, resourceGroup, outputs}` for the optimizer deployment.
-The manual commands save the required `outputs` envelope. Existing deployments
-can instead use the following mappings; clear stale environment overrides:
+After an authorized deployment and configuration of the documented outputs, run
+the native service preflight and workflow:
+
+```bash
+dotnet run --file demo.cs -- --preflight
+dotnet run --file demo.cs
+```
+
+The app reads `.azure/deployment.json` in `{subscription, resourceGroup, outputs}`
+format and/or the listed environment mappings. Clear stale overrides when changing projects:
 
 | Output | Environment |
 |---|---|
@@ -54,9 +56,9 @@ Required ARM parameters: `location`, `principalId` (User). Optional: `accountNam
 
 ## Verification and evidence
 
-27 offline tests pass for native payload serialization, immutable dataset reference and metadata tag repair/read-back, rejecting changed content or nonpersisted tags, explicit unoptimized baseline, reporting actual failed-candidate errors, budget/disjoint holdout, actual-model tool-call lineage, diverse evaluators and required native grounding/tool mapping, rejecting missing/nonfinite evaluator scores, score/link/mutation requirements, rejecting training-screen scores as heldout evidence, approval/rejection, and timeout cancellation. Bicep and Python syntax compiled. Pylance was unavailable; actual SDK signatures/runtime serialization and focused unittest were used.
+**Historical Python validation only:** 27 offline tests covered native payloads, dataset/version/tag behavior, tool trace/evaluator mapping, disjoint holdout, optimizer candidates, score/link/mutation gates, and cancellation. This is not .NET validation.
 
-Actual ARM deployment: **succeeded**, `rg-foundry-evaluation-optimizer-demo`, East US 2, subscription `1217c203-6c76-47b4-b61c-9bba62dc8e02`. Both model deployments and Entra project preflight succeeded. **Historical standalone verification:** native dataset generation passed for `catalog-qna-fe0799cbfa`, version `1.0`, exactly two generated samples. Native optimizer job `opt_2ea02df647694c88af7064d88b93894c` succeeded and generated a real instruction mutation. Generation used 11,320 tokens; optimizer stage reported 2,178 optimizer-model tokens plus agent/evaluator usage.
+**Historical Python live validation only:** ARM deployment and service preflight succeeded. Historical dataset generation, optimizer mutation, evaluator, and held-out workflow reports below are not .NET results.
 
 **Important native API observation:** candidate evaluation links pointed to two training-screen pricing rows, while the baseline link pointed to the refund holdout. The native service did not expose a candidate refund-holdout run for this screened candidate. Comparing those scores would be invalid. The implementation therefore requires an explicit additional native-cloud heldout evaluation of both configurations, with matching query, candidate IDs, response IDs, and independent evaluation/run IDs. It never treats training-screen scores as heldout evidence. Exact final heldout decision and live status are in `.azure/live-report.json`.
 
@@ -68,7 +70,7 @@ Native evaluator breadth: **PASS**, run `evalrun_15901f904d41452ea0ecc66e2587244
 
 The root optimizer job `opt_0c96c7916fed469ca3d0908dd59d340b` reported `succeeded`, but its only nonbaseline candidate actually **failed** with `candidate_screening_stalled`: “Candidate screening stopped without an accepted improvement before this candidate completed full validation.” Its baseline already scored 1.0, leaving no higher bounded score to accept. This was **BLOCKED**, not a completed comparison or a cancellation. The current baseline deliberately has instruction-quality headroom; its facts are unchanged and no candidate is fabricated locally. Native job status, termination reason, candidate summary, and actual candidate failures are persisted and included in blocker messages. A service-level `succeeded` with no completed generated candidate cannot pass the feature gate.
 
-**Final exact root replay: PASS, exit 0.** One `python3 deploy.py --demo 44` invocation deployed infrastructure, passed 27 offline tests/preflight, and completed all native stages:
+**Historical Python root replay: PASS, exit 0.** One root-runner invocation deployed infrastructure, ran Python tests/preflight, and completed all native stages:
 
 - Generated dataset `catalog-qna-c2326d0c54`, version `1.0`, job `datagen-c52f05e7284b41ffbc203ddd6df58897`. Native metadata PUT/GET preserved the dataset identity/content URI and persisted both exact mandatory tags. All three retained generated dataset versions were independently verified tagged.
 - Cloud evaluator breadth run `evalrun_f9db715eca1e4cfda422229877f13832` passed all required scores.
@@ -76,7 +78,7 @@ The root optimizer job `opt_0c96c7916fed469ca3d0908dd59d340b` reported `succeede
 - The separate same-question cloud heldout run `evalrun_548f46aed7cf4164a5243f12aec8b628` scored actual returned configurations **0.4 baseline versus 1.0 candidate**: **APPROVE**, `promoted=false`. These independent heldout scores—not training-screen scores—control the gate. Ties still reject, as covered by regression tests and the historical tie run.
 - The temporary optimizer agent was deleted; project listing confirmed no remaining agents. No jobs were resubmitted. Exact root transcript and native evidence are `.azure/root-replay-terminal.log` and `.azure/live-report.json`.
 
-Any missing core stage results in `BLOCKED`, exit 1. `demo.py --stage evaluator` retries only that stage while preserving native dataset/optimizer evidence; `demo.py --stage holdout` evaluates existing native optimizer output without resubmitting optimization. SDK/Pydantic can warn when serializing Foundry's Azure-specific grader extension into OpenAI's base grader schema; the real service read-back and all six scores were verified, and report serialization suppresses only that known serialization warning.
+Any missing core stage results in `BLOCKED`, exit 1. The .NET `--stage evaluator` retries only that stage while preserving native dataset/optimizer evidence; `--stage holdout` evaluates saved native optimizer output without resubmitting optimization.
 
 Ignored `.azure/` contains root-compatible deployment state, ARM/live transcripts, generation job and dataset IDs, real agent response/tool-call IDs, native evaluator outputs, exact optimizer request/job/candidates, held-out decision, and cleanup evidence. No access tokens or authentication secrets are stored.
 

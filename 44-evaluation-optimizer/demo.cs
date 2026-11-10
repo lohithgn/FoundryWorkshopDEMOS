@@ -16,6 +16,12 @@ var lab = Environment.CurrentDirectory;
 var state = Path.Combine(lab, ".azure");
 if (!File.Exists(Path.Combine(lab, "infra", "main.bicep")))
     throw new DirectoryNotFoundException("Run this file from 44-evaluation-optimizer.");
+if (ValidateArguments(args, ["--self-test", "--help", "-h", "--preflight"], ["--stage"]) is { } argumentError)
+{
+    Console.Error.WriteLine($"ERROR: {argumentError}");
+    Environment.ExitCode = 2;
+    return;
+}
 if (args.Contains("--self-test")) { OfflineTests(); return; }
 if (args.Contains("--help") || args.Contains("-h"))
 {
@@ -25,7 +31,11 @@ if (args.Contains("--help") || args.Contains("-h"))
 var preflight = args.Contains("--preflight");
 var stage = Option(args, "--stage") ?? "all";
 if (stage is not ("all" or "dataset" or "evaluator" or "optimizer" or "holdout"))
-    throw new ArgumentException("--stage must be all, dataset, evaluator, optimizer, or holdout.");
+{
+    Console.Error.WriteLine("ERROR: --stage must be all, dataset, evaluator, optimizer, or holdout.");
+    Environment.ExitCode = 2;
+    return;
+}
 Directory.CreateDirectory(state);
 var reportPath = Path.Combine(state, "live-report.json");
 var report = new JsonObject { ["status"] = "BLOCKED", ["dataset_status"] = "NOT_RUN",
@@ -73,8 +83,7 @@ try
                         ?? throw new InvalidOperationException("No native optimizer candidates are saved for held-out validation.");
                     var summary = report["optimization_job"]?["result"]?["candidate_summary"]?.AsObject()
                         ?? throw new InvalidOperationException("Native optimizer candidate summary is missing.");
-                    var validation = report["native_holdout_validation"]?.AsObject()
-                        ?? throw new InvalidOperationException("Actual native holdout evaluation evidence is missing.");
+                    var validation = await NativeHeldoutEvaluation(config, report, candidates, summary);
                     report["heldout_gate"] = HeldoutGate(candidates, summary, validation);
                     report["optimizer_status"] = "PASS";
                     break;
@@ -113,6 +122,19 @@ static string? Option(string[] values, string option)
     return values[index + 1];
 }
 
+static string? ValidateArguments(string[] values, string[] switches, string[] options)
+{
+    for (var index = 0; index < values.Length; index++)
+    {
+        if (switches.Contains(values[index], StringComparer.Ordinal)) continue;
+        if (!options.Contains(values[index], StringComparer.Ordinal)) return $"Unknown option: {values[index]}";
+        if (index + 1 >= values.Length || values[index + 1].StartsWith("--", StringComparison.Ordinal))
+            return $"{values[index]} requires a value.";
+        index++;
+    }
+    return null;
+}
+
 static JsonObject Settings(string state)
 {
     var outputs = File.Exists(Path.Combine(state, "deployment.json"))
@@ -127,7 +149,7 @@ static JsonObject Settings(string state)
         config[key] = Environment.GetEnvironmentVariable(env) is { Length: > 0 } value ? value : outputs[key]?["value"]?.ToString();
     foreach (var key in mapping.Keys)
         if (string.IsNullOrWhiteSpace(config[key]?.ToString()))
-            throw new InvalidOperationException($"BLOCKED: missing {key}; deploy with dotnet run --file deploy_lab.cs -- --infra-only");
+            throw new InvalidOperationException($"BLOCKED: missing {key}; deploy infra/main.bicep and save its outputs in .azure/deployment.json or set the documented environment variables.");
     return config;
 }
 
@@ -145,9 +167,10 @@ static void VerifyEvaluatorResults(JsonArray items, int expectedRows)
     foreach (var item in items)
     {
         var results = item?["results"]?.AsArray() ?? new JsonArray();
-        var valid = results.Where(result => result?["error"] is null && double.TryParse(result?["score"]?.ToString(), out var score) && double.IsFinite(score))
+        var valid = results.Where(result => result?["error"] is null && FiniteJsonNumber(result?["score"]))
             .Select(result => result?["name"]?.ToString()).ToHashSet(StringComparer.Ordinal);
-        if (!required.All(valid.Contains)) throw new InvalidDataException($"Cloud evaluators unavailable or missing scores: {results}");
+        if (!required.All(valid.Contains))
+            throw new InvalidDataException("Cloud evaluators unavailable or missing scores: expected finite numeric scores.");
     }
 }
 
@@ -160,8 +183,9 @@ static JsonObject HeldoutGate(List<JsonObject> candidates, JsonObject summary, J
         throw new InvalidOperationException("Native optimizer did not actually compare a baseline and generated candidate.");
     foreach (var candidate in new[] { baseline }.Concat(alternatives))
     {
-        if (!FiniteBetween(candidate["evaluation"]?["score"], 0, 1)
-            || string.IsNullOrEmpty(candidate["evaluation"]?["eval_id"]?.ToString())
+        if (!FiniteBetween(candidate["evaluation"]?["score"], 0, 1))
+            throw new InvalidOperationException("Native held-out evaluation lacks a bounded numeric score.");
+        if (string.IsNullOrEmpty(candidate["evaluation"]?["eval_id"]?.ToString())
             || string.IsNullOrEmpty(candidate["evaluation"]?["eval_run_id"]?.ToString()))
             throw new InvalidOperationException("Native candidate lacks linked cloud evaluation evidence.");
     }
@@ -177,7 +201,8 @@ static JsonObject HeldoutGate(List<JsonObject> candidates, JsonObject summary, J
         throw new InvalidOperationException("Held-out evaluation targets do not match the actual native baseline/candidate.");
     var baselineScore = Number(validation["baseline"]?["score"]);
     var candidateScore = Number(validation["candidate"]?["score"]);
-    if (baselineScore is < 0 or > 1 || candidateScore is < 0 or > 1
+    if (!FiniteJsonNumber(validation["baseline"]?["score"]) || !FiniteJsonNumber(validation["candidate"]?["score"])
+        || baselineScore is < 0 or > 1 || candidateScore is < 0 or > 1
         || string.IsNullOrEmpty(validation["baseline"]?["response_id"]?.ToString())
         || string.IsNullOrEmpty(validation["candidate"]?["response_id"]?.ToString()))
         throw new InvalidOperationException("Native held-out score or response link is missing.");
@@ -190,22 +215,22 @@ static JsonObject HeldoutGate(List<JsonObject> candidates, JsonObject summary, J
 }
 
 static double Number(JsonNode? value) => double.TryParse(value?.ToString(), out var score) ? score : double.NaN;
-static bool FiniteBetween(JsonNode? value, double min, double max) => double.IsFinite(Number(value)) && Number(value) >= min && Number(value) <= max;
+static bool FiniteJsonNumber(JsonNode? value)
+{
+    if (value is not JsonValue json || value.GetValueKind() != System.Text.Json.JsonValueKind.Number) return false;
+    if (json.TryGetValue<double>(out var number)) return double.IsFinite(number);
+    if (json.TryGetValue<decimal>(out var decimalNumber)) return true;
+    if (json.TryGetValue<long>(out var longNumber)) return true;
+    if (json.TryGetValue<int>(out var intNumber)) return true;
+    return false;
+}
+static bool FiniteBetween(JsonNode? value, double min, double max)
+    => FiniteJsonNumber(value) && Number(value) >= min && Number(value) <= max;
 
 async Task<JsonObject> GenerateDataset(NativeProject project, JsonObject config, JsonObject report)
 {
     var name = "catalog-qna-" + Guid.NewGuid().ToString("N")[..10];
-    var body = new JsonObject {
-        ["name"] = name,
-        ["sources"] = new JsonArray(new JsonObject { ["type"] = "prompt", ["description"] = "Synthetic pricing-only training source",
-            ["prompt"] = "Synthetic workshop catalog: Atlas costs USD 25. Boreal costs USD 40." }),
-        ["generation_configuration"] = new JsonObject { ["type"] = "simple_qna", ["max_samples"] = 2,
-            ["model_options"] = new JsonObject { ["model"] = config["deployment"]!.DeepClone() } },
-        ["output_configuration"] = new JsonObject { ["name"] = name,
-            ["description"] = "Exactly two synthetic pricing training samples; refund holdout excluded.",
-            ["tags"] = new JsonObject { ["lab"] = "44", ["split"] = "training",
-                ["SecurityControl"] = "Ignore", ["SecurityExemption"] = "StorageAccountKeyAccess" } }
-    };
+    var body = DatasetRequest(name, config["deployment"]!.ToString());
     var job = await project.Send(HttpMethod.Post, "evaluation_data_generation_jobs", body);
     report["generation_job_id"] = job["id"]?.DeepClone();
     await Save(report);
@@ -219,22 +244,49 @@ async Task<JsonObject> GenerateDataset(NativeProject project, JsonObject config,
     report["generated_dataset_before_tag_update"] = saved.DeepClone();
     if (string.IsNullOrEmpty(saved["id"]?.ToString()) || string.IsNullOrEmpty(saved["version"]?.ToString()))
         throw new InvalidDataException("Generated cloud dataset lacks a service id or immutable version.");
-    var tags = saved["tags"]?.AsObject() ?? new JsonObject();
-    if (tags["SecurityControl"]?.ToString() != "Ignore" || tags["SecurityExemption"]?.ToString() != "StorageAccountKeyAccess")
+    if (!HasRequiredTags(saved))
     {
-        var bodyWithTags = saved.DeepClone().AsObject();
-        bodyWithTags["tags"] = new JsonObject { ["SecurityControl"] = "Ignore", ["SecurityExemption"] = "StorageAccountKeyAccess" };
-        saved = await project.Send(HttpMethod.Put, $"datasets/{Uri.EscapeDataString(datasetName)}/versions/{Uri.EscapeDataString(version)}", bodyWithTags);
+        await project.Send(HttpMethod.Put, $"datasets/{Uri.EscapeDataString(datasetName)}/versions/{Uri.EscapeDataString(version)}",
+            DatasetWithRequiredTags(saved));
         report["dataset_tag_update_submitted"] = true;
     }
     var readback = await project.Get($"datasets/{Uri.EscapeDataString(datasetName)}/versions/{Uri.EscapeDataString(version)}");
-    if (readback["tags"]?["SecurityControl"]?.ToString() != "Ignore"
-        || readback["tags"]?["SecurityExemption"]?.ToString() != "StorageAccountKeyAccess")
+    VerifyDatasetReadback(saved, readback);
+    return readback;
+}
+
+static JsonObject DatasetRequest(string name, string model) => new() {
+        ["name"] = name,
+        ["sources"] = new JsonArray(new JsonObject { ["type"] = "prompt", ["description"] = "Synthetic pricing-only training source",
+            ["prompt"] = "Synthetic workshop catalog: Atlas costs USD 25. Boreal costs USD 40." }),
+        ["generation_configuration"] = new JsonObject { ["type"] = "simple_qna", ["max_samples"] = 2,
+            ["model_options"] = new JsonObject { ["model"] = model } },
+        ["output_configuration"] = new JsonObject { ["name"] = name,
+            ["description"] = "Exactly two synthetic pricing training samples; refund holdout excluded.",
+            ["tags"] = new JsonObject { ["lab"] = "44", ["split"] = "training",
+                ["SecurityControl"] = "Ignore", ["SecurityExemption"] = "StorageAccountKeyAccess" } }
+    };
+static bool HasRequiredTags(JsonObject dataset)
+    => dataset["tags"]?["SecurityControl"]?.ToString() == "Ignore"
+       && dataset["tags"]?["SecurityExemption"]?.ToString() == "StorageAccountKeyAccess";
+
+static JsonObject DatasetWithRequiredTags(JsonObject dataset)
+{
+    var updated = dataset.DeepClone().AsObject();
+    var tags = updated["tags"]?.AsObject() ?? new JsonObject();
+    tags["SecurityControl"] = "Ignore";
+    tags["SecurityExemption"] = "StorageAccountKeyAccess";
+    updated["tags"] = tags;
+    return updated;
+}
+
+static void VerifyDatasetReadback(JsonObject original, JsonObject readback)
+{
+    if (!HasRequiredTags(readback))
         throw new InvalidDataException("Generated cloud dataset did not retain mandatory security tags after native metadata update.");
     foreach (var key in new[] { "id", "name", "version", "type", "data_uri", "dataUri" })
-        if (readback[key]?.ToString() != report["generated_dataset_before_tag_update"]?[key]?.ToString())
+        if (original[key]?.ToString() != readback[key]?.ToString())
             throw new InvalidDataException($"Dataset metadata update unexpectedly changed immutable {key}.");
-    return readback;
 }
 
 async Task EvaluateTraces(JsonObject config, JsonObject report)
@@ -296,23 +348,16 @@ async Task EvaluateTraces(JsonObject config, JsonObject report)
     VerifyEvaluatorResults((items["data"]?.AsArray() ?? items["value"]?.AsArray() ?? new JsonArray()), rows.Count);
 }
 
-async Task StartOptimizer(NativeProject project, JsonObject config, JsonObject report)
+JsonObject OptimizationRequest(string agentName, JsonNode? agentVersion, JsonObject config, JsonObject? dataset)
 {
-    var agentName = "optimizer-agent-" + Guid.NewGuid().ToString("N")[..10];
-    var agent = await project.Send(HttpMethod.Post, $"agents/{Uri.EscapeDataString(agentName)}/versions",
-        new JsonObject { ["definition"] = new JsonObject { ["kind"] = "prompt", ["model"] = config["deployment"]!.DeepClone(), ["instructions"] = Baseline } });
-    report["optimizer_baseline_agent"] = agent.DeepClone();
-    string? jobId = null;
-    try
-    {
     var trainingSet = new JsonObject { ["type"] = "target_completion", ["source"] = new JsonObject { ["type"] = "inline",
         ["test_cases"] = training.DeepClone() } };
-    if (report["generated_dataset"] is JsonObject dataset)
+    if (dataset is not null)
         trainingSet["source"] = new JsonObject { ["type"] = "dataset_reference",
             ["name"] = dataset["name"]?.DeepClone(), ["version"] = dataset["version"]?.ToString() };
-    var body = new JsonObject {
+    return new JsonObject {
         ["display_name"] = "44 one-candidate bounded native optimization",
-        ["target"] = new JsonObject { ["type"] = "foundry_agent", ["name"] = agentName, ["version"] = agent["version"]?.DeepClone() },
+        ["target"] = new JsonObject { ["type"] = "foundry_agent", ["name"] = agentName, ["version"] = agentVersion?.DeepClone() },
         ["optimization_model"] = new JsonObject { ["model"] = config["optimizationDeployment"]!.DeepClone() },
         ["optimization_configuration"] = new JsonObject { ["type"] = "agent_optimization", ["goal"] = "improve_quality",
             ["evaluation_configuration"] = new JsonObject { ["training_set"] = trainingSet,
@@ -324,6 +369,18 @@ async Task StartOptimizer(NativeProject project, JsonObject config, JsonObject r
             ["candidate_search_configuration"] = new JsonObject { ["max_candidates"] = 1 },
             ["agent_optimization_space"] = new JsonObject { ["target_attributes"] = new JsonArray("instructions") } }
     };
+}
+
+async Task StartOptimizer(NativeProject project, JsonObject config, JsonObject report)
+{
+    var agentName = "optimizer-agent-" + Guid.NewGuid().ToString("N")[..10];
+    var agent = await project.Send(HttpMethod.Post, $"agents/{Uri.EscapeDataString(agentName)}/versions",
+        new JsonObject { ["definition"] = new JsonObject { ["kind"] = "prompt", ["model"] = config["deployment"]!.DeepClone(), ["instructions"] = Baseline } });
+    report["optimizer_baseline_agent"] = agent.DeepClone();
+    string? jobId = null;
+    try
+    {
+    var body = OptimizationRequest(agentName, agent["version"], config, report["generated_dataset"]?.AsObject());
     report["optimizer_request"] = body.DeepClone();
     await Save(report);
     var response = await project.Send(HttpMethod.Post, "agent_optimization_jobs", body);
@@ -451,7 +508,7 @@ async Task<JsonObject> NativeHeldoutEvaluation(JsonObject config, JsonObject rep
         var result = (item["results"]?.AsArray() ?? new JsonArray())
             .FirstOrDefault(node => node?["name"]?.ToString() == "relevance");
         var score = Number(result?["score"]);
-        if (result?["error"] is not null || !double.IsFinite(score) || score is < 1 or > 5)
+        if (result?["error"] is not null         || !FiniteJsonNumber(result?["score"]) || !double.IsFinite(score) || score is < 1 or > 5)
             throw new InvalidDataException("Native held-out relevance evaluator did not return a valid 1–5 score.");
         validation[key] = new JsonObject { ["candidate_id"] = expected["candidate_id"]!.DeepClone(),
             ["response_id"] = source["response_id"]!.DeepClone(), ["raw_score"] = score, ["score"] = score / 5 };
@@ -546,6 +603,37 @@ void OfflineTests()
 {
     if (training.Select(r => r!["query"]!.ToString()).Intersect(heldout.Select(r => r!["query"]!.ToString())).Any())
         throw new InvalidDataException("Refund holdout leaked into training.");
+    var generated = DatasetRequest("catalog-qna-test", "baseline-model");
+    if (generated["generation_configuration"]?["max_samples"]?.GetValue<int>() != 2
+        || generated["sources"]?.AsArray().Count != 1
+        || generated["sources"]?[0]?["type"]?.ToString() != "prompt"
+        || generated["sources"]?[0]?["prompt"]?.ToString().Contains("refund", StringComparison.OrdinalIgnoreCase) == true
+        || generated["output_configuration"]?["tags"]?["SecurityControl"]?.ToString() != "Ignore"
+        || generated["output_configuration"]?["tags"]?["SecurityExemption"]?.ToString() != "StorageAccountKeyAccess")
+        throw new InvalidDataException("Generated training dataset must be exactly two pricing-only samples with required tags.");
+    var optimizerConfig = new JsonObject { ["deployment"] = "baseline-model", ["optimizationDeployment"] = "optimizer-model" };
+    var optimizerRequest = OptimizationRequest("optimizer-agent", JsonValue.Create("3"), optimizerConfig,
+        new JsonObject { ["name"] = "generated", ["version"] = "7" });
+    var optimization = optimizerRequest["optimization_configuration"]!;
+    if (optimizerRequest["target"]?["version"]?.ToString() != "3"
+        || optimization["evaluation_configuration"]?["training_set"]?["source"]?["type"]?.ToString() != "dataset_reference"
+        || optimization["evaluation_configuration"]?["training_set"]?["source"]?["version"]?.ToString() != "7"
+        || optimization["evaluation_configuration"]?["validation_set"]?["source"]?["test_cases"]?.AsArray().Count != 1
+        || optimization["evaluation_configuration"]?["max_concurrent_agent_runs"]?.GetValue<int>() != 1
+        || optimization["candidate_search_configuration"]?["max_candidates"]?.GetValue<int>() != 1
+        || optimization["agent_optimization_space"]?["target_attributes"]?.AsArray().Single()?.ToString() != "instructions")
+        throw new InvalidDataException("Native optimizer must pin versions, disjoint holdout, supported model and bounded instruction search.");
+    var originalDataset = JsonNode.Parse("""{"id":"native-id","name":"generated","version":"1","type":"uri_file","data_uri":"azureai://source","tags":{"lab":"44","securityControl":"Ignore","custom":"kept"}}""")!.AsObject();
+    var taggedDataset = DatasetWithRequiredTags(originalDataset);
+    if (taggedDataset["tags"]?["lab"]?.ToString() != "44" || taggedDataset["tags"]?["custom"]?.ToString() != "kept"
+        || !HasRequiredTags(taggedDataset) || HasRequiredTags(originalDataset))
+        throw new InvalidDataException("Metadata tag repair must preserve existing tags and exact required tag casing.");
+    VerifyDatasetReadback(originalDataset, taggedDataset);
+    ExpectFailure(() => VerifyDatasetReadback(originalDataset,
+        new JsonObject { ["id"] = "native-id", ["name"] = "generated", ["version"] = "1", ["type"] = "uri_file",
+            ["data_uri"] = "azureai://different", ["tags"] = DatasetWithRequiredTags(originalDataset)["tags"]!.DeepClone() }),
+        "immutable data_uri");
+    ExpectFailure(() => VerifyDatasetReadback(originalDataset, originalDataset), "mandatory security tags");
     if (!Baseline.Contains("reply only 'Please consult the catalog.'", StringComparison.Ordinal)
         || !Baseline.Contains(Policy, StringComparison.Ordinal)) throw new InvalidDataException("Baseline must preserve real catalog facts and instruction headroom.");
     if (LookupPrice(new JsonObject { ["workshop"] = "Atlas" })["price"]?.ToString() != "25")
@@ -569,8 +657,31 @@ void OfflineTests()
     if (HeldoutGate(candidates, summary, validation)["decision"]?.ToString() != "REJECT")
         throw new InvalidDataException("Tie must be rejected.");
     ExpectFailure(() => HeldoutGate(candidates, summary, new JsonObject()), "separate actual native held-out");
+    var rejected = validation.DeepClone().AsObject();
+    rejected["candidate"]!["score"] = .7;
+    if (HeldoutGate(candidates, summary, rejected)["decision"]?.ToString() != "REJECT")
+        throw new InvalidDataException("Held-out candidate below the required threshold must be rejected.");
+    var invalidCandidate = candidates.Select(item => item.DeepClone().AsObject()).ToList();
+    invalidCandidate[1]["evaluation"]!["score"] = double.NaN;
+    ExpectFailure(() => HeldoutGate(invalidCandidate, summary, validation), "bounded numeric score");
+    invalidCandidate = candidates.Select(item => item.DeepClone().AsObject()).ToList();
+    invalidCandidate[1]["output"]!["mutations"] = new JsonArray();
+    ExpectFailure(() => HeldoutGate(invalidCandidate, summary, validation), "no native generated instruction mutation");
+    invalidCandidate = candidates.Select(item => item.DeepClone().AsObject()).ToList();
+    invalidCandidate[1]["evaluation"]!["eval_run_id"] = null;
+    ExpectFailure(() => HeldoutGate(invalidCandidate, summary, validation), "linked cloud evaluation evidence");
     var poor = new JsonArray(new JsonObject { ["results"] = new JsonArray(new JsonObject { ["name"] = "groundedness", ["score"] = 4 }) });
     ExpectFailure(() => VerifyEvaluatorResults(poor, 1), "missing scores");
+    var stringScore = new JsonArray(new JsonObject { ["results"] = new JsonArray(
+        new JsonObject { ["name"] = "groundedness", ["score"] = "5" },
+        new JsonObject { ["name"] = "relevance", ["score"] = 4 },
+        new JsonObject { ["name"] = "tool_call_accuracy", ["score"] = 4 }) });
+    ExpectFailure(() => VerifyEvaluatorResults(stringScore, 1), "missing scores");
+    var invalidNumber = new JsonArray(new JsonObject { ["results"] = new JsonArray(
+        new JsonObject { ["name"] = "groundedness", ["score"] = double.NaN },
+        new JsonObject { ["name"] = "relevance", ["score"] = 4 },
+        new JsonObject { ["name"] = "tool_call_accuracy", ["score"] = 4 }) });
+    ExpectFailure(() => VerifyEvaluatorResults(invalidNumber, 1), "missing scores");
     VerifyEvaluatorResults(new JsonArray(new JsonObject { ["results"] = new JsonArray(
         new JsonObject { ["name"] = "groundedness", ["score"] = 4 },
         new JsonObject { ["name"] = "relevance", ["score"] = 4 },

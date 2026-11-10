@@ -10,6 +10,12 @@ var lab = Environment.CurrentDirectory;
 var state = Path.Combine(lab, ".azure");
 if (!File.Exists(Path.Combine(lab, "infra", "main.bicep")))
     throw new DirectoryNotFoundException("Run this file from 42-managed-harness-tool-search.");
+if (ValidateArguments(args, ["--self-test", "--help", "-h", "--preflight"], []) is { } argumentError)
+{
+    Console.Error.WriteLine($"ERROR: {argumentError}");
+    Environment.ExitCode = 2;
+    return;
+}
 if (args.Contains("--self-test")) { OfflineTests(); return; }
 if (args.Contains("--help") || args.Contains("-h"))
 {
@@ -67,6 +73,19 @@ Console.WriteLine(new JsonObject { ["status"] = report["status"]!.DeepClone(), [
     .ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 if (report["status"]?.ToString() != "PASS") Environment.ExitCode = 1;
 
+static string? ValidateArguments(string[] values, string[] switches, string[] options)
+{
+    for (var index = 0; index < values.Length; index++)
+    {
+        if (switches.Contains(values[index], StringComparer.Ordinal)) continue;
+        if (!options.Contains(values[index], StringComparer.Ordinal)) return $"Unknown option: {values[index]}";
+        if (index + 1 >= values.Length || values[index + 1].StartsWith("--", StringComparison.Ordinal))
+            return $"{values[index]} requires a value.";
+        index++;
+    }
+    return null;
+}
+
 static JsonObject Settings(string state)
 {
     var outputs = File.Exists(Path.Combine(state, "deployment.json"))
@@ -81,7 +100,7 @@ static JsonObject Settings(string state)
         result[key] = Environment.GetEnvironmentVariable(env) is { Length: > 0 } value ? value : outputs[key]?["value"]?.ToString();
     foreach (var key in mapping.Keys)
         if (string.IsNullOrWhiteSpace(result[key]?.ToString()))
-            throw new InvalidOperationException($"BLOCKED: missing {key}; deploy with dotnet run --file deploy_lab.cs -- --infra-only");
+            throw new InvalidOperationException($"BLOCKED: missing {key}; deploy infra/main.bicep and save its outputs in .azure/deployment.json or set the documented environment variables.");
     return result;
 }
 
