@@ -27,12 +27,12 @@ var examples = new (string Ticket, string Expected)[]
 try { return await MainAsync(args); }
 catch (Exception error) when (error is ArgumentException or FormatException or OverflowException)
 {
-    Console.Error.WriteLine($"ERROR: {error.Message}");
+    Console.Error.WriteLine($"ERROR: {error.GetType().Name}: {error.Message}");
     return 2;
 }
 catch (Exception error) when (error is HttpRequestException or JsonException or InvalidOperationException or Azure.RequestFailedException or OperationCanceledException)
 {
-    Console.Error.WriteLine($"ERROR: {error.Message}");
+    Console.Error.WriteLine($"ERROR: {error.GetType().Name}: {error.Message}");
     return 1;
 }
 
