@@ -30,8 +30,12 @@ concurrent writes to the same Foundry account.
 
 ## Prerequisites / deploy / run
 
-Python 3.10+, Azure CLI, `az login`, `gpt-4.1-mini` quota, Agent Service and Agent
+.NET 10 SDK, Azure CLI, `az login`, `gpt-4.1-mini` quota, Agent Service and Agent
 Applications preview availability in the selected region. The caller needs:
+
+`demo.py` and `test_demo.py` plus `requirements.txt` remain unchanged and are
+transitional compatibility files for the existing Python runner; use `demo.cs`
+and `test_demo.cs` for this .NET 10 implementation.
 
 - **Foundry User** (`53ca6127-db72-4b80-b1b0-d745d6d5456d`) at the account scope
   (assigned by Bicep) for creating agent
@@ -49,15 +53,15 @@ Use a disposable resource group; run from this directory:
 ```bash
 az login
 az account set --subscription "<subscription-id>"
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
 az group create -n lab24-lifecycle -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
 az deployment group create -g lab24-lifecycle -n lab24 -f infra/main.bicep \
   -p principalId="$(az ad signed-in-user show --query id -o tsv)"
 export FOUNDRY_PROJECT_ENDPOINT="$(az deployment group show -g lab24-lifecycle -n lab24 --query properties.outputs.projectEndpoint.value -o tsv)"
 export FOUNDRY_PROJECT_RESOURCE_ID="$(az deployment group show -g lab24-lifecycle -n lab24 --query properties.outputs.projectResourceId.value -o tsv)"
 export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g lab24-lifecycle -n lab24 --query properties.outputs.deployment.value -o tsv)"
-.venv/bin/python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs --no-build
 ```
 
 Root runner mappings: standard `endpoint`, `deployment`, `projectEndpoint`, plus
@@ -107,13 +111,20 @@ that path. Activity Logs show control-plane changes, not model/tool latency.
 ## Offline tests / limitations / costs
 
 ```bash
-.venv/bin/python -m unittest -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs --no-build -- --help
+dotnet run --file demo.cs --no-build -- --project-resource-id invalid
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-build
 az bicep build --file infra/main.bicep --stdout > /dev/null
 ```
 
-Mocks validate real ARM request contracts, Managed deployment/version selection,
-actual application endpoint invocation with the `https://ai.azure.com` audience,
-same-test rollback, failed-rollout recovery, failed/stale state rejection.
+The C# offline harness validates ARM request bodies/tags, rollout and same-endpoint
+rollback, recovery after failed rollout, invocation's `https://ai.azure.com` audience,
+request IDs/non-200/mismatch handling, and stale-state rejection. It performs no
+Azure calls; the help and invalid-resource-ID commands are safe validation paths.
 No Azure resources are changed during tests. The dated [live verification
 record](../tests.md) reports six actual application responses across versions
 1 → 2 → 1, three successful Activity Log writes, and final version-1 ARM
@@ -147,7 +158,8 @@ az group delete -n lab24-lifecycle --yes --no-wait
 If keeping the project, first delete the application's `deployment_id` and then
 `application_id` from the report with `az resource delete --ids "<id>"
 --api-version 2025-10-01-preview`, then delete the recorded good/changed agent
-versions using `AIProjectClient.agents.delete_version(agent_name=..., agent_version=...)`.
+versions with the project agent-versions REST `DELETE` API
+(`api-version=2025-11-15-preview`, authenticated for `https://ai.azure.com`).
 Check Entra for any dedicated agent identity/blueprint left by preview lifecycle
 behavior. Remove local report/state only after cleanup evidence is recorded.
 

@@ -10,11 +10,38 @@ claim of statistical coverage or a production deployment pipeline.
 Both prompts explicitly request raw JSON without Markdown fences; the gate still
 rejects fenced or malformed responses rather than silently normalizing them.
 
+## .NET 10 file-based runner
+
+`demo.cs` is the primary standalone runner. It uses Azure CLI authentication and
+Foundry REST APIs for agent versions, Responses, and cloud evaluations; no NuGet
+libraries are required. The retained Python files and `requirements.txt` are transitional
+and unchanged. The scoped `workflow.yml` sample now uses the .NET runner. The shared
+`.github/workflows/foundry-evaluation.yml` remains Python and is owned by issue #1; it is
+intentionally not changed here.
+
+From this directory:
+
+```bash
+mkdir -p .dotnet-home
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet restore demo.cs --configfile NuGet.Config
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet build demo.cs --no-restore
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet restore test_demo.cs --configfile NuGet.Config
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet build test_demo.cs --no-restore
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --help
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --prompt baseline
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --prompt regression
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file test_demo.cs --no-build --no-restore
+```
+
+The two evaluation commands make billable live Foundry calls. The test harness is
+offline-only and never authenticates or creates cloud resources.
+
 ## Deploy / run
 
-Python 3.10+, Azure CLI with Bicep, `az login`, quota for `gpt-4.1-mini` in the deployment region,
+Azure CLI with Bicep, `az login`, quota for `gpt-4.1-mini` in the deployment region,
 resource/role assignment privileges, and Foundry cloud evaluation availability
-are required. Commands run from this directory:
+are required for the C# runner. Python 3.10+ and `requirements.txt` are retained only
+for the transitional Python path below. Commands run from this directory:
 
 The template creates the model deployment before the project to avoid concurrent
 account writes failing with ARM `RequestConflict`.
@@ -24,15 +51,16 @@ az login
 az account set --subscription "<subscription-id>"
 az provider register --namespace Microsoft.CognitiveServices --wait
 RG=lab23-evaluation
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
 az group create -n "$RG" -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
 az deployment group create -g "$RG" -n lab23 -f infra/main.bicep \
   -p principalId="$(az ad signed-in-user show --query id -o tsv)"
 export FOUNDRY_PROJECT_ENDPOINT="$(az deployment group show -g "$RG" -n lab23 --query properties.outputs.projectEndpoint.value -o tsv)"
 export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RG" -n lab23 --query properties.outputs.deployment.value -o tsv)"
-.venv/bin/python demo.py
-.venv/bin/python demo.py --prompt regression
+mkdir -p .dotnet-home
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet restore demo.cs --configfile NuGet.Config
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet build demo.cs --no-restore
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --prompt baseline
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --prompt regression
 ```
 
 For runner-created infrastructure, set `RG` to its actual recorded resource
@@ -74,10 +102,13 @@ default coherence grading threshold; the release threshold gates its pass rate.
 
 ## GitHub Actions and secretless Azure access
 
-The workflow is installed at
-[.github/workflows/foundry-evaluation.yml](../.github/workflows/foundry-evaluation.yml).
-The lab's [workflow.yml](./workflow.yml) remains an identical portable example;
-an offline test rejects drift between the two.
+The installed
+[.github/workflows/foundry-evaluation.yml](../.github/workflows/foundry-evaluation.yml)
+remains the legacy Python workflow, owned by issue #1. The lab's [workflow.yml](./workflow.yml)
+is the updated .NET 10 sample: it retains the same fork guard, protected environment,
+OIDC permissions, triggers, strict thresholds, and always-uploaded report. The C# offline
+harness checks those contracts. The files intentionally differ until issue #1 migrates
+the shared workflow; do not treat the installed workflow as running this C# app.
 
 The repository environment `foundry-evaluation` was configured on 2026-10-26:
 
@@ -139,6 +170,9 @@ policies, and variables. Allow Azure role/federation propagation before testing.
 
 ### Run the real GitHub gate
 
+The following commands target the installed legacy Python workflow; they are transitional
+until issue #1 updates that shared asset:
+
 From the repository root:
 
 ```bash
@@ -188,22 +222,27 @@ override the failed step. Environment approval is essential for same-repo PRs to
 ## Offline validation / limitations / costs
 
 ```bash
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file test_demo.cs --no-build --no-restore
 .venv/bin/python -m unittest -v
 az bicep build --file infra/main.bicep --stdout > /dev/null
 ```
 
-Tests mock the cloud and prove the request schema, timeout/error rejection,
-per-item regression behavior, threshold gating and failed-report/nonzero contract.
-They are not live evaluation tests. Root runner needs only standard
+The C# test harness is the current offline test command. It verifies the Foundry auth
+scope, agent/Responses/evaluation REST request shapes, result matching, failure/timeout
+gates, release regression behavior and failed-report artifact serialization using mocked
+HTTP only. It makes no cloud calls. The retained Python test suite is transitional and
+its workflow-equivalence assertion no longer applies while the shared workflow remains
+Python. Root runner needs only standard
 `endpoint`/`deployment`/`projectEndpoint` mappings.
 
-The SDK is pinned to the new Foundry `azure-ai-projects==2.7.0` evaluation API;
-cloud evaluation availability is regional and preview behavior may change. Public
+The transitional Python path uses the Foundry `azure-ai-projects==2.7.0` evaluation API.
+The C# runner uses Azure CLI OAuth and the supported Foundry REST endpoints. Cloud
+evaluation availability is regional and preview behavior may change. Public
 Azure endpoints and public networking only. GPT-4.1-mini `2025-04-14` uses
 GlobalStandard capacity 10 in East US 2 by default; processing may leave that region.
-Project operations use `DefaultAzureCredential`; locally, ensure it selects the
-principal granted Foundry User rather than an unrelated configured
-environment/workload identity. A three-item dataset is illustrative,
+Project operations in the Python path use `DefaultAzureCredential`; ensure it selects
+the principal granted Foundry User rather than an unrelated configured
+environment/workload identity. The C# path uses the current Azure CLI login. A three-item dataset is illustrative,
 not a comprehensive release certification. No retry masks judge/infra errors.
 Each run incurs model generation and cloud judge token/evaluation costs; no hosted
 container or private endpoint is provisioned. GitHub Actions minutes/artifact

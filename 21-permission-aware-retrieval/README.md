@@ -6,10 +6,36 @@ authenticated user/group identities. Prompt text can never supply or change ACLs
 This is application-enforced security trimming, **not** Search's native token-based
 document ACL feature, and not proof that two invented names authenticate.
 
+## .NET 10 file-based runner
+
+`demo.cs` is the primary runner; it uses Azure CLI tokens and service REST APIs, with no
+NuGet library dependencies. The retained `demo.py`, `test_demo.py`, and `requirements.txt`
+are transitional Python references/compatibility path; they remain unchanged.
+
+Run from this directory. The local NuGet config keeps this package-free runner's restore
+independent of user-level package-source settings:
+
+```sh
+mkdir -p .dotnet-home
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet restore demo.cs --configfile NuGet.Config
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet build demo.cs --no-restore
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet restore test_demo.cs --configfile NuGet.Config
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet build test_demo.cs --no-restore
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --help
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --preflight
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file test_demo.cs --no-build --no-restore
+```
+
+Preflight and live-run environment variables, two real Graph-authenticated users,
+service setup, ACL checks, and cost/security limitations are the same as below. The
+offline test command never calls Azure or accepts a synthetic identity as live proof.
+
 ## Tenant prerequisites (complete before the live runner)
 
-- Python 3.10+, Azure CLI/Bicep, an Azure subscription and two different test **users
+- Azure CLI/Bicep, an Azure subscription and two different test **users
   in the same tenant**. Use synthetic documents and dedicated accounts where possible.
+- Python 3.10+ and `requirements.txt` are needed only for the transitional Python runner.
 - The presenter/backend deployer needs resource creation and role-assignment rights
   (e.g. Contributor plus User Access Administrator). Register
   `Microsoft.CognitiveServices` and `Microsoft.Search` if needed.
@@ -29,16 +55,19 @@ document ACL feature, and not proof that two invented names authenticate.
   direct Search access in an application relying on this filter.
 
 From this directory, establish separate sessions (these setup logins are interactive;
-`demo.py` itself is not):
+the Python and C# runners themselves are not):
 
 ```sh
+mkdir -p .dotnet-home
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet restore demo.cs --configfile NuGet.Config
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet build demo.cs --no-restore
 export AZURE_TENANT_ID=YOUR_TENANT_UUID
 az login --tenant "$AZURE_TENANT_ID"
 az account set --subscription YOUR_SUBSCRIPTION_ID
 export SECOND_AZURE_CONFIG_DIR="$PWD/.identity-b"
 AZURE_CONFIG_DIR="$SECOND_AZURE_CONFIG_DIR" az login \
   --tenant "$AZURE_TENANT_ID" --allow-no-subscriptions
-python3 demo.py --preflight
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --preflight
 ```
 
 Sign in as the **second** user in the second command; logging in twice as the same user
@@ -87,7 +116,7 @@ export AZURE_TENANT_ID="$(az account show --query tenantId -o tsv)"
 export SECOND_AZURE_CONFIG_DIR="$PWD/.identity-b"
 AZURE_CONFIG_DIR="$SECOND_AZURE_CONFIG_DIR" az login \
   --tenant "$AZURE_TENANT_ID" --allow-no-subscriptions --use-device-code
-python3 demo.py --preflight
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --preflight
 ```
 
 Complete the device login yourself as the **second user**, using a private browser
@@ -181,6 +210,10 @@ administrator remove only the dedicated account you created.
 
 ## Standalone deploy/run
 
+The Python venv/pip commands are not needed by the primary C# runner. `requirements.txt`
+and the Python entrypoint remain transitional; use the following C# flow after creating
+the Azure resources:
+
 ```sh
 export RG=rg-lab21
 export LOCATION=eastus2
@@ -191,21 +224,20 @@ az deployment group create --resource-group "$RG" --name lab21 \
   --template-file infra/main.bicep \
   --parameters principalId="$PRINCIPAL_ID" location="$LOCATION" \
   --query properties.outputs -o json > .azure/outputs.json
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-export AZURE_OPENAI_ENDPOINT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["endpoint"]["value"])')
-export AZURE_OPENAI_DEPLOYMENT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["deployment"]["value"])')
-export AZURE_SEARCH_ENDPOINT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["searchEndpoint"]["value"])')
-python demo.py
+export AZURE_OPENAI_ENDPOINT=$(az deployment group show -g "$RG" -n lab21 --query properties.outputs.endpoint.value -o tsv)
+export AZURE_OPENAI_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab21 --query properties.outputs.deployment.value -o tsv)
+export AZURE_SEARCH_ENDPOINT=$(az deployment group show -g "$RG" -n lab21 --query properties.outputs.searchEndpoint.value -o tsv)
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore
 ```
 
-Run `python3 demo.py --preflight` **before deployment**. This uses only the standard
-library and Azure CLI, authenticates both real users and checks the optional group,
-without provisioning anything or calling Search/model inference.
+Run `HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore -- --preflight` **before
+deployment** for the primary runner. It authenticates both real users and checks the
+optional group without provisioning anything or calling Search/model inference.
+`python3 demo.py --preflight` remains available as the transitional Python equivalent.
 Missing two-user setup produces an explicit preflight error, never a fake access proof.
-These outputs match root `deploy.py`; it must inherit `AZURE_TENANT_ID` and
-`SECOND_AZURE_CONFIG_DIR` and invoke this preflight before provisioning this lab.
+The root `deploy.py` reference is the separate transitional Python orchestrator, not this
+lab's primary C# app; it must inherit `AZURE_TENANT_ID` and `SECOND_AZURE_CONFIG_DIR`
+and invoke the Python preflight before provisioning this lab.
 No project endpoint is needed.
 `endpoint` is the inference service root; the app appends `/openai/v1/`.
 The Bicep roles are Foundry User (role ID
@@ -219,7 +251,7 @@ namespaced by tenant. For a group ACL demonstration, optionally set:
 
 ```sh
 export RESTRICTED_GROUP_ID=YOUR_EXISTING_ENTRA_GROUP_UUID
-python demo.py
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file demo.cs --no-build --no-restore
 unset RESTRICTED_GROUP_ID
 ```
 
@@ -267,16 +299,21 @@ credential and the caller's effective document access are deliberately separate.
 ## Offline tests and Bicep validation
 
 ```sh
+HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file test_demo.cs --no-build --no-restore
 python3 -m unittest -v test_demo.py
 mkdir -p .azure
 az bicep build --file infra/main.bicep --stdout > .azure/template.json
 ```
 
-Offline tests need no installed SDKs or credentials. They use explicitly synthetic
+The C# offline test uses explicitly synthetic
 UUID fixtures to test filter construction, prompt independence, Graph authentication
-failures/pagination, group validation, public/restricted ACLs and output quote/citation
-rejection. **Offline fixtures are not live authentication or access-control proof.**
-Only an actual two-user cloud run can verify tenant setup and Search enforcement.
+resource/tenant arguments, Graph bearer/consistency headers and origin rejection,
+Search request shape and trusted filter, group validation, public/restricted ACLs,
+extractive quote validation and Bicep region behavior. It uses mocked HTTP responses;
+it makes no Graph, Search or inference calls. **Offline fixtures are not live
+authentication or access-control proof.**
+The Python test file and dependency list are transitional and remain untouched. Only an
+actual two-user cloud run can verify tenant setup and Search enforcement.
 
 The provisioning helpers also have standalone offline PowerShell tests (no Graph
 module, credentials, or network access required):
