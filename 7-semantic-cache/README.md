@@ -11,6 +11,16 @@ comparison, Redis client, or embedding calls.
 > the Python instructions are transitional until the integration issue removes
 > that compatibility path.
 
+Restore and build each .NET 10 file app from this folder:
+
+```bash
+dotnet restore demo.cs && dotnet build demo.cs
+dotnet restore deploy_lab.cs && dotnet build deploy_lab.cs
+dotnet restore cleanup.cs && dotnet build cleanup.cs
+dotnet restore test_demo.cs && dotnet build test_demo.cs
+dotnet restore test_deploy_lab.cs && dotnet build test_deploy_lab.cs
+```
+
 ```text
 .NET 10 / any chat client
   -> APIM Consumption: validate caller, semantic-cache-lookup

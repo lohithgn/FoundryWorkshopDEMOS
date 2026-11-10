@@ -1,5 +1,63 @@
 # Supervised fine-tuning: classification and Polish domain knowledge
 
+## .NET 10 file-based apps (staged migration)
+
+The original Python files and dependency manifests remain unchanged temporarily
+for the repository-wide runner. Use the new C# entry points independently from
+this folder; each is a .NET 10 file-based app and has no project or solution:
+
+```bash
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet restore polish_demo.cs
+dotnet build polish_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs
+dotnet restore cleanup.cs
+dotnet build cleanup.cs
+dotnet restore test_demo.cs
+dotnet build test_demo.cs
+dotnet restore test_polish_demo.cs
+dotnet build test_polish_demo.cs
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file demo.cs -- --job-id "<job-id>" --wait
+dotnet run --file polish_demo.cs -- --help
+dotnet run --file polish_demo.cs -- --stage prepare --output .azure/my-polish-run
+dotnet run --file polish_demo.cs -- --stage compare --output .azure/my-polish-run
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file cleanup.cs -- --help
+```
+
+Set `AZURE_OPENAI_ENDPOINT` and authenticate with `az login` before running the
+managed demo. Running without `--job-id` uploads the training file and submits a
+new **paid** job. `deploy_lab.cs` provisions billable Azure resources and runs
+that live demo; do not invoke it without authorization and quota. The offline
+regression harnesses need no Azure credentials:
+
+```bash
+dotnet run --file test_demo.cs
+dotnet run --file test_polish_demo.cs
+```
+
+The managed C# path is covered by offline tests only; historic Python live
+training results below are not evidence that the C# path has been live-validated.
+
+**Polish MLX packaging blocker:** The .NET 10 `Itexoft.MLX` binding exposes MLX
+array/C APIs but not the `mlx-lm` model loader, Phi tokenizer/chat-template
+generation, or `mlx_lm.lora` trainer required by this example. The C# app
+faithfully implements offline data validation, scoring, preparation, manifest
+verification, and report comparison; `baseline`, `train`, and `evaluate` fail
+visibly with this native API blocker. It does not invoke Python or fabricate
+inference/training results. The historical local MLX results below were
+produced by the transitional Python app, not the C# app. Offline comparison
+requires actual baseline, training, and tuned reports (for example, retained
+experiment evidence); `prepare` alone does not produce them.
+
+**Transitional Python documentation:** Existing Python commands and Python live
+results below are retained for the repository-wide runner migration. They do
+not validate the new C# apps; use the .NET commands above for this port.
+
 This lab has two independent examples:
 
 1. **Managed Azure classification:** the original tiny support-ticket example,

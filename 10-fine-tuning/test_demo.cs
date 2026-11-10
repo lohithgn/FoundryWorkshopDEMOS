@@ -77,6 +77,23 @@ var sentJob = JsonNode.Parse(calls[2].Body!)!;
 Check(sentJob["trainingType"]?.GetValue<string>() == "GlobalStandard" &&
       sentJob["training_file"]?.GetValue<string>() == "file-1",
     "The API submission payload changed.");
+var processingCalls = 0;
+using var failedFileHttp = new HttpClient(new MockHandler(_ =>
+{
+    processingCalls++;
+    var response = processingCalls == 1
+        ? """{"id":"file-2","status":"uploaded"}"""
+        : """{"id":"file-2","status":"processed_with_errors","error":{"message":"invalid rows"}}""";
+    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(response) });
+}));
+var fileFailure = false;
+try
+{
+    await FineTuningDemo.SubmitAsync(failedFileHttp, "https://account.openai.azure.com", FineTuningDemo.Model,
+        FineTuningDemo.DataPath, "token", _ => Task.CompletedTask);
+}
+catch (InvalidOperationException error) { fileFailure = error.Message.Contains("Training file processing failed"); }
+Check(processingCalls == 2 && fileFailure, "A training file with processing errors reached job submission.");
 
 using var retrievalHttp = new HttpClient(new MockHandler(request =>
 {
@@ -118,6 +135,40 @@ finally
 }
 Check(FineTuningDemo.Parse(["--endpoint", "https://account.openai.azure.com", "--job-id", "job-1"]).JobId == "job-1",
     "Resume by job ID was not preserved.");
+var retryCalls = new List<(string? Key, string? Body)>();
+var retryCount = 0;
+using var retryHttp = new HttpClient(new MockHandler(request =>
+{
+    retryCalls.Add((request.Headers.GetValues("Idempotency-Key").Single(),
+        request.Content!.ReadAsStringAsync().GetAwaiter().GetResult()));
+    retryCount++;
+    return Task.FromResult(new HttpResponseMessage(retryCount == 1 ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK)
+    {
+        Content = new StringContent("""{"status":"ok"}""")
+    });
+}));
+using var retried = await FineTuningDemo.SendAsync(retryHttp, HttpMethod.Post, "https://account.openai.azure.com/test",
+    "token", new StringContent("""{"data":1}"""), retryDelay: (_, _) => Task.CompletedTask);
+Check(retryCount == 2 && retryCalls[0] == retryCalls[1] &&
+      retried.RootElement.GetProperty("status").GetString() == "ok",
+    "Transient retry did not retain the idempotency key and request body.");
+var badRequestCalls = 0;
+using var badRequestHttp = new HttpClient(new MockHandler(_ =>
+{
+    badRequestCalls++;
+    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
+    {
+        Content = new StringContent("invalid request")
+    });
+}));
+var badRequestFailed = false;
+try
+{
+    await FineTuningDemo.SendAsync(badRequestHttp, HttpMethod.Get, "https://account.openai.azure.com/test", "token",
+        retryDelay: (_, _) => Task.CompletedTask);
+}
+catch (HttpRequestException error) { badRequestFailed = error.Message.Contains("400"); }
+Check(badRequestCalls == 1 && badRequestFailed, "Non-retryable service failures were hidden or retried.");
 Console.WriteLine("PASS: fine-tuning offline regression checks");
 
 sealed class MockHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> send) : HttpMessageHandler

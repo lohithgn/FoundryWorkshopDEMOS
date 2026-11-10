@@ -1,9 +1,9 @@
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 
 public static class FineTuningDemo
 {
@@ -85,15 +85,60 @@ public static class FineTuningDemo
 
     public static async Task<JsonDocument> SendAsync(
         HttpClient http, HttpMethod method, string uri, string token, HttpContent? content = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, Func<TimeSpan, CancellationToken, Task>? retryDelay = null)
     {
-        using var request = new HttpRequestMessage(method, uri) { Content = content };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        using var response = await http.SendAsync(request, cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        if (!response.IsSuccessStatusCode)
-            throw new HttpRequestException($"Azure OpenAI returned {(int)response.StatusCode}: {body}");
-        return JsonDocument.Parse(string.IsNullOrWhiteSpace(body) ? "{}" : body);
+        retryDelay ??= (duration, cancellationToken) => Task.Delay(duration, cancellationToken);
+        var contentBytes = content is null ? null : await content.ReadAsByteArrayAsync(cancellationToken);
+        var contentHeaders = content?.Headers.ToArray() ?? [];
+        var idempotencyKey = method == HttpMethod.Post ? Guid.NewGuid().ToString("N") : null;
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                using var request = new HttpRequestMessage(method, uri);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (idempotencyKey is not null)
+                    request.Headers.TryAddWithoutValidation("Idempotency-Key", idempotencyKey);
+                if (contentBytes is not null)
+                {
+                    request.Content = new ByteArrayContent(contentBytes);
+                    foreach (var header in contentHeaders)
+                        request.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+                using var response = await http.SendAsync(request, cancellationToken);
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                if (response.IsSuccessStatusCode)
+                    return JsonDocument.Parse(string.IsNullOrWhiteSpace(body) ? "{}" : body);
+                if (attempt < 2 && IsRetryable(response.StatusCode))
+                {
+                    await retryDelay(GetRetryDelay(response, attempt), cancellationToken);
+                    continue;
+                }
+                throw new HttpRequestException($"Azure OpenAI returned {(int)response.StatusCode}: {body}", null, response.StatusCode);
+            }
+            catch (HttpRequestException error) when (error.StatusCode is null && attempt < 2)
+            {
+                await retryDelay(TimeSpan.FromSeconds(1 << attempt), cancellationToken);
+            }
+            catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested && attempt < 2)
+            {
+                await retryDelay(TimeSpan.FromSeconds(1 << attempt), cancellationToken);
+            }
+        }
+    }
+
+    private static bool IsRetryable(HttpStatusCode status) =>
+        status is HttpStatusCode.RequestTimeout or HttpStatusCode.Conflict or (HttpStatusCode)429 ||
+        (int)status >= 500;
+
+    private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
+    {
+        var retryAfter = response.Headers.RetryAfter;
+        var delay = retryAfter?.Delta ??
+            (retryAfter?.Date is { } date ? date - DateTimeOffset.UtcNow : TimeSpan.FromSeconds(1 << attempt));
+        return delay > TimeSpan.Zero && delay <= TimeSpan.FromSeconds(60)
+            ? delay
+            : TimeSpan.FromSeconds(1 << attempt);
     }
 
     public static async Task<JsonDocument> SubmitAsync(
@@ -120,8 +165,8 @@ public static class FineTuningDemo
                 $"{endpoint.TrimEnd('/')}/openai/v1/files/{Uri.EscapeDataString(fileId)}", token,
                 cancellationToken: cancellationToken);
             var status = fileState.RootElement.TryGetProperty("status", out var state) ? state.GetString() : null;
-            if (status is "processed" or "processed_with_errors") break;
-            if (status is "error" or "failed")
+            if (status == "processed") break;
+            if (status is "error" or "failed" or "processed_with_errors")
                 throw new InvalidOperationException($"Training file processing failed: {fileState.RootElement.GetRawText()}");
             if (deadline.Elapsed >= (fileTimeout ?? TimeSpan.FromMinutes(10)))
                 throw new TimeoutException($"Training file {fileId} is still processing.");

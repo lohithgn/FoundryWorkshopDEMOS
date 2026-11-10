@@ -14,6 +14,15 @@ It uses the real managed knowledge-base API, **not a local RAG imitation**.
 > unchanged for the repository-wide runner. Use the .NET 10 file-app commands;
 > Python runner references are transitional until issue #1 completes integration.
 
+Restore and build each .NET 10 file app from this folder:
+
+```bash
+dotnet restore demo.cs && dotnet build demo.cs
+dotnet restore deploy_lab.cs && dotnet build deploy_lab.cs
+dotnet restore cleanup.cs && dotnet build cleanup.cs
+dotnet restore test_demo.cs && dotnet build test_demo.cs
+```
+
 To keep it small, this example uses a text index and semantic ranker rather than
 the quickstart's vector index/NASA corpus. No embedding model, storage account,
 hosted agent, Foundry portal connection, or UI is needed. It demonstrates the

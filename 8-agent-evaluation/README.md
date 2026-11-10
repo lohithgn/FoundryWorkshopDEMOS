@@ -10,6 +10,15 @@ scores. This is not a local string comparison presented as a Foundry evaluation.
 > Python instructions in the historical record are transitional until issue #1
 > completes the shared-runner cutover.
 
+Restore and build each .NET 10 file app from this folder:
+
+```bash
+dotnet restore demo.cs && dotnet build demo.cs
+dotnet restore deploy_lab.cs && dotnet build deploy_lab.cs
+dotnet restore cleanup.cs && dotnet build cleanup.cs
+dotnet restore test_demo.cs && dotnet build test_demo.cs
+```
+
 ## Deploy
 
 Requires the .NET 10 SDK, Azure CLI with Bicep, resource creation and role-assignment
