@@ -44,6 +44,7 @@ static class AgentSkills
         var project = endpoint!.TrimEnd('/');
         string? skillName = null;
         var agents = new List<(string Name, string Version)>();
+        Exception? operationFailure = null;
         try
         {
             skillName = "workshop-brief-" + Guid.NewGuid().ToString("N")[..12];
@@ -92,12 +93,30 @@ static class AgentSkills
             Console.WriteLine("Both requests used independent conversations; the skill supplies instructions, not executable tools.");
             return 0;
         }
+        catch (Exception error)
+        {
+            operationFailure = error;
+            throw;
+        }
         finally
         {
+            var cleanupErrors = new List<string>();
             foreach (var (name, version) in agents.AsEnumerable().Reverse())
-                await Delete(http, credential, project, $"/agents/{Uri.EscapeDataString(name)}/versions/{Uri.EscapeDataString(version)}");
+            {
+                try { await Delete(http, credential, project, $"/agents/{Uri.EscapeDataString(name)}/versions/{Uri.EscapeDataString(version)}"); }
+                catch (Exception error) { cleanupErrors.Add($"agent {name}/{version}: {error.GetType().Name}"); }
+            }
             if (skillName is not null)
-                await Delete(http, credential, project, $"/skills/{Uri.EscapeDataString(skillName)}");
+            {
+                try { await Delete(http, credential, project, $"/skills/{Uri.EscapeDataString(skillName)}"); }
+                catch (Exception error) { cleanupErrors.Add($"skill {skillName}: {error.GetType().Name}"); }
+            }
+            if (cleanupErrors.Count > 0)
+            {
+                var message = "Cleanup failed; remove temporary resources manually: " + string.Join("; ", cleanupErrors);
+                if (operationFailure is null) throw new AggregateException(message);
+                Console.Error.WriteLine(message);
+            }
         }
     }
 

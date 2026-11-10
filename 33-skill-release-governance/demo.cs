@@ -38,9 +38,12 @@ static class ReleaseDemo
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(90) };
         var credential = new AzureCliCredential();
         string? originalVersion = null;
+        var skillCreated = false;
+        Exception? operationFailure = null;
         try
         {
             var first = await CreateSkill(http, credential, project, name, firstBody, true);
+            skillCreated = true;
             originalVersion = Required(first, "version");
             bodies[originalVersion] = firstBody;
             codes[originalVersion] = "PRICING-V1";
@@ -69,11 +72,30 @@ static class ReleaseDemo
             Console.WriteLine("Verified candidate gate, default promotion, pinned isolation and rollback.");
             return 0;
         }
+        catch (Exception error)
+        {
+            operationFailure = error;
+            throw;
+        }
         finally
         {
+            var cleanupErrors = new List<string>();
             if (originalVersion is not null)
-                await SetDefault(http, credential, project, name, originalVersion);
-            await Delete(http, credential, project, "/skills/" + Uri.EscapeDataString(name));
+            {
+                try { await SetDefault(http, credential, project, name, originalVersion); }
+                catch (Exception error) { cleanupErrors.Add($"default restore: {error.GetType().Name}"); }
+            }
+            if (skillCreated)
+            {
+                try { await Delete(http, credential, project, "/skills/" + Uri.EscapeDataString(name)); }
+                catch (Exception error) { cleanupErrors.Add($"skill deletion: {error.GetType().Name}"); }
+            }
+            if (cleanupErrors.Count > 0)
+            {
+                var message = "Cleanup failed; remove the temporary skill manually: " + string.Join("; ", cleanupErrors);
+                if (operationFailure is null) throw new AggregateException(message);
+                Console.Error.WriteLine(message);
+            }
         }
     }
 
@@ -131,9 +153,7 @@ static class ReleaseDemo
                 throw new InvalidOperationException($"Pricing agent failed: {response["status"]}; {response["error"]}");
             var value = JsonNode.Parse(text) as JsonObject;
             var price = workshop == "intro" ? 25 : 50;
-            if (value is null || (string?)value["workshop"] != workshop ||
-                (int?)value["unit_price"] != price || (string?)value["currency"] != "USD" ||
-                (string?)value["skill_code"] != codes[resolved] || value.Count != 4)
+            if (!MatchesContract(value, workshop, price, codes[resolved]))
                 throw new InvalidOperationException($"Release gate failed: unexpected response {text}.");
             Console.WriteLine($"PASS {consumer}: {resolved} {workshop} {text}");
             return resolved;
@@ -197,6 +217,15 @@ static class ReleaseDemo
     static string Required(JsonObject node, string key) =>
         node[key]?.GetValue<string>() ?? throw new InvalidDataException($"Foundry response is missing {key}.");
 
+    static bool MatchesContract(JsonObject? value, string workshop, int price, string code)
+    {
+        return value is not null && value.Count == 4 &&
+               (string?)value["workshop"] == workshop &&
+               value["unit_price"] is JsonValue priceNode && priceNode.TryGetValue<int>(out var actualPrice) &&
+               actualPrice == price && (string?)value["currency"] == "USD" &&
+               (string?)value["skill_code"] == code;
+    }
+
     static string? Value(string[] args, string name)
     {
         var index = Array.IndexOf(args, name);
@@ -207,12 +236,30 @@ static class ReleaseDemo
 
     static int SelfTest()
     {
+        var correct = new JsonObject
+        {
+            ["workshop"] = "intro", ["unit_price"] = 25,
+            ["currency"] = "USD", ["skill_code"] = "PRICING-V1"
+        };
+        var wrongPrice = (JsonObject)correct.DeepClone();
+        wrongPrice["unit_price"] = 40;
+        var booleanPrice = (JsonObject)correct.DeepClone();
+        booleanPrice["unit_price"] = true;
+        var extra = (JsonObject)correct.DeepClone();
+        extra["extra"] = true;
+        var regression = Body("v2").Replace("USD 25", "USD 40", StringComparison.Ordinal);
         if (!Body("v1").Contains("USD 25", StringComparison.Ordinal) ||
             !Body("v2").Contains("USD 25", StringComparison.Ordinal) ||
             !Body("v1").Contains("PRICING-V1", StringComparison.Ordinal) ||
-            !Body("v2").Contains("PRICING-V2", StringComparison.Ordinal))
+            !Body("v2").Contains("PRICING-V2", StringComparison.Ordinal) ||
+            !MatchesContract(correct, "intro", 25, "PRICING-V1") ||
+            MatchesContract(wrongPrice, "intro", 25, "PRICING-V1") ||
+            MatchesContract(booleanPrice, "intro", 25, "PRICING-V1") ||
+            MatchesContract(extra, "intro", 25, "PRICING-V1") ||
+            MatchesContract(new JsonObject { ["workshop"] = "intro", ["unit_price"] = 40, ["currency"] = "USD", ["skill_code"] = "PRICING-V2" }, "intro", 25, "PRICING-V2") ||
+            !regression.Contains("USD 40", StringComparison.Ordinal))
             throw new InvalidOperationException("Versioned pricing skill content changed unexpectedly.");
-        Console.WriteLine("PASS: original pricing versions remain distinct and contain the expected release gate.");
+        Console.WriteLine("PASS: immutable skill markers and strict release-gate price/schema checks.");
         return 0;
     }
 }
