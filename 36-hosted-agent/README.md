@@ -13,13 +13,98 @@ agent identity, and routes requests through an authenticated Invocations endpoin
 using container protocol **2.0.0**. There is no legacy application deployment or
 local workflow fallback. The sample is framework-independent custom code.
 
+## .NET 10 file-based counterpart
+
+Requires the .NET 10 SDK. The `.cs` files are independent .NET 10 file-based applications; no project,
+solution, or Python wrapper is used. The C# runtime uses the official
+`Azure.AI.AgentServer.Invocations` SDK (protocol 2.0.0), listens on port **8088**,
+requires Foundry's authenticated `x-agent-user-id` for state partitioning, forwards
+the platform call ID and client headers, and uses `DefaultAzureCredential` for
+model access. Offline regression tests exercise bounded UI-body reads, request bounds,
+exact tool/response schemas, pricing, durable session state, hashed user isolation,
+and session-ID validation.
+
+From this directory, the exact offline restore/build/test and safe CLI checks are:
+
+```bash
+mkdir -p .dotnet-tmp
+export TMPDIR="$PWD/.dotnet-tmp"
+trap 'rm -rf "$PWD/.dotnet-artifacts" "$PWD/.dotnet-tmp"' EXIT
+dotnet restore demo.cs
+dotnet restore deploy_lab.cs
+dotnet restore ui.cs
+dotnet restore test_demo.cs
+dotnet restore runtime/agent.cs
+dotnet build demo.cs --no-restore
+dotnet build deploy_lab.cs --no-restore
+dotnet build ui.cs --no-restore
+dotnet build test_demo.cs --no-restore
+dotnet build runtime/agent.cs --no-restore
+dotnet run --file test_demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file ui.cs -- --help
+```
+
+`dotnet run --file runtime/agent.cs` starts the authenticated server and should
+only be used inside a properly configured hosted container; it is not an offline
+test command. The C# client can invoke and verify an existing deployment, but cannot
+publish its own runtime image while the required Dockerfile remains Python-only.
+`demo.cs --publish` and full `deploy_lab.cs` therefore fail closed before an image
+build or cloud mutation. `deploy_lab.cs --infra-only` is a cloud operation, not a
+test; do not run it for offline validation.
+
+**Runtime/Docker conflict (intentional and unresolved):** the required existing
+`runtime/Dockerfile` is Python-based and launches `agent.py`. Per the request it
+is unchanged, so ACR Tasks still build and deploy the Python runtime; the compiled
+C# `runtime/agent.cs` is not present in that image. The minimal packaging exception
+needed to make the C# runtime deployable is approval to replace that Dockerfile (or
+add a separately selected `Dockerfile.net10`) with a .NET 10 SDK build/publish
+stage and .NET 10 ASP.NET runtime stage, preserving port 8088, protocol 2.0.0,
+managed-identity auth, and the same environment variables. Hosted-agent management
+APIs are available through the prerelease .NET SDK, but that does not make the
+unchanged Python image capable of running C#. Until packaging is approved, the Python runtime/deployment steps
+below are the **transitional compatibility path** and remain the only end-to-end
+cloud route. Existing Python source and requirements files are intentionally
+unchanged.
+
+The smallest packaging exception would be an additional `runtime/Dockerfile.net10`
+selected only by an explicitly approved publisher:
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY agent.cs .
+RUN dotnet publish agent.cs -c Release -o /publish
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=build /publish/ .
+ENV ASPNETCORE_URLS=http://0.0.0.0:8088
+EXPOSE 8088
+ENTRYPOINT ["dotnet", "agent.dll"]
+```
+
+No such Dockerfile or publisher change is made here.
+
+Cloud-backed C# commands (not part of offline validation; model calls, builds, or
+resource provisioning can incur charges):
+
+```bash
+dotnet run --file deploy_lab.cs -- --infra-only
+dotnet run --file demo.cs -- --live-test
+dotnet run --file ui.cs -- --port 8036
+```
+
+`dotnet run --file demo.cs -- --publish` and unqualified `deploy_lab.cs` are
+intentionally rejected until the C# image packaging exception is approved.
+
 The simple UI shows the actual quote, model response IDs, function call ID,
 cloud sandbox instance, session marker/counter, and trace ID. A repeated session
 retains its filesystem state; a new session starts independently. These are two
 sessions of the same authenticated presenter, **not a two-user isolation test**.
 The live gate also requires actual ingested Azure Monitor telemetry.
 
-## Prerequisites
+## Transitional Python prerequisites
 
 - Python 3.10+, Azure CLI with Bicep, and `az login` as a user who can create
   resources and role assignments in the selected subscription.
@@ -32,7 +117,7 @@ Azure builds the Linux/AMD64 image using ACR Tasks: **local Docker is not needed
 No API keys, registry admin credentials, or user tokens are baked into the image.
 The browser never receives an Azure access token.
 
-## Deploy and test
+## Transitional Python deploy and test
 
 From this directory:
 
@@ -71,7 +156,7 @@ To publish changes to the runtime, run `.venv/bin/python demo.py --publish`
 before retesting. Publishing a version is a paid cloud build and deployment,
 not part of an ordinary UI request.
 
-## See it work
+## Transitional Python UI
 
 ```bash
 .venv/bin/python ui.py
