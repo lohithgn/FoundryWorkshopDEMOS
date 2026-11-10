@@ -1,5 +1,27 @@
 # 28 - Agent using a reusable Foundry skill
 
+## .NET 10 file-based app
+
+The runnable C# entry points are `demo.cs` and `test_demo.cs`; no project or
+solution file is required. From this folder, restore/build and run the offline
+regression harness with:
+
+```bash
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file demo.cs -- --title "Responsible AI workshop"
+```
+
+The live command requires .NET 10, Azure CLI, `az login`, the documented project
+endpoint and deployment, plus preview Skills API access. Live Azure behavior has
+not been run as part of this migration.
+
+The original Python files and the Python commands below are retained unchanged
+temporarily for the root runner during staged integration. They are transitional,
+not the .NET execution path.
+
 Store a reusable workshop procedure in the **preview Foundry Skills API**, pin
 its immutable version, and use its downloaded instructions in a real Foundry
 prompt agent. This follows the direct-injection concept from
