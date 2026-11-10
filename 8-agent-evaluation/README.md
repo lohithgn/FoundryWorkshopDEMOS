@@ -5,9 +5,14 @@ ask two questions, retain its actual answers and stored response IDs, and evalua
 the question/answer pairs using `builtin.coherence`. Print run metadata, result counts, and per-item
 scores. This is not a local string comparison presented as a Foundry evaluation.
 
+> **Migration note:** Python sources and requirements are temporarily retained
+> unchanged for the repository-wide runner. Use the .NET 10 file-app commands;
+> Python instructions in the historical record are transitional until issue #1
+> completes the shared-runner cutover.
+
 ## Deploy
 
-Requires Python 3.10+, Azure CLI with Bicep, resource creation and role-assignment
+Requires the .NET 10 SDK, Azure CLI with Bicep, resource creation and role-assignment
 permissions, and Foundry Agent Service/cloud evaluation support and model quota
 in the selected region. Cloud response evaluation uses preview Foundry APIs.
 The template creates a Foundry account, project, `gpt-4.1-mini` deployment
@@ -32,13 +37,20 @@ export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RESOURCE_GROUP" 
   -n demo --query properties.outputs.deployment.value -o tsv)"
 ```
 
+Alternatively, run the standalone lifecycle app from this directory:
+
+```bash
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs
+dotnet run --file deploy_lab.cs -- --location eastus2
+```
+
 ## Run and present
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet run --file demo.cs --
 ```
 
 1. Show the agent's two answers and their stored response IDs.
@@ -99,9 +111,22 @@ incorrect product claims. This small lab does not verify groundedness or accurac
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
-az group delete --name "$RESOURCE_GROUP" --yes
+dotnet restore test_demo.cs
+dotnet build test_demo.cs
+dotnet run --file test_demo.cs
+dotnet restore cleanup.cs
+dotnet build cleanup.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file cleanup.cs -- --help
+# Destructive; run only with authorization:
+dotnet run --file cleanup.cs --
 ```
+
+The standalone .NET cleanup command is `dotnet run --file cleanup.cs --`; it
+deletes only the recorded, ownership-checked resource group. Do not run deployment
+or cleanup without separate authorization. The retained Python lifecycle files
+are transitional compatibility only.
 
 Generation and judge requests are billed. Both project and presenter RBAC may
 need time to propagate after deployment. Use **projectEndpoint**, not the
