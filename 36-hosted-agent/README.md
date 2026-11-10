@@ -20,9 +20,9 @@ solution, or Python wrapper is used. The C# runtime uses the official
 `Azure.AI.AgentServer.Invocations` SDK (protocol 2.0.0), listens on port **8088**,
 requires Foundry's authenticated `x-agent-user-id` for state partitioning, forwards
 the platform call ID and client headers, and uses `DefaultAzureCredential` for
-model access. Offline regression tests exercise bounded UI-body reads, request bounds,
-exact tool/response schemas, pricing, durable session state, hashed user isolation,
-and session-ID validation.
+model access. Offline regression tests exercise bounded UI and runtime body reads
+(including unknown content length), request bounds, exact tool/response schemas,
+pricing, durable session state, hashed user isolation, and session-ID validation.
 
 From this directory, the exact offline restore/build/test and safe CLI checks are:
 

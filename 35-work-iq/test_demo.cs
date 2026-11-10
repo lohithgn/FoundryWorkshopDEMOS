@@ -35,6 +35,22 @@ internal static class TestDemo
 
     private static async Task<int> Main()
     {
+        var armTokenArgs = WorkIq.Demo.TokenArguments(Tenant, WorkIq.Demo.TokenAudience.Arm);
+        var foundryTokenArgs = WorkIq.Demo.TokenArguments(Tenant, WorkIq.Demo.TokenAudience.Foundry);
+        var graphTokenArgs = WorkIq.Demo.TokenArguments(Tenant, WorkIq.Demo.TokenAudience.Graph);
+        Equal(WorkIq.Demo.ArmResource, WorkIq.Demo.TokenResource(WorkIq.Demo.TokenAudience.Arm),
+            "ARM token resource");
+        Equal(WorkIq.Demo.FoundryResource, WorkIq.Demo.TokenResource(WorkIq.Demo.TokenAudience.Foundry),
+            "Foundry token resource");
+        True(WorkIq.Demo.TokenResource(WorkIq.Demo.TokenAudience.Arm) !=
+             WorkIq.Demo.TokenResource(WorkIq.Demo.TokenAudience.Foundry),
+            "ARM and Foundry audiences are distinct");
+        True(armTokenArgs.Contains(WorkIq.Demo.ArmResource) &&
+             foundryTokenArgs.Contains(WorkIq.Demo.FoundryResource) &&
+             !foundryTokenArgs.Contains(WorkIq.Demo.ArmResource),
+            "CLI token requests use the correct control/data-plane resources");
+        True(graphTokenArgs.Contains("ms-graph"), "Graph identity uses its own token audience");
+
         Equal(true, WorkIq.Demo.ConfigureHelpRequested(["--help"]), "connection help option");
         Throws<ArgumentException>(() => WorkIq.Demo.ConfigureHelpRequested(["--typo"]),
             "unsupported", "reject connection option typo");

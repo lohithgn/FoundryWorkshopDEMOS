@@ -35,11 +35,9 @@ public sealed class HostedInvocationHandler : InvocationHandler
         JsonDocument requestJson;
         try
         {
-            requestJson = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
-            if (requestJson.RootElement.ValueKind != JsonValueKind.Object
-                || !requestJson.RootElement.TryGetProperty("attendees", out var a)
-                || a.ValueKind != JsonValueKind.Number || !a.TryGetInt32(out var count) || count is < 1 or > 20)
-                throw new ArgumentException("attendees must be an integer from 1 to 20");
+            requestJson = await HostedAgent.HostedCore.ReadBoundedJsonAsync(
+                request.Body, request.ContentLength, cancellationToken, allowUndeclaredContentLength: true);
+            HostedAgent.HostedCore.ValidateAttendees(requestJson.RootElement);
         }
         catch (Exception ex) when (ex is JsonException or ArgumentException)
         {
@@ -47,6 +45,7 @@ public sealed class HostedInvocationHandler : InvocationHandler
             await response.WriteAsJsonAsync(new { error = ex.Message }, cancellationToken);
             return;
         }
+        using var requestDocument = requestJson;
         var attendees = requestJson.RootElement.GetProperty("attendees").GetInt32();
         var userId = context.PlatformContext.UserIdKey;
         if (string.IsNullOrEmpty(userId))

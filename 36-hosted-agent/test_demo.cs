@@ -33,6 +33,20 @@ using (var truncatedStream = new MemoryStream(Encoding.UTF8.GetBytes("{\"attende
     try { await HostedAgent.HostedCore.ReadBoundedJsonAsync(truncatedStream, 20, CancellationToken.None); throw new Exception("accepted truncated body"); }
     catch (ArgumentException) { Check(true, "truncated request body rejected"); }
 }
+using (var undeclaredStream = new MemoryStream(validBody))
+using (var undeclaredJson = await HostedAgent.HostedCore.ReadBoundedJsonAsync(
+    undeclaredStream, null, CancellationToken.None, allowUndeclaredContentLength: true))
+    Check(HostedAgent.HostedCore.ValidateAttendees(undeclaredJson.RootElement) == 3, "undeclared-length runtime body accepted within limit");
+using (var emptyUndeclared = new MemoryStream())
+{
+    try { await HostedAgent.HostedCore.ReadBoundedJsonAsync(emptyUndeclared, null, CancellationToken.None, allowUndeclaredContentLength: true); throw new Exception("accepted empty undeclared body"); }
+    catch (ArgumentException) { Check(true, "empty undeclared runtime body rejected"); }
+}
+using (var oversizedUndeclared = new MemoryStream(new byte[8192]))
+{
+    try { await HostedAgent.HostedCore.ReadBoundedJsonAsync(oversizedUndeclared, null, CancellationToken.None, allowUndeclaredContentLength: true); throw new Exception("accepted oversized undeclared body"); }
+    catch (ArgumentException) { Check(oversizedUndeclared.Position == 4097, "oversized undeclared runtime body stops at limit plus one"); }
+}
 HostedAgent.HostedCore.ValidateToolArguments(JsonDocument.Parse("""{"attendees":3}""").RootElement, 3);
 Check(true, "exact tool arguments accepted");
 try

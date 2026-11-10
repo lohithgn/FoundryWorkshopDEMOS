@@ -20,9 +20,26 @@ public static class HostedCore
         return attendees;
     }
 
-    public static async Task<JsonDocument> ReadBoundedJsonAsync(Stream body, long? contentLength, CancellationToken cancellationToken)
+    public static async Task<JsonDocument> ReadBoundedJsonAsync(
+        Stream body, long? contentLength, CancellationToken cancellationToken, bool allowUndeclaredContentLength = false)
     {
-        if (contentLength is null or < 1 or > 4096)
+        if (contentLength is null)
+        {
+            if (!allowUndeclaredContentLength)
+                throw new ArgumentException("Request body must be 1-4096 bytes");
+            var bounded = new byte[4097];
+            var total = 0;
+            while (total < bounded.Length)
+            {
+                var read = await body.ReadAsync(bounded.AsMemory(total), cancellationToken);
+                if (read == 0) break;
+                total += read;
+            }
+            if (total == 0) throw new ArgumentException("Request body must be 1-4096 bytes");
+            if (total > 4096) throw new ArgumentException("Request body must be 1-4096 bytes");
+            return JsonDocument.Parse(bounded.AsMemory(0, total));
+        }
+        if (contentLength is < 1 or > 4096)
             throw new ArgumentException("Request body must be 1-4096 bytes");
         var buffer = new byte[(int)contentLength.Value];
         try

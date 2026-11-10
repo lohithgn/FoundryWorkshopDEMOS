@@ -29,7 +29,7 @@ internal static class ConfigureConnectionApp
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
             using var request = WorkIq.Demo.Request(HttpMethod.Put,
                 WorkIq.Demo.Arm + config.ProjectResourceId + "/connections/" + WorkIq.Demo.Connection + "?api-version=2025-04-01-preview",
-                WorkIq.Demo.GetToken(config.TenantId), body);
+                WorkIq.Demo.GetToken(config.TenantId, WorkIq.Demo.TokenAudience.Arm), body);
             using var response = await http.SendAsync(request);
             if (response.StatusCode is not (System.Net.HttpStatusCode.OK or System.Net.HttpStatusCode.Created))
                 throw new InvalidOperationException($"Connection creation failed: HTTP {(int)response.StatusCode}; request ID {RequestId(response)}.");

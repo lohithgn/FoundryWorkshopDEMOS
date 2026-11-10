@@ -21,6 +21,9 @@ using System.Text.Json.Nodes;
 internal static class Demo
 {
     internal const string Arm = "https://management.azure.com";
+    internal const string ArmResource = "https://management.azure.com/";
+    internal const string FoundryResource = "https://ai.azure.com/";
+    internal const string GraphResource = "https://graph.microsoft.com/";
     internal const string Target = "https://workiq.svc.cloud.microsoft/a2a/";
     internal const string Connection = "work-iq-user-oauth";
     internal const string Agent = "work-iq-user-agent";
@@ -44,6 +47,7 @@ internal static class Demo
     internal sealed record Actor(string UserId, string UserPrincipalName);
     internal sealed record Binding(string Tenant, Actor Actor, string Project, string Connection,
         string Agent, string Version, string QuestionSha256);
+    internal enum TokenAudience { Arm, Foundry, Graph }
     internal sealed record RunOptions(bool Help, bool ValidateConfig, bool AskOnly, bool Resume,
         bool ShowConsent, int Repetitions, string[]? IsolationReports);
 
@@ -342,20 +346,37 @@ internal static class Demo
         return string.IsNullOrWhiteSpace(source) ? Directory.GetCurrentDirectory() : source;
     }
 
-    internal static string GetToken(string tenant, bool graph = false)
+    internal static string TokenResource(TokenAudience audience) => audience switch
     {
-        var start = new ProcessStartInfo("az") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
-        start.ArgumentList.Add("account"); start.ArgumentList.Add("get-access-token");
-        start.ArgumentList.Add("--tenant"); start.ArgumentList.Add(tenant);
-        if (graph)
+        TokenAudience.Arm => ArmResource,
+        TokenAudience.Foundry => FoundryResource,
+        TokenAudience.Graph => GraphResource,
+        _ => throw new ArgumentOutOfRangeException(nameof(audience))
+    };
+
+    internal static string[] TokenArguments(string tenant, TokenAudience audience)
+    {
+        var args = new List<string> { "account", "get-access-token", "--tenant", tenant };
+        if (audience == TokenAudience.Graph)
         {
-            start.ArgumentList.Add("--resource-type"); start.ArgumentList.Add("ms-graph");
+            args.Add("--resource-type");
+            args.Add("ms-graph");
         }
         else
         {
-            start.ArgumentList.Add("--resource"); start.ArgumentList.Add(Arm + "/");
+            args.Add("--resource");
+            args.Add(TokenResource(audience));
         }
-        start.ArgumentList.Add("--output"); start.ArgumentList.Add("json");
+        args.Add("--output");
+        args.Add("json");
+        return args.ToArray();
+    }
+
+    internal static string GetToken(string tenant, TokenAudience audience)
+    {
+        var start = new ProcessStartInfo("az") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+        foreach (var argument in TokenArguments(tenant, audience))
+            start.ArgumentList.Add(argument);
         using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start Azure CLI.");
         var stdout = process.StandardOutput.ReadToEnd();
         process.WaitForExit();
@@ -389,7 +410,7 @@ internal static class Demo
     internal static async Task<Actor> CallerIdentityAsync(HttpClient http, string tenant)
     {
         using var request = Request(HttpMethod.Get,
-            "https://graph.microsoft.com/v1.0/me?$select=id,userPrincipalName", GetToken(tenant, graph: true));
+            "https://graph.microsoft.com/v1.0/me?$select=id,userPrincipalName", GetToken(tenant, TokenAudience.Graph));
         var value = await SendJsonAsync(http, request);
         var principal = value["userPrincipalName"]?.GetValue<string>();
         if (!Guid.TryParse(value["id"]?.GetValue<string>(), out var id) || string.IsNullOrWhiteSpace(principal))
@@ -400,7 +421,7 @@ internal static class Demo
     internal static async Task CheckConnectionAsync(HttpClient http, Config config)
     {
         var url = Arm + config.ConnectionId + "?api-version=2025-04-01-preview";
-        using var request = Request(HttpMethod.Get, url, GetToken(config.TenantId));
+        using var request = Request(HttpMethod.Get, url, GetToken(config.TenantId, TokenAudience.Arm));
         using var response = await http.SendAsync(request);
         if (response.StatusCode == HttpStatusCode.NotFound)
             throw new InvalidOperationException("Work IQ OAuth connection is missing. Complete administrator setup and run configure_connection.cs.");
@@ -450,7 +471,7 @@ internal static class Demo
         var report = new JsonObject { ["complete"] = false, ["cases"] = new JsonArray(), ["timestamp"] = DateTimeOffset.UtcNow.ToString("O") };
         try
         {
-            var token = GetToken(config.TenantId);
+            var token = GetToken(config.TenantId, TokenAudience.Foundry);
             var agentUrl = config.ProjectEndpoint + "/agents/" + Uri.EscapeDataString(Agent) + "?api-version=" + ApiVersion;
             JsonNode agent;
             if (askOnly)
