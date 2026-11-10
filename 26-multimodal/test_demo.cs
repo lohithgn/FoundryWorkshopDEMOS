@@ -7,9 +7,32 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Azure.Core;
 
 public sealed class MultimodalTests
 {
+    private sealed class CountingCredential : TokenCredential
+    {
+        public int Calls;
+        public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
+        {
+            Calls++;
+            return new AccessToken("offline-token", DateTimeOffset.UtcNow.AddMinutes(5));
+        }
+        public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken) =>
+            ValueTask.FromResult(GetToken(requestContext, cancellationToken));
+    }
+
+    private sealed class CountingHandler : HttpMessageHandler
+    {
+        public int Calls;
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Calls++;
+            throw new Exception("The endpoint validation test must not make a request.");
+        }
+    }
+
     private static void Equal<T>(T expected, T actual, string label)
     {
         if (!EqualityComparer<T>.Default.Equals(expected, actual))
@@ -188,6 +211,26 @@ public sealed class MultimodalTests
         return Task.CompletedTask;
     }
 
+    private static Task TestEndpointValidationPrecedesAuthentication()
+    {
+        var handler = new CountingHandler();
+        using var http = new HttpClient(handler);
+        var credential = new CountingCredential();
+        foreach (var endpoint in new[] { "http://model.example", "not a URI", "https://" })
+        {
+            try
+            {
+                Multimodal.RequestAzure(http, credential, endpoint, "receipt-vision", Multimodal.GenerateImage(false));
+                throw new Exception($"invalid endpoint was accepted: {endpoint}");
+            }
+            catch (ArgumentException ex) when (ex.Message.Contains("absolute HTTPS URI", StringComparison.Ordinal)) { }
+        }
+        Equal(0, credential.Calls, "no token acquisition for invalid endpoints");
+        Equal(0, handler.Calls, "no HTTP request for invalid endpoints");
+        Equal("https", Multimodal.ValidateEndpoint("https://model.example").Scheme, "valid HTTPS endpoint");
+        return Task.CompletedTask;
+    }
+
     private static Task TestGeneratorWritesAllOutputArtifacts()
     {
         var directory = Path.Combine(Directory.GetCurrentDirectory(), ".offline-generated-" + Guid.NewGuid().ToString("N"));
@@ -228,6 +271,7 @@ public sealed class MultimodalTests
             ("request timeout is not a prediction", TestTimeoutIsNotPrediction),
             ("unknown usage and cost calculation", TestMissingUsageAndCost),
             ("strict structured vision request", TestStructuredVisionRequestContract),
+            ("HTTPS endpoint validation before auth", TestEndpointValidationPrecedesAuthentication),
             ("generated PNG and truth artifacts", TestGeneratorWritesAllOutputArtifacts)
         };
         foreach (var test in tests)

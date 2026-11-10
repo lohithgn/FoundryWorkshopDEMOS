@@ -223,16 +223,16 @@ override the failed step. Environment approval is essential for same-repo PRs to
 
 ```bash
 HOME="$PWD/.dotnet-home" DOTNET_CLI_HOME="$PWD/.dotnet-home" dotnet run --file test_demo.cs --no-build --no-restore
-.venv/bin/python -m unittest -v
 az bicep build --file infra/main.bicep --stdout > /dev/null
 ```
 
 The C# test harness is the current offline test command. It verifies the Foundry auth
 scope, agent/Responses/evaluation REST request shapes, result matching, failure/timeout
 gates, release regression behavior and failed-report artifact serialization using mocked
-HTTP only. It makes no cloud calls. The retained Python test suite is transitional and
-its workflow-equivalence assertion no longer applies while the shared workflow remains
-Python. Root runner needs only standard
+HTTP only. It makes no cloud calls. The unchanged transitional Python test suite is not
+an active validation command: its byte-for-byte workflow parity assertion fails while
+the scoped sample uses .NET and the issue #1-owned shared workflow remains Python. That
+assertion is temporarily blocked pending issue #1's workflow integration. Root runner needs only standard
 `endpoint`/`deployment`/`projectEndpoint` mappings.
 
 The transitional Python path uses the Foundry `azure-ai-projects==2.7.0` evaluation API.

@@ -192,6 +192,7 @@ public static class Multimodal
     public static JsonObject RequestAzure(HttpClient http, TokenCredential credential, string endpoint,
         string deployment, byte[] png)
     {
+        ValidateEndpoint(endpoint);
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint.TrimEnd('/') + "/openai/v1/chat/completions");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
             credential.GetToken(new TokenRequestContext(["https://cognitiveservices.azure.com/.default"]), CancellationToken.None).Token);
@@ -202,6 +203,15 @@ public static class Multimodal
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"HTTP {(int)response.StatusCode}: {content}", null, response.StatusCode);
         return JsonNode.Parse(content)!.AsObject();
+    }
+
+    public static Uri ValidateEndpoint(string endpoint)
+    {
+        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri)
+            || !string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrEmpty(uri.Host))
+            throw new ArgumentException("Endpoint must be an absolute HTTPS URI.", nameof(endpoint));
+        return uri;
     }
 
     public static byte[] GenerateImage(bool ambiguous)
@@ -376,6 +386,7 @@ public static class MultimodalApp
             }
             if (string.IsNullOrEmpty(endpoint))
                 return UsageError("Set AZURE_OPENAI_ENDPOINT or pass --endpoint (or --generate-only).");
+            Multimodal.ValidateEndpoint(endpoint);
             var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ExcludeInteractiveBrowserCredential = true });
             using var http = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
             var results = new List<JsonObject>();
