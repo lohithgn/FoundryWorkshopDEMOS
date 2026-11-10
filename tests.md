@@ -34,6 +34,16 @@ include new live executions and supersede older results for those runs.
 - **Review and merge pending:** an independent review of the final integrated
   commit and human readiness/approval/merge actions remain required.
 
+### Independent review handoff
+
+An independent read-only code-review agent reviewed commit
+`8b4f8ef3ce511f585c0f62f9ac733a9a653cb6e1`. Its first-pass stale README
+invocations were changed to the .NET runner, then the review was repeated on
+that commit. The re-review found no other actionable issues and confirmed the
+documented lab-integration blocker. This is not a review of the eventual
+post-integration commit; request another independent review after rebasing all
+seven lab conversions.
+
 ## Recovery verification, 2026-11-09
 
 - **Lab 0:** both comparison models returned the reference answer of 11;
