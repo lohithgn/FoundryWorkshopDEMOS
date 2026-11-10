@@ -36,6 +36,12 @@ The backend disables local authentication; APIM uses its managed identity.
 Frontend tokens require the signed-in user's object ID and Azure CLI client ID.
 There are no API keys, APIM subscriptions or secrets in code/logs.
 
+### Transitional Python deployment and prerequisites
+
+This Python-only deployment, prerequisite, and cleanup guidance is retained for
+transitional compatibility with the shared root runner and `deploy_lab.py`;
+`requirements.txt` and Python files remain unchanged.
+
 From the repository root: `python3 deploy.py --demo 39`.
 From the lab folder, the standalone alternative is
 `python3 deploy_lab.py --prefix rg-foundry`.
@@ -49,7 +55,8 @@ az group create --name rg-foundry-gateway-token-limits-demo --location eastus2 -
 Do not create an unrecorded group before running standalone: it creates fresh
 groups itself and refuses to adopt an unowned group.
 
-Prerequisites: Python 3.10+, signed-in Azure CLI user; resource/role-assignment
+Prerequisites for this transitional Python runner: Python 3.10+, signed-in
+Azure CLI user; resource/role-assignment
 creation and ARM policy-read/**write** permissions for the per-run counter reset,
 APIM Developer availability in `eastus2`, and
 `gpt-4.1-mini` GlobalStandard quota capacity 10 (10 RPM / 10,000 TPM), needed
@@ -58,6 +65,9 @@ Model capacity reserves quota, not an extra fixed token charge. Foundry project 
 serialized. ARM uses Cognitive Services `2025-06-01` and APIM `2024-05-01`;
 model inference uses `2024-10-21`. This standalone gateway does not depend
 on preview Foundry portal gateway APIs.
+
+The root command above and `deploy_lab.py` continue to use the Python
+implementation during this transition.
 
 The ownership-safe standalone runner defaults to `rg-foundry-student-*`; use
 `--prefix rg-foundry` for the recorded presentation group. Unowned/unrecorded
@@ -88,6 +98,47 @@ Leave resources deployed for presentation; delete afterwards:
 .venv/bin/python -m unittest -v
 az group delete --name rg-foundry-gateway-token-limits-demo --yes --no-wait
 ```
+
+## .NET 10 file-based counterpart
+
+The C# entry points are standalone .NET 10 file-based apps with no
+`.csproj`/`.sln` files and no NuGet dependencies. Starting at the repository
+root, enter this lab directory, then restore and compile all three files, run the
+offline evidence-gate harness, and inspect the safe CLI help. The shared source
+uses the file-app `#:include` directive, available in .NET 10 SDK 10.0.300+:
+
+```bash
+cd 39-gateway-token-limits
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file deploy_lab.cs -- --help
+```
+
+Deploy/run with the standalone C# counterpart, or replay the demo after an
+existing deployment:
+
+```bash
+dotnet run --file deploy_lab.cs -- --prefix rg-foundry
+dotnet run --file demo.cs
+```
+
+`dotnet run --file deploy_lab.cs -- --offline-only` runs the offline harness and
+builds/lints Bicep without deploying; Azure CLI with Bicep is still required.
+The live C# app uses Azure CLI user tokens for ARM
+(`https://management.azure.com/`) and inference
+(`https://cognitiveservices.azure.com/`), and performs the same privileged
+per-run ARM policy rotation and exact service-side evidence checks as the Python
+runner. These are live paid service requests. This conversion ran no live
+deployment or gateway/model workload; offline results are not live enforcement
+evidence.
+The C# demo uses the same root-shaped `.azure/deployment.json` output contract;
+saved gateway metadata takes precedence over `AI_GATEWAY_ENDPOINT`.
 
 ## Official references
 

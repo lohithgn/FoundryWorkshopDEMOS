@@ -14,7 +14,11 @@ No microphone, speaker, audio device or local server is required.
 Missing response, code mismatch, preview denial or missing persistence fails
 with exit status 1; text-only or simulated execution never passes this smoke.
 
-## Prerequisites and preview
+## Transitional Python prerequisites and preview
+
+These Python prerequisites apply to the existing Python root runner and
+`demo.py`; they are retained for transitional compatibility. The C# entry points
+are described separately below and do not use the Python virtual environment.
 
 - Python 3.10+, Azure CLI/Bicep and `az login` as a user with resource creation
   and role-assignment permissions. Entra `AzureCliCredential` only; local auth
@@ -31,15 +35,73 @@ with exit status 1; text-only or simulated execution never passes this smoke.
 - Native APIs use the official `azure-ai-projects[voice]==2.10.0` SDK.
   The lab installs its own `.venv`; no shared environment is changed.
 
-## Run
+## .NET 10 file-based counterpart
 
-From the repository root:
+The C# implementation is a genuine file-based .NET 10 app and makes the native
+Foundry voice-agent REST/WebSocket calls directly. It has no project/solution
+file and no NuGet dependencies; Azure CLI supplies the signed-in Entra token.
+Starting at the repository root, enter the lab directory, then restore and
+compile every C# entry point and run the
+offline fixture/configuration harness. The shared source uses the file-app
+`#:include` directive, available in .NET 10 SDK 10.0.300+:
+
+```bash
+cd 40-voice-agent
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet restore generate_audio.cs
+dotnet build generate_audio.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file generate_audio.cs -- --help
+```
+
+While still in `40-voice-agent`, the safe preflight checks Azure CLI login, the regional service model catalog,
+and the local WAV fixture without provisioning; it does not verify preview
+entitlement:
+
+```bash
+dotnet run --file demo.cs -- --preflight --location eastus2
+```
+
+The existing Python root runner remains responsible for deployment. It deploys
+and runs the Python voice demo. After deployment, return to the repository root
+for deployment, then enter the lab directory to run the C# demo against the same
+saved `.azure/deployment.json` outputs:
+
+```bash
+cd ..
+python3 deploy.py --demo 40 --location eastus2
+cd 40-voice-agent
+dotnet run --file demo.cs
+```
+
+The C# app uses the Foundry project REST API `v1` with
+`Foundry-Features: VoiceAgents=V1Preview`, a real WebSocket audio exchange, and
+the native persisted-conversation and recording endpoints. It never substitutes
+text-only chat or local audio emulation. Audio/model and retained recording
+requests can be billable. `generate_audio.cs` preserves the local macOS
+`say` regeneration behavior; the committed fixture is used elsewhere:
+
+```bash
+dotnet run --file generate_audio.cs
+```
+
+No live deployment or voice workload was run as part of this conversion.
+Offline fixtures do not establish preview access or live service evidence.
+
+## Transitional Python compatibility docs
+
+From the repository root, the compatibility deployment command is:
 
 ```bash
 python3 deploy.py --demo 40 --location eastus2
 ```
 
-The root runner installs requirements, runs offline tests, deploys and calls
+The shared Python root runner and `requirements.txt` remain unchanged for staged
+workshop compatibility. The root runner installs requirements, runs offline tests, deploys and calls
 `demo.py` without microphone interaction. Standard mappings are
 `endpoint -> AZURE_OPENAI_ENDPOINT`, `projectEndpoint -> FOUNDRY_PROJECT_ENDPOINT`,
 and `deployment -> AZURE_OPENAI_DEPLOYMENT`. Optional `FOUNDRY_VOICE_AGENT_MODEL`
@@ -76,7 +138,8 @@ Bicep exposes `location`, `principalId`, `accountName`, `projectName` and
 
 ## Evidence and cost
 
-Verified in this subscription on 2026-11-03: **16 offline tests passed**,
+The previous Python implementation was verified in this subscription on
+2026-11-03: **16 offline tests passed**,
 Bicep build/lint and EastUS2 ARM deployment succeeded, and the native managed
 spoken WebSocket turn, both transcripts, persisted conversation and stereo
 recording all passed live. The authoritative replay result is `.azure/live-report.json`.
