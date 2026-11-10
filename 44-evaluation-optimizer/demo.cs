@@ -215,6 +215,21 @@ static JsonObject HeldoutGate(List<JsonObject> candidates, JsonObject summary, J
 }
 
 static double Number(JsonNode? value) => double.TryParse(value?.ToString(), out var score) ? score : double.NaN;
+static (DateTimeOffset PollingDeadline, DateTimeOffset StageDeadline) StageDeadlines(DateTimeOffset started, int timeout)
+{
+    var deadline = started.AddSeconds(timeout);
+    var cancellationReserve = TimeSpan.FromSeconds(Math.Min(15, Math.Max(1, timeout / 40.0)));
+    return (deadline - cancellationReserve, deadline);
+}
+
+static bool ApplyOptimizerCleanupOutcome(JsonObject report, List<string> errors)
+{
+    if (errors.Count == 0) return true;
+    report["optimizer_status"] = "BLOCKED";
+    report["optimizer_cleanup_errors"] = new JsonArray(errors.Select(error => (JsonNode?)JsonValue.Create(error)).ToArray());
+    return false;
+}
+
 static bool FiniteJsonNumber(JsonNode? value)
 {
     if (value is not JsonValue json || value.GetValueKind() != System.Text.Json.JsonValueKind.Number) return false;
@@ -378,6 +393,7 @@ async Task StartOptimizer(NativeProject project, JsonObject config, JsonObject r
         new JsonObject { ["definition"] = new JsonObject { ["kind"] = "prompt", ["model"] = config["deployment"]!.DeepClone(), ["instructions"] = Baseline } });
     report["optimizer_baseline_agent"] = agent.DeepClone();
     string? jobId = null;
+    Exception? operationError = null;
     try
     {
     var body = OptimizationRequest(agentName, agent["version"], config, report["generated_dataset"]?.AsObject());
@@ -399,8 +415,14 @@ async Task StartOptimizer(NativeProject project, JsonObject config, JsonObject r
     report["heldout_gate"] = HeldoutGate(candidateList, summary, validation);
     report["optimizer_status"] = "PASS";
     }
+    catch (Exception error)
+    {
+        operationError = error;
+        throw;
+    }
     finally
     {
+        var cleanupErrors = new List<string>();
         if (jobId is not null)
         {
             try
@@ -412,15 +434,18 @@ async Task StartOptimizer(NativeProject project, JsonObject config, JsonObject r
                     report["optimizer_cancel_requested"] = true;
                 }
             }
-            catch (Exception error) { report["optimizer_cleanup_error"] = error.Message; }
+            catch (Exception error) { cleanupErrors.Add($"job cancellation check: {error.Message}"); }
         }
         try
         {
             await project.Send(HttpMethod.Delete, $"agents/{Uri.EscapeDataString(agentName)}");
             report["optimizer_agent_deleted"] = true;
         }
-        catch (Exception error) { report["optimizer_cleanup_error"] = error.Message; }
+        catch (Exception error) { cleanupErrors.Add($"temporary agent deletion: {error.Message}"); }
+        var cleanupSucceeded = ApplyOptimizerCleanupOutcome(report, cleanupErrors);
         await Save(report);
+        if (!cleanupSucceeded && operationError is null)
+            throw new InvalidOperationException($"Optimizer cleanup failed: {string.Join("; ", cleanupErrors)}");
     }
 }
 
@@ -523,38 +548,61 @@ async Task<JsonObject> NativeHeldoutEvaluation(JsonObject config, JsonObject rep
 async Task<JsonObject> Poll(NativeProject project, JsonObject initial, string collection, int timeout, JsonObject report, string key)
 {
     var jobId = initial["id"]?.ToString() ?? throw new InvalidDataException($"Native {key} response has no job id.");
-    var deadline = DateTimeOffset.UtcNow.AddSeconds(timeout);
+    var (pollingDeadline, deadline) = StageDeadlines(DateTimeOffset.UtcNow, timeout);
     var current = initial;
-    while (DateTimeOffset.UtcNow < deadline)
+    while (DateTimeOffset.UtcNow < pollingDeadline)
     {
         report[key] = current.DeepClone();
         await Save(report);
         if (current["status"]?.ToString() == "succeeded") return current;
         if (current["status"]?.ToString() is "failed" or "cancelled")
             throw new InvalidOperationException($"Native {key} {current["status"]}: {current["error"]}");
-        await Task.Delay(TimeSpan.FromSeconds(Math.Min(10, Math.Max(0, (deadline - DateTimeOffset.UtcNow).TotalSeconds))));
-        current = await project.Get($"{collection}/{Uri.EscapeDataString(jobId)}");
+        var delay = pollingDeadline - DateTimeOffset.UtcNow;
+        if (delay > TimeSpan.Zero) await Task.Delay(TimeSpan.FromSeconds(Math.Min(10, delay.TotalSeconds)));
+        var remaining = pollingDeadline - DateTimeOffset.UtcNow;
+        if (remaining <= TimeSpan.Zero) break;
+        using var requestDeadline = new CancellationTokenSource(remaining);
+        try { current = await project.Get($"{collection}/{Uri.EscapeDataString(jobId)}", requestDeadline.Token); }
+        catch (OperationCanceledException) when (DateTimeOffset.UtcNow >= pollingDeadline) { break; }
     }
-    await project.Send(HttpMethod.Post, $"{collection}/{Uri.EscapeDataString(jobId)}/cancel", new JsonObject());
-    report[key + "_cancel_requested"] = true;
-    await Save(report);
-    throw new TimeoutException($"Native {key} exceeded {timeout}s; cancellation requested, never resubmitted.");
+    var cancelRemaining = deadline - DateTimeOffset.UtcNow;
+    if (cancelRemaining > TimeSpan.Zero)
+    {
+        using var cancellationDeadline = new CancellationTokenSource(cancelRemaining);
+        await project.Send(HttpMethod.Post, $"{collection}/{Uri.EscapeDataString(jobId)}/cancel",
+            new JsonObject(), cancellationDeadline.Token);
+        report[key + "_cancel_requested"] = true;
+        await Save(report);
+    }
+    throw new TimeoutException($"Native {key} exceeded its {timeout}s deadline; cancellation was {(report[key + "_cancel_requested"]?.GetValue<bool>() == true ? "requested" : "not confirmed")}, never resubmitted.");
 }
 
 async Task<JsonObject> PollOpenAI(string endpoint, string route, JsonObject initial, int timeout)
 {
     var id = initial["id"]?.ToString() ?? throw new InvalidDataException("Native evaluator run has no ID.");
-    var deadline = DateTimeOffset.UtcNow.AddSeconds(timeout);
-    while (DateTimeOffset.UtcNow < deadline)
+    var (pollingDeadline, deadline) = StageDeadlines(DateTimeOffset.UtcNow, timeout);
+    while (DateTimeOffset.UtcNow < pollingDeadline)
     {
         if (initial["status"]?.ToString() == "completed") return initial;
         if (initial["status"]?.ToString() is "failed" or "canceled")
             throw new InvalidOperationException($"Native evaluator run failed: {initial["error"]}");
-        await Task.Delay(TimeSpan.FromSeconds(10));
-        initial = await OpenAI(endpoint, $"{route}/{id}", null, HttpMethod.Get);
+        var delay = pollingDeadline - DateTimeOffset.UtcNow;
+        if (delay > TimeSpan.Zero) await Task.Delay(TimeSpan.FromSeconds(Math.Min(10, delay.TotalSeconds)));
+        var remaining = pollingDeadline - DateTimeOffset.UtcNow;
+        if (remaining <= TimeSpan.Zero) break;
+        using var requestDeadline = new CancellationTokenSource(remaining);
+        try { initial = await OpenAI(endpoint, $"{route}/{id}", null, HttpMethod.Get, requestDeadline.Token); }
+        catch (OperationCanceledException) when (DateTimeOffset.UtcNow >= pollingDeadline) { break; }
     }
-    await OpenAI(endpoint, $"{route}/{id}/cancel", new JsonObject(), HttpMethod.Post);
-    throw new TimeoutException("Cloud evaluator run exceeded its bound; cancellation requested.");
+    var cancelRemaining = deadline - DateTimeOffset.UtcNow;
+    var cancellationConfirmed = false;
+    if (cancelRemaining > TimeSpan.Zero)
+    {
+        using var cancellationDeadline = new CancellationTokenSource(cancelRemaining);
+        await OpenAI(endpoint, $"{route}/{id}/cancel", new JsonObject(), HttpMethod.Post, cancellationDeadline.Token);
+        cancellationConfirmed = true;
+    }
+    throw new TimeoutException($"Cloud evaluator run exceeded its {timeout}s deadline; cancellation was {(cancellationConfirmed ? "requested" : "not confirmed")}.");
 }
 
 static JsonObject ToolDefinition() => new() { ["type"] = "function", ["name"] = "lookup_price",
@@ -574,14 +622,16 @@ static string ResponseText(JsonObject response) => string.Concat((response["outp
     .SelectMany(item => item?["content"]?.AsArray() ?? new JsonArray())
     .Where(item => item?["type"]?.ToString() == "output_text").Select(item => item?["text"]?.ToString() ?? ""));
 
-async Task<JsonObject> OpenAI(string endpoint, string route, JsonObject? payload, HttpMethod? method = null)
+async Task<JsonObject> OpenAI(string endpoint, string route, JsonObject? payload, HttpMethod? method = null,
+    CancellationToken cancellationToken = default)
 {
     using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
     using var request = new HttpRequestMessage(method ?? HttpMethod.Post, endpoint.TrimEnd('/') + "/openai/v1/" + route);
-    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", await AzCli.Token("https://ai.azure.com/.default"));
+    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
+        await AzCli.Token("https://ai.azure.com/.default", cancellationToken));
     if (payload is not null) request.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
-    using var response = await http.SendAsync(request);
-    var body = await response.Content.ReadAsStringAsync();
+    using var response = await http.SendAsync(request, cancellationToken);
+    var body = await response.Content.ReadAsStringAsync(cancellationToken);
     if (!response.IsSuccessStatusCode) throw new InvalidOperationException($"Native OpenAI API {method ?? HttpMethod.Post} {route}: HTTP {(int)response.StatusCode}, {ErrorCode(body)}");
     return body.Length == 0 ? new JsonObject() : JsonNode.Parse(body)!.AsObject();
 }
@@ -630,6 +680,16 @@ void OfflineTests()
     if (toolCallCriterion["initialization_parameters"]?["deployment_name"]?.ToString() != "judge-model"
         || toolCallCriterion["initialization_parameters"]?["model"] is not null)
         throw new InvalidDataException("Native tool-call accuracy requires its deployment_name parameter.");
+    var cleanupOutcome = new JsonObject { ["optimizer_status"] = "PASS" };
+    if (ApplyOptimizerCleanupOutcome(cleanupOutcome, ["simulated temporary agent deletion failure"])
+        || cleanupOutcome["optimizer_status"]?.ToString() != "BLOCKED"
+        || cleanupOutcome["optimizer_cleanup_errors"]?.AsArray().Count != 1)
+        throw new InvalidDataException("Optimizer cleanup failures must block the stage and remain in evidence.");
+    var started = DateTimeOffset.UtcNow;
+    var (pollingDeadline, stageDeadline) = StageDeadlines(started, WaitSeconds);
+    if (pollingDeadline >= stageDeadline || stageDeadline - pollingDeadline > TimeSpan.FromSeconds(15)
+        || pollingDeadline - started < TimeSpan.FromSeconds(585))
+        throw new InvalidDataException("Long-running evaluation deadlines must reserve bounded cancellation time.");
     var originalDataset = JsonNode.Parse("""{"id":"native-id","name":"generated","version":"1","type":"uri_file","data_uri":"azureai://source","tags":{"lab":"44","securityControl":"Ignore","custom":"kept"}}""")!.AsObject();
     var taggedDataset = DatasetWithRequiredTags(originalDataset);
     if (taggedDataset["tags"]?["lab"]?.ToString() != "44" || taggedDataset["tags"]?["custom"]?.ToString() != "kept"
@@ -706,8 +766,10 @@ static void ExpectFailure(Action action, string message)
 sealed class NativeProject(string endpoint, string token)
 {
     private readonly Uri _endpoint = new(endpoint.TrimEnd('/') + "/");
-    public Task<JsonObject> Get(string path) => Send(HttpMethod.Get, path);
-    public async Task<JsonObject> Send(HttpMethod method, string path, JsonObject? payload = null)
+    public Task<JsonObject> Get(string path, CancellationToken cancellationToken = default)
+        => Send(HttpMethod.Get, path, cancellationToken: cancellationToken);
+    public async Task<JsonObject> Send(HttpMethod method, string path, JsonObject? payload = null,
+        CancellationToken cancellationToken = default)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
         var builder = new UriBuilder(new Uri(_endpoint, path.TrimStart('/')));
@@ -717,8 +779,8 @@ sealed class NativeProject(string endpoint, string token)
         using var request = new HttpRequestMessage(method, builder.Uri);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (payload is not null) request.Content = new StringContent(payload.ToJsonString(), Encoding.UTF8, "application/json");
-        using var response = await http.SendAsync(request);
-        var body = await response.Content.ReadAsStringAsync();
+        using var response = await http.SendAsync(request, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException($"Native project API {method} {path}: HTTP {(int)response.StatusCode}, {ErrorCode(body)}");
         return body.Length == 0 ? new JsonObject() : JsonNode.Parse(body)!.AsObject();
     }
@@ -731,17 +793,25 @@ sealed class NativeProject(string endpoint, string token)
 
 static class AzCli
 {
-    public static async Task<string> Token(string scope)
-        => (await Run("account", "get-access-token", "--scope", scope, "--query", "accessToken", "-o", "tsv")).Trim();
-    public static async Task<string> Run(params string[] args)
+    public static async Task<string> Token(string scope, CancellationToken cancellationToken = default)
+        => (await Run(cancellationToken, "account", "get-access-token", "--scope", scope, "--query", "accessToken", "-o", "tsv")).Trim();
+    public static async Task<string> Run(CancellationToken cancellationToken, params string[] args)
     {
         var start = new ProcessStartInfo("az") { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         foreach (var arg in args) start.ArgumentList.Add(arg);
         using var process = Process.Start(start) ?? throw new InvalidOperationException("Unable to start Azure CLI.");
-        var stdout = await process.StandardOutput.ReadToEndAsync();
-        var stderr = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
-        if (process.ExitCode != 0) throw new InvalidOperationException($"Azure CLI failed ({process.ExitCode}): {stderr.Trim()}");
-        return stdout;
+        var stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
+        try { await process.WaitForExitAsync(cancellationToken); }
+        catch (OperationCanceledException)
+        {
+            try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { }
+            await process.WaitForExitAsync();
+            throw;
+        }
+        var output = await stdout;
+        var errorOutput = await stderr;
+        if (process.ExitCode != 0) throw new InvalidOperationException($"Azure CLI failed ({process.ExitCode}): {errorOutput.Trim()}");
+        return output;
     }
 }
