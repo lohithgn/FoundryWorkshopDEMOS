@@ -36,7 +36,7 @@ The backend disables local authentication; APIM uses its managed identity.
 Frontend tokens require the signed-in user's object ID and Azure CLI client ID.
 There are no API keys, APIM subscriptions or secrets in code/logs.
 
-From the repository root: `python3 deploy.py --demo 39`.
+From the repository root: `dotnet run --file deploy.cs -- --demo 39`.
 From the lab folder, the standalone alternative is
 `python3 deploy_lab.py --prefix rg-foundry`.
 

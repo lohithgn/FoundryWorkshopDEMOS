@@ -7,6 +7,17 @@ on the existence of code or passing mocks. The 2026-11-03 documentation review
 reconciled historical baseline results without rerunning paid Azure tests.
 See the [catalog](./demos.md) for what each lab actually demonstrates.
 
+## .NET 10 migration integration gate
+
+The shared runner and offline harness are being prepared as .NET 10 file-based
+apps. Final integration depends on merged lab conversion issues #2, #3, #4, #5,
+#8, #9, and #11; this migration is not complete until every lab entrypoint and
+offline test is integrated and validated. Lab 36 remains blocked by its
+unchanged `runtime/Dockerfile` (`python:3.12-slim`, `agent.py` entrypoint): the
+hosted .NET agent requires explicit maintainer authorization for the necessary
+packaging exception. A human must request/complete the independent final review
+and perform the protected merge.
+
 ## F000 - Microsoft Foundry: Model basics
 
 **Type:** Feature
@@ -65,7 +76,7 @@ model, latency, and token usage. The simple/writing prompts selected
 `FW-GLM-5.3-Flash`; reasoning selected `grok-4-1-fast-reasoning`. Routing results
 are illustrative, not guarantees. Resources remain deployed.
 
-The runner and usage instructions are in [deploy.py](./deploy.py) and the
+The runner and usage instructions are in [deploy.cs](./deploy.cs) and the
 [repository README](./README.md). Deployment outputs and the live transcript are
 saved locally under `1-model-router/.azure/` (ignored by Git).
 

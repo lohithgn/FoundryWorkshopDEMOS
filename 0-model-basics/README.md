@@ -158,7 +158,7 @@ CLI/managed identity is active.
 From the repository root, the shared runner discovers number **0**:
 
 ```bash
-python3 deploy.py --subscription YOUR_SUBSCRIPTION_ID --demo 0
+dotnet run --file deploy.cs -- --subscription YOUR_SUBSCRIPTION_ID --demo 0
 ```
 
 It deploys to `rg-foundry-model-basics-demo`, maps all three deployment outputs

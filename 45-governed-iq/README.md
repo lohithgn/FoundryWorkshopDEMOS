@@ -28,7 +28,7 @@ throttling two ~900-token permission probes.
 From the repository root (runtime outputs are mapped/loaded automatically):
 
 ```bash
-python3 deploy.py --demo 45
+dotnet run --file deploy.cs -- --demo 45
 ```
 
 Standalone:

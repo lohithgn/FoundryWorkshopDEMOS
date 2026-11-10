@@ -25,7 +25,7 @@ No gateway, Defender plan, Purview subscription or broad tenant identity changes
 From repository root (no manual runtime output exports required):
 
 ```bash
-python3 deploy.py --demo 46
+dotnet run --file deploy.cs -- --demo 46
 ```
 
 Standalone:

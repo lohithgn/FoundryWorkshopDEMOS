@@ -204,7 +204,7 @@ Run `python3 demo.py --preflight` **before deployment**. This uses only the stan
 library and Azure CLI, authenticates both real users and checks the optional group,
 without provisioning anything or calling Search/model inference.
 Missing two-user setup produces an explicit preflight error, never a fake access proof.
-These outputs match root `deploy.py`; it must inherit `AZURE_TENANT_ID` and
+These outputs match root `deploy.cs`; it must inherit `AZURE_TENANT_ID` and
 `SECOND_AZURE_CONFIG_DIR` and invoke this preflight before provisioning this lab.
 No project endpoint is needed.
 `endpoint` is the inference service root; the app appends `/openai/v1/`.

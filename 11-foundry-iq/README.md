@@ -99,7 +99,7 @@ use a new dedicated resource group when changing its region.
 The root runner supports the same override:
 
 ```bash
-python3 deploy.py --demo 11 --location eastus2 --search-location westus2
+dotnet run --file deploy.cs -- --demo 11 --location eastus2 --search-location westus2
 ```
 
 Run that command from the repository root. The lab-specific `deploy_lab.py`

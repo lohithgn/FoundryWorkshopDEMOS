@@ -140,7 +140,7 @@ export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RESOURCE_GROUP" 
 **The endpoint output now points to APIM (`https://...azure-api.net/ai`),
 not directly to Foundry.** Existing deployments must be redeployed and their
 environment variables refreshed. The repository-wide runner already maps these
-outputs; `python3 ../deploy.py --demo 7` also deploys and exercises this lab.
+outputs; `dotnet run --file ../deploy.cs -- --demo 7` also deploys and exercises this lab.
 
 ## Run and present
 

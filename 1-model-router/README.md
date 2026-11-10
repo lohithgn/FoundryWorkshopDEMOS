@@ -33,7 +33,7 @@ This is a public Azure workshop setup, not a production networking design.
 ## 1. Deploy
 
 To deploy, install dependencies, and run local tests plus this live demo in one
-command, run `python3 deploy.py --demo 1` from the repository root. Omitting
+command, run `dotnet run --file deploy.cs -- --demo 1` from the repository root. Omitting
 `--demo 1` selects every discovered lab, including billable training/evaluation
 and labs with additional tenant prerequisites. See the
 [repository runner instructions](../README.md) for subscription selection, logs,

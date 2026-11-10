@@ -3,4 +3,6 @@ __pycache__/
 *.py[cod]
 .env
 .azure/
+bin/
+obj/
 1-model-router/infra/main.json
