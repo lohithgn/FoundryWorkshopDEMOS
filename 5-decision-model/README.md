@@ -5,9 +5,14 @@ A 2-minute terminal demo: route three toy support tickets to **billing**,
 typed Decision API, not a chat model pretending to return a classification.
 The script prints the selected team, expected team, latency, and toy accuracy.
 
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions. Historical live results below are from
+> the Python version and are not .NET live validation.
+
 ## Deploy
 
-Requires Python 3.10+, Azure CLI with Bicep, `az login` as a user, resource
+Requires the .NET 10 SDK, Azure CLI with Bicep, `az login` as a user, resource
 creation and role-assignment permissions, and Microsoft-Decision-1 access/quota
 in the selected region. The standalone template deploys one Foundry account,
 the Microsoft model (version `1`, Data Zone Standard, capacity `10`), and presenter
@@ -21,7 +26,7 @@ access. Data Zone Standard keeps inference within the selected data zone.
 Capacity `1` deployed successfully but hit HTTP 429 during the three-ticket
 live demo; the default is `10` to allow the short sequence. Capacity remains
 configurable, consumes model quota, and does not guarantee absence of throttling.
-The script reports HTTP 429 and honors `retry-after-ms` or numeric `Retry-After`
+The .NET app reports HTTP 429 and honors `retry-after-ms` or numeric `Retry-After`
 for at most two retries per ticket, with a maximum 65-second delay per retry.
 Missing or excessive retry delays and exhausted retries fail explicitly.
 The same three-attempt budget also covers the specific HTTP 404
@@ -30,6 +35,20 @@ of 1 and 2 seconds. Other 404 responses are not retried. Failures include the
 deployment name, service response, and Azure request ID when available.
 
 Run from this folder:
+
+Alternatively, the lab-local .NET deploy helper creates billable resources, runs
+the offline tests, and performs live Decision API calls. Use only with separate
+authorization; `--help` is safe and performs no Azure calls.
+
+```bash
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --subscription YOUR_SUBSCRIPTION_ID --location eastus2
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs
+```
+
+Cleanup prompts for the full recorded resource-group name; use `--yes` only for
+separately authorized unattended cleanup.
 
 ```bash
 az login
@@ -54,11 +73,10 @@ not OpenAI chat completions. No project or generative model is required.
 ## Run and present
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
-python demo.py --ticket "Please send me a copy of my invoice."
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --ticket "Please send me a copy of my invoice."
 ```
 
 Show the `choice` question and its fixed criteria in the script. Run the three
@@ -85,7 +103,15 @@ Resources remain deployed; inference is billable.
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
+dotnet restore cleanup.cs
+dotnet build cleanup.cs --no-restore
+dotnet run --file cleanup.cs -- --help
 az group delete --name "$RESOURCE_GROUP" --yes
 ```
 

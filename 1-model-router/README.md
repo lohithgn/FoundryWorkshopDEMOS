@@ -2,8 +2,12 @@
 
 A short terminal demo: send three different prompts to **one endpoint** and show
 which underlying model actually answered each request. Model router chooses a
-model based on the prompt; the Python code never chooses an underlying model.
+model based on the prompt; the C# code never chooses an underlying model.
 Allow about 3-5 minutes to present after provisioning.
+
+> **Migration transition:** Use the .NET 10 commands below. Original Python files
+> and requirements are temporarily retained unchanged for the root runner while
+> issue #1 integrates the lab conversions; they are not the current lab commands.
 
 ## What gets deployed
 
@@ -19,7 +23,7 @@ This is a public Azure workshop setup, not a production networking design.
 
 ## Prerequisites
 
-- Python 3.10+; Azure CLI with Bicep (`az bicep version`).
+- .NET 10 SDK; Azure CLI with Bicep (`az bicep version`).
 - An Azure subscription with access and sufficient quota for Model Router in
   **East US 2** (the default). Regional availability, model access, and organization
   policies can still prevent deployment.
@@ -33,11 +37,25 @@ This is a public Azure workshop setup, not a production networking design.
 ## 1. Deploy
 
 To deploy, install dependencies, and run local tests plus this live demo in one
-command, run `python3 deploy.py --demo 1` from the repository root. Omitting
+command, the transitional Python root runner can still be run as `python3 deploy.py --demo 1` from the repository root. Omitting
 `--demo 1` selects every discovered lab, including billable training/evaluation
 and labs with additional tenant prerequisites. See the
 [repository runner instructions](../README.md) for subscription selection, logs,
 and all-demo deployment. The manual steps below remain available.
+
+The lab-local .NET helper is an alternative, billable path that also runs offline
+tests and the live demo. Use it only when deployment and inference are authorized;
+`--help` is safe and performs no Azure calls:
+
+```bash
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --subscription YOUR_SUBSCRIPTION_ID --location eastus2
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs
+```
+
+Cleanup prompts for the full recorded resource-group name; `--yes` skips that
+confirmation and should be used only for separately authorized unattended cleanup.
 
 Run in Bash or Zsh from this demo folder. Choose your subscription and use a
 dedicated resource group; the cleanup command deletes everything in that group.
@@ -75,13 +93,12 @@ Role assignments can take several minutes to propagate.
 ## 2. Run locally
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs
 
 # Optional: try your own prompt.
-python demo.py --prompt "Explain model routing to a Python developer in two sentences."
+dotnet run --file demo.cs -- --prompt "Explain model routing to a Python developer in two sentences."
 ```
 
 You can pass `--endpoint` and `--deployment` instead of environment variables.
@@ -144,11 +161,20 @@ From this folder, with the dependencies installed:
 ```bash
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
+dotnet restore cleanup.cs
+dotnet build cleanup.cs --no-restore
+dotnet run --file cleanup.cs -- --help
 ```
 
-Tests mock authentication and service calls; they do not deploy resources or
-incur inference charges. Live deployment/inference is a separate smoke test.
+The deployment and cleanup helpers have safe `--help` checks; invoking deployment
+creates billable resources and performs live inference. Tests are offline and do
+not deploy resources or incur inference charges. Live validation is separate.
 
 ## Cleanup
 
