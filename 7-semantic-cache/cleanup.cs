@@ -14,9 +14,11 @@ public static class SemanticCacheCleanup
         foreach (var argument in arguments)
             start.ArgumentList.Add(argument);
         using var process = Process.Start(start) ?? throw new InvalidOperationException("Could not start Azure CLI.");
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
         process.WaitForExit();
+        var output = outputTask.GetAwaiter().GetResult();
+        var error = errorTask.GetAwaiter().GetResult();
         if (process.ExitCode != 0)
             throw new InvalidOperationException($"Azure CLI failed ({process.ExitCode}): {error.Trim()}");
         return output.Trim();

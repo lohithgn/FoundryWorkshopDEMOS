@@ -126,7 +126,7 @@ Throws<ArgumentException>(() => EntraAgentDemo.Parse(["--unknown", "value"]),
     "An unknown option was accepted.");
 
 await CheckCommand("demo.cs", "--help", 0, "Usage:");
-await CheckCommandWithValue("demo.cs", "--deployment", "chat", 1, "HTTPS URL");
+await CheckCommandWithValue("demo.cs", "--endpoint", "http://localhost", 1, "HTTPS URL");
 await CheckCommand("deploy_lab.cs", "--help", 0, "Usage:");
 await CheckCommandWithValue("deploy_lab.cs", "--prefix", "!invalid", 1, "prefix");
 await CheckCommand("cleanup.cs", "--help", 0, "Usage:");

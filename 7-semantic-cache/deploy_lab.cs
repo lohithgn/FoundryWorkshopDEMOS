@@ -146,7 +146,8 @@ public static class SemanticCacheDeployLab
             try
             {
                 Console.WriteLine($"Billable Azure deployment: {Lab} -> {group} ({subscriptionId})");
-                var testLog = Run(["dotnet", "run", "--file", "test_demo.cs"], labPath, capture: true);
+                var testLog = Run(["dotnet", "run", "--file", "test_demo.cs"], labPath, capture: true)
+                    + Run(["dotnet", "run", "--file", "test_deploy_lab.cs"], labPath, capture: true);
                 Console.Write(testLog);
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(State)!, "lab-tests.log"), testLog);
                 result["stage"] = "deployment";
@@ -160,7 +161,7 @@ public static class SemanticCacheDeployLab
                     Run(["az", "provider", "register", "--namespace", provider, "--wait", "--subscription", subscriptionId]);
                 var tags = Owner.Concat(SecurityTags).Select(pair => $"{pair.Key}={pair.Value}");
                 Run(["az", "group", "create", "--name", group, "--location", options.Location, "--tags", .. tags, "--subscription", subscriptionId, "-o", "none"]);
-                var outputs = JsonDocument.Parse(Run(DeploymentArguments(group, name, subscriptionId, template, principal, options.Location, options.RedisSku), capture: true));
+                var outputs = JsonDocument.Parse(Run(["az", .. DeploymentArguments(group, name, subscriptionId, template, principal, options.Location, options.RedisSku)], capture: true));
                 result["outputs"] = JsonNode.Parse(outputs.RootElement.GetRawText());
                 result["stage"] = "live-demo";
                 Save(result);
@@ -216,10 +217,8 @@ public static class SemanticCacheDeployLab
             File.AppendAllText(logPath, $"\n--- Attempt {attempt + 1} ---\n{output}");
             if (process.ExitCode == 0)
                 return;
-            var dnsFailure = (output.Contains("HttpRequestException", StringComparison.Ordinal) ||
-                              output.Contains("Azure CLI", StringComparison.Ordinal)) &&
-                new[] { "Name or service not known", "Temporary failure in name resolution", "nodename nor servname", "getaddrinfo failed" }
-                    .Any(message => output.Contains(message, StringComparison.Ordinal));
+            var dnsFailure = new[] { "Name or service not known", "Temporary failure in name resolution", "nodename nor servname", "getaddrinfo failed" }
+                .Any(message => output.Contains(message, StringComparison.Ordinal));
             var propagating = output.Contains("403", StringComparison.Ordinal) ||
                               output.Contains("DeploymentNotFound", StringComparison.Ordinal);
             if (!(dnsFailure || propagating) || attempt == 10)

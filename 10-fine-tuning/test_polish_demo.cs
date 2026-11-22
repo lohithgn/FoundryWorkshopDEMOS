@@ -90,15 +90,13 @@ try
     catch (ArgumentException error) { changedInputRejected = error.Message.Contains("inputs changed"); }
     Check(changedInputRejected, "Changed training data did not invalidate the manifest.");
 
-    var nativeFailure = false;
+    var corruptedManifestRejected = false;
     try { PolishFineTuningDemo.Evaluate(output, tuned: false); }
-    catch (ArgumentException) { }
-    catch (PolishFineTuningDemo.NativeMlxUnavailableException error)
+    catch (ArgumentException error)
     {
-        nativeFailure = error.Message.Contains("mlx-lm model loader") &&
-                        error.Message.Contains("No Python subprocess");
+        corruptedManifestRejected = error.Message.Contains("inputs changed", StringComparison.Ordinal);
     }
-    Check(!nativeFailure, "A corrupted manifest should be rejected before attempting native inference.");
+    Check(corruptedManifestRejected, "A corrupted manifest should be rejected before attempting native inference.");
 
     var reportOutput = Path.Combine(work, "comparison");
     PolishFineTuningDemo.Prepare(reportOutput);

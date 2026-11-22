@@ -100,7 +100,8 @@ public static class FineTuningDeployLab
             try
             {
                 Console.WriteLine($"Billable Azure deployment and fine-tuning job: {Lab} -> {group} ({subscription})");
-                var testLog = Run(["dotnet", "run", "--file", "test_demo.cs"], labPath, capture: true);
+                var testLog = Run(["dotnet", "run", "--file", "test_demo.cs"], labPath, capture: true)
+                    + Run(["dotnet", "run", "--file", "test_polish_demo.cs"], labPath, capture: true);
                 Console.Write(testLog);
                 File.WriteAllText(Path.Combine(Path.GetDirectoryName(State)!, "lab-tests.log"), testLog);
                 result["stage"] = "deployment";

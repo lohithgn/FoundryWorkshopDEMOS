@@ -113,7 +113,13 @@ public static class AgentEvaluationDemo
         using var result = await SendAsync(http, HttpMethod.Post, uri, token, body, cancellationToken);
         var root = result.RootElement;
         var status = root.TryGetProperty("status", out var state) ? state.GetString() : null;
-        var text = root.TryGetProperty("output_text", out var output) ? output.GetString() : null;
+        var text = root.TryGetProperty("output", out var output) && output.ValueKind == JsonValueKind.Array
+            ? string.Concat(output.EnumerateArray()
+                .Where(item => item.TryGetProperty("type", out var type) && type.GetString() == "message")
+                .SelectMany(item => item.GetProperty("content").EnumerateArray())
+                .Where(content => content.TryGetProperty("type", out var type) && type.GetString() == "output_text")
+                .Select(content => content.GetProperty("text").GetString()))
+            : null;
         if (status != "completed" || string.IsNullOrWhiteSpace(text))
             throw new InvalidOperationException($"Agent response failed: {status}; {root.GetRawText()}");
         var id = root.TryGetProperty("id", out var idElement) ? idElement.GetString() : null;
@@ -206,6 +212,7 @@ public static class AgentEvaluationDemo
                 resultPassed.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
                 throw new InvalidOperationException("Missing, mismatched, or errored coherence result.");
             if (resultPassed.GetBoolean()) passed++;
+            Console.WriteLine(item.ToString());
         }
         if (passed != expectedPassed)
             throw new InvalidOperationException("Per-item coherence results disagree with aggregate counts.");
