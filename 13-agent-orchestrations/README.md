@@ -1,19 +1,126 @@
 # Microsoft Agent Framework - Four tiny orchestration samples
 
 Four independent examples share one Foundry model deployment. Each pattern is
-implemented in its own small Python file; `demo.py` selects and runs them.
-Agent Framework orchestrates **locally**; Foundry performs model inference.
+implemented in its own Python file and standalone .NET file-based app;
+`demo.py` or `demo.cs` selects and runs them. Agent Framework in Python and the
+equivalent local C# workflow code orchestrate locally; Foundry performs inference.
 
-| Pattern | Sample | Super-simple scenario |
-| --- | --- | --- |
-| Sequential | [sequential.py](./sequential.py) | Writer drafts an invitation, editor shortens it |
-| Concurrent | [concurrent_sample.py](./concurrent_sample.py) | Independently suggest a title and a snack |
-| Group Chat | [group_chat.py](./group_chat.py) | Planner and reviewer refine a two-item agenda |
-| Magentic | [magentic.py](./magentic.py) | Manager asks title/checklist specialists for a tiny workshop card |
+The Python implementation remains unchanged. This folder also contains
+dependency-free .NET 10 file-based apps for the same four patterns, a matching
+`demo.cs` selector, lifecycle helpers, and offline test harnesses. The C# sources
+use `#:include`, supported by .NET 10 SDK 10.0.300 and later.
+**Transitional Python documentation:** Python commands below are retained for
+the repository-wide runner only; they do not validate the .NET apps.
+
+| Pattern | Python | .NET 10 | Super-simple scenario |
+| --- | --- | --- | --- |
+| Sequential | [sequential.py](./sequential.py) | [sequential.cs](./sequential.cs) | Writer drafts an invitation, editor shortens it |
+| Concurrent | [concurrent_sample.py](./concurrent_sample.py) | [concurrent_sample.cs](./concurrent_sample.cs) | Independently suggest a title and a snack |
+| Group Chat | [group_chat.py](./group_chat.py) | [group_chat.cs](./group_chat.cs) | Planner and reviewer refine a two-item agenda |
+| Magentic | [magentic.py](./magentic.py) | [magentic.cs](./magentic.cs) | Manager asks title/checklist specialists for a tiny workshop card |
 
 `concurrent_sample.py` avoids shadowing Python's standard-library `concurrent`
 package. "Magentic" is the framework's manager-driven pattern, not a typo for
 "magnetic." No web research, tools, hosted agent deployment, database, or UI.
+
+## .NET 10 file-based apps
+
+Run these commands from this folder. No project file, NuGet package, or live
+Azure resource is needed to restore, build, or run the offline tests. The apps
+use the project endpoint from the Bicep output, obtain a bearer token through
+`az account get-access-token`, and call the Foundry chat-completions API. A live
+sample requires `az login`, network access, and a deployed model.
+
+```bash
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet restore sequential.cs
+dotnet build sequential.cs
+dotnet restore concurrent_sample.cs
+dotnet build concurrent_sample.cs
+dotnet restore group_chat.cs
+dotnet build group_chat.cs
+dotnet restore magentic.cs
+dotnet build magentic.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs
+dotnet restore cleanup.cs
+dotnet build cleanup.cs
+dotnet restore test_demo.cs
+dotnet build test_demo.cs
+dotnet restore test_deploy_lab.cs
+dotnet build test_deploy_lab.cs
+
+dotnet run --file test_demo.cs
+dotnet run --file test_deploy_lab.cs
+```
+
+`demo.cs` runs all four workflows by default. Choose one by selector or invoke
+its standalone file:
+
+```bash
+export FOUNDRY_PROJECT_ENDPOINT="https://<account>.services.ai.azure.com/api/projects/orchestration-demo"
+export AZURE_OPENAI_DEPLOYMENT="gpt-4.1-mini"
+dotnet run --file demo.cs -- --pattern sequential
+dotnet run --file demo.cs -- --pattern concurrent
+dotnet run --file demo.cs -- --pattern group-chat
+dotnet run --file demo.cs -- --pattern magentic
+dotnet run --file demo.cs -- --pattern all
+# Standalone pattern entry points:
+dotnet run --file sequential.cs
+dotnet run --file concurrent_sample.cs
+dotnet run --file group_chat.cs
+dotnet run --file magentic.cs
+```
+
+The CLI also accepts `--project-endpoint HTTPS_URL` and `--deployment NAME`.
+`FOUNDRY_PROJECT_ENDPOINT` is required; the deployment defaults to
+`gpt-4.1-mini`. Use `--help` for an entry point's options. Each workflow has a
+five-minute cancellation deadline. Group Chat uses round-robin turns and stops
+after four assistant messages (five-round cap). Magentic asks its manager to
+select specialists and is bounded to five manager rounds, two stalls, and one
+reset.
+
+The .NET lifecycle has the same saved-name, owner-tag, prepare-only, cleanup,
+and explicit `--start-fresh` safeguards as the Python lifecycle. Its commands
+also run the .NET offline harnesses before deploying and then run the live demo;
+they create billable resources and must not be used for offline validation.
+
+```bash
+az login
+az account set --subscription "<subscription-id>"
+dotnet run --file deploy_lab.cs -- --prefix "rg-foundry-student01" --location eastus2
+dotnet run --file cleanup.cs
+```
+
+For a manual Bicep deployment, prepare the saved lifecycle first (copy
+`accountName` from the "Lab lifecycle" line printed by the command):
+
+```bash
+dotnet run --file deploy_lab.cs -- --prefix "rg-foundry-student01" --location eastus2 --start-fresh --prepare-only
+RESOURCE_GROUP="rg-foundry-student01-agent-orchestrations-demo"
+ACCOUNT_NAME="<accountName-from-prepare-output>"
+PRINCIPAL_ID="$(az ad signed-in-user show --query id -o tsv)"
+az provider register --namespace Microsoft.CognitiveServices --wait
+az group create --name "$RESOURCE_GROUP" --location eastus2 \
+  --tags managedBy=foundry-lab-script lab=13-agent-orchestrations \
+  SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
+az deployment group create -g "$RESOURCE_GROUP" -n agent-orchestrations-demo \
+  --template-file infra/main.bicep \
+  --parameters principalId="$PRINCIPAL_ID" location=eastus2 accountName="$ACCOUNT_NAME"
+```
+
+The cleanup app prompts for the exact resource group name; `--yes` skips the
+prompt. Prepare-only and cleanup use `.azure/lab-deployment.json` and do not
+change the Python entry points or shared infrastructure. For manual deployments,
+read the output endpoint values directly from the deployment:
+
+```bash
+export FOUNDRY_PROJECT_ENDPOINT="$(az deployment group show -g "$RESOURCE_GROUP" \
+  -n agent-orchestrations-demo --query properties.outputs.projectEndpoint.value -o tsv)"
+export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RESOURCE_GROUP" \
+  -n agent-orchestrations-demo --query properties.outputs.deployment.value -o tsv)"
+```
 
 ## Deploy
 

@@ -17,9 +17,16 @@ Offline token-flow and Graph mocks do not establish a successful Agent ID login
 or live inference. Complete the tenant setup below before attempting a live run;
 see [recorded test results](../tests.md).
 
+The runnable .NET 10 file-based counterparts are `demo.cs`, `deploy_lab.cs`,
+`cleanup.cs`, and `test_demo.cs`. The original Python files remain unchanged for
+the staged migration; the PowerShell identity setup and Bicep template are shared.
+**Transitional Python documentation:** Python-only commands below are retained
+for the repository-wide runner and do not validate the .NET apps.
+
 ## Prerequisites
 
-- Python 3.10+, Azure CLI with Bicep, and **PowerShell 7** (`pwsh`).
+- .NET 10 SDK, Azure CLI with Bicep, and **PowerShell 7** (`pwsh`).
+- Python 3.10+ is needed only for the retained Python entry points.
 - A tenant with Entra Agent ID enabled and permission to create blueprints and
   agents, for example **Agent ID Developer**.
 - An administrator able to consent to the explicit Graph delegated scopes in
@@ -58,14 +65,14 @@ It sets these environment variables in the current PowerShell process:
 Only non-secret IDs are saved to `.azure/identity.json`, including partial progress
 for cleanup on failure. The secret/token is never printed or written to a file.
 Do not enable PowerShell tracing/transcription or HTTP debug logging.
-Run subsequent commands in this same session so child Python processes inherit
+Run subsequent commands in this same session so child processes inherit
 the variables. Rerunning setup with existing state fails rather than creating
 duplicate identities.
 
 Client secrets are for **local development only**. Production should use the
 recommended identity SDK and managed identity federation or certificates with
-proper token caching/refresh. The Python demo deliberately exposes Learn's two
-short token requests for teaching; it acquires tokens for one short run only.
+proper token caching/refresh. The demos deliberately expose Learn's two short
+token requests for teaching; each acquires tokens for one short run only.
 
 ## 2. Deploy Azure infrastructure (same PowerShell session)
 
@@ -91,19 +98,31 @@ is intentional; Bicep doesn't pretend to create them.
 
 ## 3. Run and present
 
+From this directory, build and run the standalone .NET demo:
+
+```bash
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet run --file demo.cs --
+```
+
+The C# entry point performs the same blueprint-to-child two-stage token exchange
+and sends the child token as a bearer credential to the account-scoped Foundry
+chat-completions endpoint. It does not fall back to the presenter identity or
+account keys. The Python entry point remains available during migration:
+
 ```powershell
 python3 -m venv .venv
 ./.venv/bin/python -m pip install -r requirements.txt
 ./.venv/bin/python demo.py
 ```
 
-These commands target macOS/Linux PowerShell. On Windows use
-`./.venv/Scripts/python.exe` instead of `./.venv/bin/python`.
-
-The script prints the blueprint and agent IDs, requests a blueprint exchange token
+The demo prints the blueprint and agent IDs, requests a blueprint exchange token
 using `fmi_path`, exchanges it for the **child's** Cognitive Services token, and
-passes that token to the Agent Framework OpenAI client. Foundry authorizes the
-request using the agent's account-scoped role. Raw tokens are not displayed.
+passes that token to the model endpoint. Python uses the Agent Framework OpenAI
+client; C# sends the equivalent single-turn chat-completions request directly.
+Foundry authorizes the request using the agent's account-scoped role. Raw tokens
+are not displayed.
 Open **Entra ID -> Agents** in the admin center to show the real blueprint,
 child identity, sponsor, and sign-in activity (logs may take time to appear).
 
@@ -113,23 +132,68 @@ an account key when the agent's request fails.
 
 ## Validate and troubleshoot
 
+Offline tests use mock HTTP responses and, when `pwsh` is installed, mock Graph
+commands; they do not contact Azure or make live model requests:
+
+```bash
+dotnet restore test_demo.cs
+dotnet build test_demo.cs
+dotnet run --file test_demo.cs
+```
+
+The equivalent retained Python checks and Bicep validation are:
+
 ```powershell
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
 ./.venv/bin/python -m unittest discover -s . -p 'test_*.py' -v
 ```
 
-Offline tests cover the two-stage token flow, credential errors, framework token
-wiring, and a mocked execution of the PowerShell Graph setup. No tenant changes
-are made by tests. Allow time for both Graph consent and Azure RBAC propagation.
+The .NET tests cover the two-stage token flow, credential errors, request
+authentication, framework-equivalent tutor request, CLI validation, and a mocked
+execution of the PowerShell Graph setup. No tenant changes are made by tests.
+Allow time for both Graph consent and Azure RBAC propagation.
 403 at provisioning means check tenant scopes/roles; 403 at inference means check
 the **agent's** role. After leaving the session, reuse the IDs and configure a new
 blueprint credential securely; the script cannot recover the old secret.
 
+## Automated .NET lifecycle (optional)
+
+Instead of the manual Azure deployment above, the .NET lifecycle helper runs the
+local tests, deploys this lab's Bicep template, and then runs the live tutor. It
+creates billable Azure resources and sends a live model request. From this
+directory, use:
+
+```powershell
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file deploy_lab.cs -- --location eastus2
+```
+
+`--subscription`, `--prefix`, and `--principal-id` are also supported. Deployment
+requires the identity environment variables created above and matching
+`.azure/identity.json`. Do not run deployment unless Azure changes and live
+inference are authorized.
+
 ## Cleanup (both Azure and tenant)
 
 Deleting the resource group does **not** delete tenant identities. In the same
-authenticated PowerShell session, an authorized blueprint owner/admin can run:
+authenticated PowerShell session, an authorized blueprint owner/admin can run
+the standalone helper:
+
+```powershell
+dotnet restore cleanup.cs
+dotnet build cleanup.cs
+dotnet run --file cleanup.cs -- --help
+dotnet run --file cleanup.cs --
+```
+
+The helper prompts for the exact resource group name and blueprint object ID.
+Pass `--yes` only for intentional unattended cleanup. `--azure-only` explicitly
+deletes only the recorded Azure resource group, retaining tenant identities.
+Cleanup requires Azure CLI for the group and `pwsh` plus Microsoft Graph
+authorization for tenant objects. The previous manual cleanup procedure is:
 
 ```powershell
 az group delete --name $group --yes
