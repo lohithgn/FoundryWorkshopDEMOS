@@ -53,9 +53,52 @@ up to five minutes to propagate. The runner retries that specific response for
 up to five minutes, records the attempts, and still fails unless the exact
 custom-blocklist intervention is observed.
 
-## Run
+## .NET 10 file-based counterpart
 
-Azure CLI must be signed in as a user with resource creation, role assignment,
+The native C# entry points are standalone .NET 10 file-based apps: there are no
+`.csproj`/`.sln` files and no NuGet dependencies. Restore/build every app and run
+the evidence-gate-only offline harness. Starting at the repository root, enter
+the lab directory first. The shared source uses the file-app `#:include`
+directive, available in .NET 10 SDK 10.0.300+:
+
+```bash
+cd 38-native-guardrails
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file deploy_lab.cs -- --help
+```
+
+For a live run, first deploy with the existing Python root workflow or the
+standalone C# runner (which compiles/lints Bicep, deploys, and runs the C# demo):
+
+```bash
+dotnet run --file deploy_lab.cs -- --prefix rg-foundry
+```
+
+After deployment, replay the C# evidence gates with `dotnet run --file demo.cs`.
+`dotnet run --file deploy_lab.cs -- --offline-only` also runs the offline harness,
+then builds/lints Bicep; it needs Azure CLI with Bicep installed but does not
+deploy. Live C# calls use Azure CLI user tokens for ARM
+(`https://management.azure.com/`), model inference
+(`https://cognitiveservices.azure.com/`), and Foundry project agents
+(`https://ai.azure.com/`). These are real service requests and may incur charges.
+No live deployment or model/agent workload was run during this conversion, so
+the offline test result is not live service evidence.
+As with Python, saved `{subscription,resourceGroup,outputs}` deployment metadata
+takes precedence over inherited endpoint/deployment environment variables.
+
+## Transitional Python prerequisites and directions
+
+This entire Python-only section—including its prerequisite notes and deployment
+examples—is transitional documentation for the shared root runner and
+`deploy_lab.py`. Azure CLI must be
+signed in as a user with resource creation, role assignment,
 ARM read and Cognitive Services OpenAI User permissions. Python 3.10+ is required.
 The native agent gate additionally uses Foundry User on the project, assigned by
 the template. Both deployments need `gpt-4.1-mini` `2025-04-14` GlobalStandard
@@ -63,7 +106,8 @@ quota: capacity 3 for the model baseline plus 5 for the agent baseline.
 `deploy_lab.py` restores dependencies, compiles/lints Bicep, tests, deploys and
 runs live evidence. Resources stay deployed for presentation.
 
-From the repository root: `python3 deploy.py --demo 38`.
+The shared root runner and `requirements.txt` remain unchanged during the
+transition. From the repository root: `python3 deploy.py --demo 38`.
 From the lab folder, the standalone alternative is
 `python3 deploy_lab.py --prefix rg-foundry`.
 

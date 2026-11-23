@@ -33,7 +33,58 @@ automatic remediation, or a full replacement for the Foundry portal.
 The automatic verdict/recovery sequence has **not** passed live; the working
 manual cloud-grader diagnostic is not evidence that continuous evaluation fired.
 
-## Prerequisites
+## .NET 10 file-based counterpart
+
+Requires the .NET 10 SDK. The `.cs` files are independent .NET 10 file-based applications, with no project,
+solution, or Python wrapper. They provide executable offline regression coverage
+for evaluation/response identity matching, strict verdict validation, pending
+state, bounded UI request bodies, JSON-root validation, service-error status mapping,
+input boundaries, and loopback/origin policy. The cloud implementation uses
+`Azure.AI.Projects.Agents` and `Azure.AI.Projects` 3.0.0-beta.6 for prompt versions,
+endpoint routing, and native continuous-evaluation rules; project Responses and
+Azure Monitor APIs provide actual traffic and telemetry. The C# UI never fabricates
+an evaluation or trace result.
+
+From this directory, the exact offline restore/build/test and safe CLI checks are:
+
+```bash
+mkdir -p .dotnet-tmp
+export TMPDIR="$PWD/.dotnet-tmp"
+trap 'rm -rf "$PWD/.dotnet-artifacts" "$PWD/.dotnet-tmp"' EXIT
+dotnet restore demo.cs
+dotnet restore deploy_lab.cs
+dotnet restore ui.cs
+dotnet restore test_demo.cs
+dotnet build demo.cs --no-restore
+dotnet build deploy_lab.cs --no-restore
+dotnet build ui.cs --no-restore
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet run --file deploy_lab.cs -- --help
+dotnet run --file ui.cs -- --help
+```
+
+`deploy_lab.cs --infra-only` provisions billable Azure resources and is not an
+offline test. Full `deploy_lab.cs` and `demo.cs --live-test` perform paid/live cloud
+operations and were not part of validation. The Python deployment, setup, live-test,
+and UI sections below remain the **transitional compatibility path**; they are
+unchanged and do not silently substitute local grading or fallback results.
+
+Cloud-backed C# commands (not part of offline validation; these create resources,
+invoke models, and trigger paid continuous evaluations):
+
+```bash
+dotnet run --file deploy_lab.cs -- --infra-only
+dotnet run --file demo.cs -- --setup
+dotnet run --file demo.cs -- --live-test
+dotnet run --file ui.cs -- --port 8037
+```
+
+Running `deploy_lab.cs` without `--infra-only` also runs setup and the complete
+live regression/recovery gate.
+
+## Transitional Python prerequisites
 
 - Python 3.10+, Azure CLI/Bicep, and `az login` as a user with resource creation
   and role-assignment permissions in the selected subscription.
@@ -49,7 +100,7 @@ Publisher for trace ingestion, plus Reader on Application Insights and Log
 Analytics Reader on its workspace for service-side trace access. No Azure credentials are stored in the repository
 or sent to the browser.
 
-## Deploy and test
+## Transitional Python deploy and test
 
 From this directory:
 
@@ -96,7 +147,7 @@ failed evaluator service or failed lab. Evaluation infrastructure errors fail th
 lab explicitly. The known-good route is restored in a `finally` block even when
 regression verification fails.
 
-## Simple operations UI
+## Transitional Python simple operations UI
 
 ```bash
 .venv/bin/python ui.py

@@ -28,8 +28,10 @@ continuation uses `previous_response_id`.
 
 ## Prerequisites and boundaries
 
-- Python 3.10+, Azure CLI, Bicep, Azure model quota, and an interactive Azure user
-  with resource creation and role-assignment permissions.
+- .NET 10 SDK (for the C# file-based apps), Azure CLI, Bicep, Azure model quota,
+  and an interactive Azure user with resource creation and role-assignment permissions.
+- Python 3.10+ remains required by the repository's deployment runner and the
+  original Python demo.
 - Microsoft 365 users in the **same tenant** as the Foundry project. Cross-tenant
   exchange and application-only Work IQ access are unsupported.
 - Work IQ API billing with **Copilot Credits** enabled by your administrator.
@@ -50,9 +52,67 @@ processed outside the Azure compliance boundary. Review tenant policy, billing,
 regional processing and service terms before authorization. Use approved test
 accounts. Do not query real mail or files during this identity-only exercise.
 
+## C# file-based apps (parallel migration)
+
+`demo.cs`, `configure_connection.cs`, and `test_demo.cs` are standalone .NET 10
+file-based apps. They have no project/solution file, NuGet dependencies, or Python
+wrapper. The Python scripts remain unchanged and are still used by the root
+`deploy.py` workflow; the C# apps are a parallel implementation, not a replacement
+for that workflow yet.
+
+Run this command block from the repository root; if already in `35-work-iq`,
+skip the first `cd` line. It restores and compiles each app, runs the offline
+assertion harness, then exercises help and configuration-only paths:
+
+```bash
+cd 35-work-iq
+dotnet restore demo.cs
+dotnet restore configure_connection.cs
+dotnet restore test_demo.cs
+dotnet build demo.cs --no-restore
+dotnet build configure_connection.cs --no-restore
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-build
+dotnet run --file demo.cs -- --help
+dotnet run --file configure_connection.cs -- --help
+dotnet run --file demo.cs -- --validate-config
+```
+
+There is no `.csproj` or test SDK, so the offline test command is
+`dotnet run --file test_demo.cs --no-build` rather than `dotnet test`.
+
+`--validate-config` only reads `.azure/deployment.json` and environment values;
+it makes no network requests and requires a deployment record. The test harness
+uses synthetic identities and temporary local test records only. For the live
+connection setup, first provision the same Entra app and deployment described
+below, then set `WORK_IQ_CLIENT_ID` and load `WORK_IQ_CLIENT_SECRET` from an
+approved secret store without echoing it:
+
+```bash
+dotnet run --file configure_connection.cs
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --ask-only --show-consent
+dotnet run --file demo.cs -- --ask-only --resume
+```
+
+Live C# commands contact Azure/Graph/Foundry and Work IQ and may incur charges;
+they were not run as part of offline validation. The C# port uses direct REST
+calls rather than the Python Azure AI Projects SDK. Native Work IQ agent
+creation/version readback and Responses API wire compatibility therefore still
+need validation against the preview service with an approved test tenant. Until
+that and the two-user live check are complete, use the Python workflow as the
+current source-of-truth implementation; its documented live Work IQ and
+two-user verification remains blocked. The C# port has not been live-validated.
+
+The following sections retain **transitional Python compatibility instructions**
+for the unchanged Python deployment/demo workflow. The Python command examples
+are not required by the C# file-based apps.
+
 ## 1. Provision the Azure infrastructure
 
 From the repository root:
+
+Transitional Python compatibility command (repository deployment runner):
 
 ```bash
 python3 deploy.py --demo 35
@@ -68,6 +128,8 @@ Foundry User for the developer, and project-scoped Foundry Project Manager for
 connection administration. It does not create an OAuth app or bypass consent.
 
 Alternatively, deploy manually:
+
+Transitional Python compatibility commands for setup and offline Python tests:
 
 ```bash
 cd 35-work-iq
@@ -97,6 +159,8 @@ set `FOUNDRY_PROJECT_ENDPOINT`, `FOUNDRY_PROJECT_RESOURCE_ID`,
 3. Configure the Foundry connection from the lab directory. Never commit or log
    the secret, pass it in command-line arguments, or place it in a prompt:
 
+   Transitional Python compatibility command:
+
    ```bash
    export WORK_IQ_CLIENT_ID="<approved-app-client-id>"
    # Set WORK_IQ_CLIENT_SECRET from your approved secret store without echoing it.
@@ -116,6 +180,8 @@ production connection. Replacing it may require renewed user authorization.
 
 ## 3. Caller: authorize and test the saved agent
 
+Transitional Python compatibility command:
+
 ```bash
 .venv/bin/python demo.py
 ```
@@ -123,6 +189,8 @@ production connection. Replacing it may require renewed user authorization.
 The agent remains in project `work-iq` as **work-iq-user-agent**. A first-use
 `oauth_consent_request` causes exit code **2**, not PASS. The consent URL is kept
 in a mode-0600 ignored state file, not printed into the deployment transcript:
+
+Transitional Python compatibility commands:
 
 ```bash
 .venv/bin/python demo.py --ask-only --show-consent
@@ -159,6 +227,8 @@ az role assignment create --assignee-object-id "<second-user-object-id>" \
 Alternatively supply `secondPrincipalId` when manually deploying Bicep.
 Run the first user's test and note its printed report path. For the second user,
 use a **separate** Azure CLI configuration and the same saved agent:
+
+Transitional Python compatibility commands for the second user:
 
 ```bash
 AZURE_CONFIG_DIR="$HOME/.azure-workiq-lab-second" az login --tenant "<tenant-id>"
