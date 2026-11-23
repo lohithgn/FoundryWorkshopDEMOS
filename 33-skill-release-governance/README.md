@@ -1,5 +1,26 @@
 # 33 - Release a skill independently from its consumers
 
+## .NET 10 file-based app
+
+The runnable C# entry points are `demo.cs` and `test_demo.cs`; no project or
+solution file is required. From this folder:
+
+```bash
+dotnet restore demo.cs
+dotnet build demo.cs
+dotnet run --file test_demo.cs
+dotnet run --file demo.cs -- --help
+dotnet run --file demo.cs -- --regression
+```
+
+The live command requires .NET 10, Azure CLI, `az login`, the documented project
+endpoint and deployment, and preview Skills API access. Live Azure behavior has
+not been run as part of this migration.
+
+The original Python files and commands below are retained unchanged temporarily
+for the root runner during staged integration. They are transitional, not the
+.NET execution path.
+
 Store two immutable pricing-skill versions in the preview Foundry Skills API.
 Evaluate the candidate on two fixed synthetic pricing facts **before** promoting
 its default. Compare a default-resolving consumer with a v1-pinned consumer,
