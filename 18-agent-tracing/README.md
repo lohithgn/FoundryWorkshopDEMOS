@@ -1,5 +1,9 @@
 # 18 · Agent tracing: find a slow tool and a failed tool
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 [Feature backlog](../BACKLOG.md#f018---microsoft-foundry-agent-tracing)
 
 A deliberately small, scripted pricing agent executes a real pricing function and
@@ -9,7 +13,7 @@ Azure Monitor trace exporter. It is not an automatic model-selected tool loop.
 
 ## Prerequisites / deploy
 
-Python 3.10+, Azure CLI with Bicep, `az login`, a subscription with `gpt-4.1-mini` quota in
+.NET 10 SDK, Azure CLI with Bicep, `az login`, a subscription with `gpt-4.1-mini` quota in
 `eastus2` (or override `location`), and permission to create resources and role
 assignments. No API keys. Run commands from this directory.
 
@@ -19,15 +23,20 @@ az account set --subscription "<subscription-id>"
 az provider register --namespace Microsoft.CognitiveServices --wait
 az provider register --namespace Microsoft.Insights --wait
 az provider register --namespace Microsoft.OperationalInsights --wait
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
 az group create -n lab18-tracing -l eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
 az deployment group create -g lab18-tracing -n lab18 -f infra/main.bicep \
   -p principalId="$(az ad signed-in-user show --query id -o tsv)"
 export AZURE_OPENAI_ENDPOINT="$(az deployment group show -g lab18-tracing -n lab18 --query properties.outputs.endpoint.value -o tsv)"
 export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g lab18-tracing -n lab18 --query properties.outputs.deployment.value -o tsv)"
 export APPLICATIONINSIGHTS_CONNECTION_STRING="$(az deployment group show -g lab18-tracing -n lab18 --query properties.outputs.applicationInsightsConnectionString.value -o tsv)"
-.venv/bin/python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live inference and Azure Monitor export (not part of offline validation):
+dotnet run --file demo.cs
 ```
 
 `principalType=ServicePrincipal` is available for a workload identity; use its
@@ -96,11 +105,11 @@ The exporter receives this demo's `TracerProvider` explicitly so its resource
 metadata does not depend on an unrelated or uninitialized global provider.
 
 ```bash
-.venv/bin/python -m unittest -v
+dotnet run --file test_demo.cs
 az bicep build --file infra/main.bicep --stdout > /dev/null
 ```
 
-Tests use a real in-memory OTel exporter and mocked model requests: parentage,
+Offline tests use an in-memory ActivityListener and mocked model requests: parentage,
 usage, slow call, intentional tool ERROR, and secret-safe model failure. No cloud
 calls occur in tests. A successful flush does **not** prove Azure accepted spans;
 verify the query and exporter warnings. Exporter and GenAI semantic conventions
@@ -126,7 +135,7 @@ Delete the root runner's actual resource group instead if used. Remove local
 
 - [Configure tracing and privacy](https://learn.microsoft.com/azure/foundry/observability/how-to/trace-agent-framework)
 - [Azure Monitor custom instrumentation](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-add-modify)
-- [Azure Monitor trace exporter](https://learn.microsoft.com/python/api/azure-monitor-opentelemetry-exporter/azure.monitor.opentelemetry.exporter.azuremonitortraceexporter)
+- [Azure Monitor OpenTelemetry exporter for .NET](https://learn.microsoft.com/dotnet/api/azure.monitor.opentelemetry.exporter.azuremonitorexporterextensions.addazuremonitortraceexporter)
 
 The lab uses explicit OTel spans plus `AzureMonitorTraceExporter`, not a fictional
 Foundry tracing API. No resources are deployed as part of offline validation.

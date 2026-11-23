@@ -1,5 +1,9 @@
 # 17 — RAG fundamentals before Foundry IQ
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 The application chunks three synthetic documents, calls a real Foundry-hosted embedding
 deployment, uploads vectors to **real Azure AI Search**, retrieves evidence, then calls
 the Foundry-hosted chat deployment. No managed IQ, local vector approximation, API keys,
@@ -7,7 +11,7 @@ or simulated cloud responses are used in the live runner.
 
 ## Prerequisites and deployment
 
-Python 3.10+, Azure CLI with Bicep, an Azure subscription, and `az login` as a user.
+.NET 10 SDK, Azure CLI with Bicep, an Azure subscription, and `az login` as a user.
 The deployer needs permission to create Cognitive Services/Search resources and role
 assignments (for example Contributor plus User Access Administrator). Register
 `Microsoft.CognitiveServices` and `Microsoft.Search` if necessary. The selected region
@@ -38,14 +42,18 @@ az deployment group create --resource-group "$RG" --name lab17 \
   --template-file infra/main.bicep \
   --parameters principalId="$PRINCIPAL_ID" location="$LOCATION" \
   --query properties.outputs -o json > .azure/outputs.json
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-export AZURE_OPENAI_ENDPOINT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["endpoint"]["value"])')
-export AZURE_OPENAI_DEPLOYMENT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["deployment"]["value"])')
-export AZURE_OPENAI_EMBEDDING_DEPLOYMENT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["embeddingDeployment"]["value"])')
-export AZURE_SEARCH_ENDPOINT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["searchEndpoint"]["value"])')
-python demo.py
+export AZURE_OPENAI_ENDPOINT=$(jq -r '.endpoint.value' .azure/outputs.json)
+export AZURE_OPENAI_DEPLOYMENT=$(jq -r '.deployment.value' .azure/outputs.json)
+export AZURE_OPENAI_EMBEDDING_DEPLOYMENT=$(jq -r '.embeddingDeployment.value' .azure/outputs.json)
+export AZURE_SEARCH_ENDPOINT=$(jq -r '.searchEndpoint.value' .azure/outputs.json)
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live model and Azure AI Search operations (not part of offline validation):
+dotnet run --file demo.cs
 ```
 
 Role assignment propagation can take minutes; retry a 403 after checking roles.
@@ -62,7 +70,7 @@ the root runner's environment mapping; this directory can also run independently
 
 ## What to inspect
 
-`python demo.py` is noninteractive. Both 12-word and 48-word configurations use exactly
+`dotnet run --file demo.cs` is noninteractive. Both 12-word and 48-word configurations use exactly
 the same documents, four questions, labels, embeddings model and top-3 limit.
 Keyword retrieval uses `search_text`, vector retrieval uses `VectorizedQuery`, and
 hybrid sends both to Search (which combines rankings). Inspect printed passages and
@@ -89,7 +97,7 @@ Search: durable index, keyword/vector ranking and hybrid fusion.
 No credentials, network, or installed SDKs are needed for these unit tests:
 
 ```sh
-python3 -m unittest -v test_demo.py
+dotnet run --file test_demo.cs
 mkdir -p .azure
 az bicep build --file infra/main.bicep --stdout > .azure/template.json
 ```
@@ -109,8 +117,8 @@ The live runner validated citations and quotes against actual retrieved passages
 
 Recall@3 was 1.0 in every configuration. MRR@3 was 0.833 for 12-word keyword
 chunks and 1.0 otherwise, matching the previous run. Index-name readback before
-and after the run confirmed no new indexes remained. Six offline tests passed
-separately. Evidence is retained in ignored `.azure/live-2026-10-26.log` and
+and after the run confirmed no new indexes remained. The historical live run above was executed by the transitional Python version;
+the .NET offline harness is validated separately. Evidence is retained in ignored `.azure/live-2026-10-26.log` and
 `.azure/live-2026-10-26.json`.
 
 ## Costs and cleanup
@@ -135,6 +143,6 @@ rm -rf .azure .venv __pycache__
 
 ## Verified API references
 
-- [Azure OpenAI v1 Python endpoints and Entra authentication](https://learn.microsoft.com/azure/ai-foundry/openai/how-to/switching-endpoints)
+- [Azure OpenAI v1 endpoints and Entra authentication](https://learn.microsoft.com/azure/ai-foundry/openai/how-to/switching-endpoints)
 - [Vector and hybrid queries](https://learn.microsoft.com/azure/search/vector-search-how-to-query)
-- [Python vector quickstart](https://learn.microsoft.com/azure/search/search-get-started-vector)
+- [Azure AI Search vector quickstart](https://learn.microsoft.com/azure/search/search-get-started-vector)

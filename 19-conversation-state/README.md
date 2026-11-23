@@ -1,5 +1,9 @@
 # 19 — Conversation state, context limits and memory boundaries
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 A real Foundry model tutors two **logical application users**. SQLite is the supported
 durable application-state mechanism: Chat Completions itself is stateless, so the app
 must explicitly send history on each request. This is a local single-process teaching
@@ -7,7 +11,7 @@ application, not an authenticated web service.
 
 ## Prerequisites and standalone deployment
 
-Python 3.10+, Azure CLI/Bicep and `az login` as a user. The deployer needs permission
+.NET 10 SDK, Azure CLI/Bicep and `az login` as a user. The deployer needs permission
 to create Cognitive Services resources and role assignments (Contributor plus User
 Access Administrator is one option). Register `Microsoft.CognitiveServices` if needed.
 The region must support `gpt-4.1-mini` version `2025-04-14`, GlobalStandard capacity 10,
@@ -27,12 +31,16 @@ az deployment group create --resource-group "$RG" --name lab19 \
   --template-file infra/main.bicep \
   --parameters principalId="$PRINCIPAL_ID" location="$LOCATION" \
   --query properties.outputs -o json > .azure/outputs.json
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-export AZURE_OPENAI_ENDPOINT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["endpoint"]["value"])')
-export AZURE_OPENAI_DEPLOYMENT=$(python -c 'import json; print(json.load(open(".azure/outputs.json"))["deployment"]["value"])')
-python demo.py
+export AZURE_OPENAI_ENDPOINT=$(jq -r '.endpoint.value' .azure/outputs.json)
+export AZURE_OPENAI_DEPLOYMENT=$(jq -r '.deployment.value' .azure/outputs.json)
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live model calls (not part of offline validation):
+dotnet run --file demo.cs
 ```
 
 Bicep disables local auth and grants Foundry User (role ID
@@ -61,14 +69,14 @@ memory deletion. The default budget is deliberately tiny to make loss visible.
 ## Persist across separate CLI invocations
 
 ```sh
-python demo.py --action turn --user alice --conversation lesson \
+dotnet run --file demo.cs -- --action turn --user alice --conversation lesson \
   --prompt 'My notebook label is MAPLE-742. Remember it.'
-python demo.py --action turn --user alice --conversation lesson \
+dotnet run --file demo.cs -- --action turn --user alice --conversation lesson \
   --prompt 'What is my notebook label?'
-python demo.py --action show --user alice --conversation lesson
-python demo.py --action show --user bob --conversation lesson
-python demo.py --action reset --user alice --conversation lesson
-python demo.py --action delete --user alice --conversation lesson
+dotnet run --file demo.cs -- --action show --user alice --conversation lesson
+dotnet run --file demo.cs -- --action show --user bob --conversation lesson
+dotnet run --file demo.cs -- --action reset --user alice --conversation lesson
+dotnet run --file demo.cs -- --action delete --user alice --conversation lesson
 ```
 
 `--state` defaults to `.state/conversations.sqlite3`, with owner-only file permissions.
@@ -109,7 +117,7 @@ Tests write unique disposable SQLite files **in this directory**, then remove th
 No cloud access or installed SDKs are required.
 
 ```sh
-python3 -m unittest -v test_demo.py
+dotnet run --file test_demo.cs
 mkdir -p .azure
 az bicep build --file infra/main.bicep --stdout > .azure/template.json
 ```
@@ -128,13 +136,13 @@ The Azure endpoint is public; GlobalStandard processing can leave the account
 region. Logical Alice/Bob scopes do not alter the Azure billing/authentication identity.
 
 ```sh
-python demo.py --action delete --user alice --conversation lesson
+dotnet run --file demo.cs -- --action delete --user alice --conversation lesson
 az group delete --name "$RG" --yes --no-wait
-rm -rf .state .azure .venv __pycache__
+rm -rf .state .azure
 ```
 
 Delete only this lab's dedicated group. Local `rm` is not secure erasure.
 
 ## API reference
 
-[Azure OpenAI v1 Python endpoints, deployment names and Entra authentication](https://learn.microsoft.com/azure/ai-foundry/openai/how-to/switching-endpoints)
+[Azure OpenAI v1 endpoints, deployment names and Entra authentication](https://learn.microsoft.com/azure/ai-foundry/openai/how-to/switching-endpoints)

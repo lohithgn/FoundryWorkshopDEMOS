@@ -1,12 +1,16 @@
 # Human approval before a tool action
 
+> **Migration note:** The Python entry point and `requirements.txt` remain unchanged
+> temporarily for the root runner. They are transitional compatibility files; use
+> the .NET 10 file-based app below for this lab.
+
 A Foundry model proposes a **synthetic** workshop booking through function
 calling. The application, not the model, validates the proposal and owns the
 execution gate. Nothing is booked by the default command.
 
 ## Deploy
 
-Requires Python 3.10+, Azure CLI/Bicep, an interactive Entra user with resource
+Requires the .NET 10 SDK, Azure CLI/Bicep, an interactive Entra user with resource
 creation/role-assignment rights, and `gpt-4.1-mini` quota in a supported region.
 From this directory:
 
@@ -22,10 +26,14 @@ export AZURE_OPENAI_ENDPOINT="$(az deployment group show -g "$RG" -n demo \
   --query properties.outputs.endpoint.value -o tsv)"
 export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RG" -n demo \
   --query properties.outputs.deployment.value -o tsv)"
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+# Live model proposal only; no booking is created by this command:
+dotnet run --file demo.cs
 ```
 
 Review the exact workshop and attendee count, then copy the printed **approve**
@@ -50,7 +58,7 @@ or `tool_calls`; both require exactly one valid tool call. Truncation, refusal,
 unexpected operations, and mismatched arguments still fail before any action.
 
 ```bash
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet run --file test_demo.cs
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
 ```
