@@ -1,6 +1,11 @@
 # 45 — Permission-native Foundry IQ + Fabric IQ
 
-> **Current full-lab status: BLOCKED.** Native Blob permission checks passed,
+> **Migration status:** .NET 10 file-based C# is the current lab workflow.
+> Original Python sources and requirements are retained unchanged temporarily
+> for staged root-runner integration. Python-era evidence below is historical
+> and does not validate the .NET port; no .NET live Azure validation is claimed.
+
+> **Historical Python full-lab status: BLOCKED.** Native Blob permission checks passed,
 > but no second real user or enabled/licensed synthetic Fabric environment was
 > available. Omitted identity is not a second-user test.
 
@@ -17,7 +22,7 @@ Two **native** integrations, using synthetic data only:
 
 ## Deploy and run
 
-Python 3.11+, Azure CLI/Bicep, signed-in Entra user with resource/role-assignment
+The .NET 10 SDK, Azure CLI/Bicep, signed-in Entra user with resource/role-assignment
 rights, supported model quota, and permission-filter preview availability.
 Defaults: Foundry eastus2, Search westus2. Basic Search bills while idle; LRS
 storage and chat/embedding usage also incur charges. Chat capacity **5** and
@@ -25,21 +30,27 @@ embedding capacity **1** are throughput allocations, not prepaid PTUs or spendin
 caps; no Fabric capacity is purchased automatically. Chat capacity 5 avoids
 throttling two ~900-token permission probes.
 
-From the repository root (runtime outputs are mapped/loaded automatically):
+From this lab directory, restore/build and run safe help and offline checks:
 
 ```bash
-python3 deploy.py --demo 45
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
+dotnet restore deploy_lab.cs
+dotnet build deploy_lab.cs --no-restore
+dotnet run --file deploy_lab.cs -- --help
 ```
 
-Standalone:
+After confirming subscription, location, user permissions, and charges, deploy
+using the standalone ownership-checked helper. `--infra-only` still creates
+billable Azure resources; without it, the helper also runs live gates:
 
 ```bash
-python3 -m venv 45-governed-iq/.venv
-45-governed-iq/.venv/bin/pip install -r 45-governed-iq/requirements.txt
-45-governed-iq/.venv/bin/python 45-governed-iq/deploy_lab.py --infra-only
-cd 45-governed-iq
-.venv/bin/python -m unittest -v
-.venv/bin/python demo.py
+dotnet run --file deploy_lab.cs -- --infra-only
+dotnet run --file demo.cs
 ```
 
 The standalone wrapper creates the group itself and records
@@ -111,7 +122,7 @@ no stored keys, tokens, OAuth secrets, or broad directory changes.
 
 ## Cleanup
 
-Basic Search continues billing when idle; stopping Python does not remove Search,
+Basic Search continues billing when idle; stopping the app does not remove Search,
 Storage, the knowledge source or the persistent Fabric-tool agent. Confirm the
 actual group in `.azure/deployment.json` (a recorded/custom target can differ),
 then delete only this lab's dedicated group:
@@ -128,7 +139,7 @@ dedicated profile when finished. Local ignored evidence remains.
 
 ## Current facts and boundaries
 
-Verified against official Learn and installed `azure-ai-projects==2.7.0`:
+Contract facts were historically checked against official Learn and Python SDK `azure-ai-projects==2.7.0`:
 
 * [Blob native RBAC ingestion](https://learn.microsoft.com/azure/search/search-blob-indexer-role-based-access)
 * [Query-time source identity enforcement](https://learn.microsoft.com/azure/search/search-query-access-control-rbac-enforcement)
@@ -139,13 +150,11 @@ Verified against official Learn and installed `azure-ai-projects==2.7.0`:
 Search preview API `2026-08-01-preview`; no SharePoint app registration is needed
 for this Blob-native variant. Container RBAC is the supported source permission
 model, not arbitrary per-document ACL emulation. Group synchronization and
-revocation can have propagation delays. Pylance transport was unavailable during
-implementation; installed SDK inspection, syntax compilation and unittest are the
-verification fallback. See ignored live report for the exact current execution.
+revocation can have propagation delays.
 
-## Live verification — 2026-11-03
+## Historical Python live verification — 2026-11-03
 
-**18 offline tests PASS**, Bicep build/lint PASS, and actual ARM deployment PASS in
+**Historical Python results:** 18 offline tests, Bicep build/lint, and ARM deployment passed in
 `rg-foundry-governed-iq-demo` (Foundry eastus2 / Search westus2).
 Native managed source permission synchronization, successful indexing, real
 authorized source read **200**, protected knowledge-base retrieval **1 reference**,
@@ -153,9 +162,9 @@ and genuinely omitted query-source identity denial all **PASS**.
 RBAC/source authorization caches needed propagation during setup; no elevated
 read or application filter was used to establish retrieval success.
 
-Full lab remains **BLOCKED**: no secondary signed-in CLI user is configured; Fabric
+The full Python lab remained **BLOCKED**: no secondary signed-in CLI user was configured; Fabric
 and Power BI token probes both returned **AADSTS500014** (tenant service principal
 disabled), ARM returned **zero Fabric capacities**, and designated synthetic Fabric
-workspace/data-agent IDs are absent. No Fabric tool query or two-user success is
-claimed. Exact evidence is retained in `.azure/live-report.json` and
+workspace/data-agent IDs were absent. No Fabric tool query or two-user success was
+claimed. This is not .NET live validation. Exact historical evidence is retained in `.azure/live-report.json` and
 `.azure/fabric-preflight.json`.

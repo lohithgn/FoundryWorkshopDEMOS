@@ -1,5 +1,10 @@
 # 43 — Native one-time agent routines
 
+> **Migration status:** .NET 10 file-based C# is the current lab workflow.
+> Original Python sources and requirements are retained unchanged temporarily
+> for staged root-runner integration. Python-era evidence below is historical
+> and does not validate the .NET port; no .NET live Azure validation is claimed.
+
 > **Current strict live status: BLOCKED.** The final root replay failed native
 > agentic-token issuance despite explicit creator dispatch identity and ready,
 > enabled identities. The tenant/service cause is unresolved; the historical
@@ -20,37 +25,35 @@ A manual dispatch or locally created response cannot satisfy this lab's evidence
 
 ## Run
 
-Requires Python 3.10+, Azure CLI/Bicep, a signed-in Entra user with resource
+Requires the .NET 10 SDK, Azure CLI/Bicep, a signed-in Entra user with resource
 creation/role-assignment rights, the model quota below, and native routine preview
 availability. Preview/API access is separate from successful ARM deployment.
 
-```bash
-python3 deploy.py --demo 43 --location eastus2
-```
-
-Manual deployment:
+Restore/build each file-based entry point; help and the offline harness make no
+Azure calls:
 
 ```bash
-cd 43-agent-routines
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python -m unittest -q
-az login
-az account set --subscription "<subscription-id>"
-mkdir -p .azure
-az group create --name rg-foundry-agent-routines-demo --location eastus2 --tags SecurityControl=Ignore SecurityExemption=StorageAccountKeyAccess
-az deployment group create --resource-group rg-foundry-agent-routines-demo --template-file infra/main.bicep --parameters location=eastus2 principalId="$(az ad signed-in-user show --query id -o tsv)" \
-  --query '{outputs:properties.outputs}' -o json > .azure/deployment.json
-.venv/bin/python demo.py --preflight
-.venv/bin/python demo.py
-# Optional native agent-identity dispatch; tenant issuance failures remain BLOCKED/nonzero:
-.venv/bin/python demo.py --dispatch-identity agent
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs -- --help
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs
 ```
 
-The root runner supplies environment outputs and saves `.azure/deployment.json`
-as `{subscription, resourceGroup, outputs}`. The manual commands save the required
-`outputs` envelope. Existing deployments can instead use these mappings; clear
-stale environment overrides when switching projects:
+After an authorized Bicep deployment, run preflight and the native timer workflow
+with current deployment outputs. This live workflow creates billable resources
+and a one-time native routine:
+
+```bash
+dotnet run --file demo.cs -- --preflight
+dotnet run --file demo.cs
+dotnet run --file demo.cs -- --dispatch-identity agent
+```
+
+The final command is an explicit alternate dispatch identity and does not fall
+back to creator identity. Existing deployments can instead use these mappings;
+clear stale environment overrides when switching projects:
 
 | Output | Environment |
 |---|---|
@@ -65,19 +68,19 @@ The caller needs role-assignment create/delete permission at `projectResourceId`
 
 ## Actual verification
 
-24 offline tests pass: root/no-argument creator default, actual SDK wire JSON captured before transport, explicit agent opt-in without fallback, identity mismatch rejected before enabling, ARM readiness guard, safe service-request diagnostics, native timer/lifecycle, response linkage (including native responses without conversations), rejecting manual dispatch/local cron evidence, and cleanup even after an indeterminate POST/network failure. Bicep and Python syntax compiled. Pylance transport was unavailable; installed SDK signatures/runtime and unittest provided verification.
+**Historical Python validation only:** 24 offline tests covered creator default, dispatch identity, timer/lifecycle, response linkage, rejection of manual dispatch/local cron, and cleanup failures. This evidence does not validate the .NET implementation.
 
-ARM deployment: **succeeded**, `rg-foundry-agent-routines-demo`, East US 2, subscription `1217c203-6c76-47b4-b61c-9bba62dc8e02`.
+**Historical Python ARM deployment:** succeeded in `rg-foundry-agent-routines-demo`, East US 2. This does not establish a .NET deployment.
 
-Native routines list/preflight: **PASS**. Initial creation encountered the service's agentic-token/blueprint identity error. The documented alternative—explicit endpoint `Entra` authorization plus agent project RBAC—resolved it. An initial timer completed without a configured conversation, but its response was unavailable after cleanup; that attempt was **not** claimed as PASS.
+The historical Python routines list/preflight passed. Initial creation encountered an agentic-token/blueprint identity error; a later standalone timer passed, but the final root replay remained blocked. These results are not .NET validation.
 
 A later root replay encountered the same token-issuance error despite the producer already explicitly selecting creator identity. The earlier PASS used **no creator environment override**, and inspection confirmed the SDK's typed authorization was serialized correctly. The current producer makes the choice a CLI default, submits an explicit JSON body, records that body before creation (including on failure), and checks creation read-back before enabling. This does not claim the previous service failure was caused by a missing identity field; tenant/service failures still return **BLOCKED/nonzero** without another identity being attempted.
 
 Another root replay also failed. Direct comparison proved root-mapped and standalone settings identical, including the project, model, account endpoint, and project resource ID; neither supplied an alternate Azure configuration directory or tenant override. ARM reported `Succeeded`. These observations disprove a default/environment explanation but do not prove which blueprint-installation or Conditional Access condition caused the service error. The producer now records ARM readiness, selected runtime settings, allowlisted service request IDs, and read-only directory results for the fresh agent identity and blueprint **before cleanup**. It never retries issuance or modifies tenant policy to obtain a PASS. The exact root replay result is retained in `.azure/root-replay-terminal.log`.
 
-**Historical standalone PASS:** a no-argument bounded timer used an explicit native conversation and same-agent response retrieval **before cleanup**. Native run `85b52baa-72cf-4bf6-836f-3a3d4698525c` completed and links response `resp_083c0a0b99ff4bdd006ae9c5f9c3588190a559773b1ea52594`. Read-back creator identity, all four lifecycle transitions, real timer delivery, exact synthetic marker response and native trace, and disabled/delete/absence checks passed. This did not establish reproducible root success. The standalone transcript is `.azure/live-transcript-creator-default.txt`.
+**Historical Python standalone PASS:** a bounded timer completed with a native conversation and response before cleanup. It did not establish reproducible root success or validate the .NET port.
 
-**Final exact root replay: BLOCKED, exit 1.** `python3 deploy.py --demo 43` completed ARM deployment, 24 offline tests, and project/model preflight, then native routine creation returned HTTP **400/UserError**, APIM request **`ac74630a-db58-44b3-9c5c-df51c46a1ac5`**, explicitly reporting failure to acquire the target agent's agentic identity token. ARM project readiness was `Succeeded`; submitted dispatch identity was creator. Directory GETs before cleanup found the fresh agent service identity and blueprint service principal present and `accountEnabled=true`. Thus absent creator configuration, different runtime mappings, unfinished ARM provisioning, or an absent/disabled service principal are not supported explanations. The exact tenant policy, consent, or service-side token-broker condition is **not established**; resolve through an authorized tenant administrator/Microsoft support using the recorded request ID. No additional creation attempt, identity fallback, artificial delay, local timer, or manual dispatch was used. The routine, native conversation, agent, and temporary project role were all cleaned up without errors.
+**Historical Python root replay: BLOCKED, exit 1.** Native routine creation returned HTTP **400/UserError** while acquiring the target agent's agentic identity token. ARM readiness and enabled identities were verified, but the tenant/service cause was not established. The routine, conversation, agent, and temporary project role were cleaned up. This remains a prerequisite to future live .NET verification; it is not evidence that the C# path has passed or failed.
 
 Native response verification and final live status are recorded in `.azure/live-report.json`. If the tenant still rejects identity issuance after the documented endpoint/RBAC setup, report **BLOCKED** and resolve tenant blueprint/Conditional Access policy with an authorized administrator. The lab never substitutes local scheduling. The persisted verified response and trace remain in `.azure/live-report.json` after native cleanup; deleted agent/conversation endpoints need not remain retrievable.
 
