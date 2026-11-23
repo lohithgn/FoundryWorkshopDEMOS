@@ -8,8 +8,11 @@ and expired deadline demonstrate explicit bounded failure.
 
 ## Deploy and run
 
-Requires Python 3.10+, Azure CLI/Bicep, an interactive Entra user with resource
+Requires the .NET 10 SDK, Azure CLI/Bicep, an interactive Entra user with resource
 creation/role-assignment permissions, and `gpt-4.1-mini` quota.
+
+`demo.py`, `test_demo.py`, and `requirements.txt` remain unchanged as transitional
+compatibility files for the existing Python runner. Use the C# file-based apps below.
 
 Run the following from this lab directory. The template deploys version
 `2025-04-14` with GlobalStandard capacity 10 and grants the presenter Cognitive
@@ -26,13 +29,12 @@ export AZURE_OPENAI_ENDPOINT="$(az deployment group show -g "$RG" -n demo \
   --query properties.outputs.endpoint.value -o tsv)"
 export AZURE_OPENAI_DEPLOYMENT="$(az deployment group show -g "$RG" -n demo \
   --query properties.outputs.deployment.value -o tsv)"
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python demo.py
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs --no-build
 ```
 
-SDK automatic retries are disabled so every retry counts against the visible
+The C# REST client has no automatic retries, so every retry counts against the visible
 application budget. Defaults: six model attempts, four tool attempts, at most
 three attempts per operation, two inference workers, 20-second per-call timeout,
 and a shared 90-second execution deadline. Each attempt reserves budget before
@@ -58,7 +60,7 @@ capacity. Backoff does not solve missing quota or authorization. Azure cost
 budgets/alerts notify; they do not automatically impose a hard spending cap.
 Use application budgets, permissions, monitoring, and operational policy.
 
-This teaching client uses synchronous SDK timeouts, not a durable cancellation
+This teaching client uses synchronous HTTP timeouts, not a durable cancellation
 service; stopping local waiting does not prove server-side cancellation.
 The tool is local and synthetic, with in-memory idempotency state. Production
 needs transactional durable keys, request-payload binding, and approval (lab 20).
@@ -69,11 +71,21 @@ capacity is a throughput allocation, not a hard spending cap.
 ## Validate and clean up
 
 ```bash
-python -m unittest discover -s . -p 'test_*.py' -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs --no-build -- --help
+dotnet run --file demo.cs --no-build -- --endpoint http://invalid
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-build
 az bicep build --file infra/main.bicep --stdout > /dev/null
 az bicep lint --file infra/main.bicep
-az group delete -n "$RG" --yes
 ```
+
+These compile, help, reject-invalid-input, and offline test commands do not call
+Azure. The Python entry points/dependencies are transitional and retained unchanged.
+Cleanup is intentionally separate and destructive: only run
+`az group delete -n "$RG" --yes` when you explicitly want to delete the deployed lab resources.
 
 - [Foundry quotas and limits](https://learn.microsoft.com/azure/foundry/openai/quotas-limits)
 - [Azure retry pattern](https://learn.microsoft.com/azure/architecture/patterns/retry)

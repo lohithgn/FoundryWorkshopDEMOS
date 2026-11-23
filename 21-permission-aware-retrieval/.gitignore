@@ -2,3 +2,4 @@
 .azure/
 .identity-b/
 __pycache__/
+.dotnet-home/

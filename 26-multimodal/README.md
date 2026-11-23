@@ -19,19 +19,22 @@ prices are present, so the amount cannot be reconstructed.
  "uncertainty":["currency_missing","total_unreadable"]}
 ```
 
-`demo.py --generate-only` regenerates all images and the manifest locally with
-Pillow's bundled font; no network, system font, Azure login, or image service is
-needed. They are also regenerated deterministically before a live run.
+`dotnet run --file demo.cs -- --generate-only` regenerates both PNGs and the
+manifest locally using an embedded bitmap font; no network, system font, Azure
+login, or image service is needed. They are also regenerated before a live run.
 
 ## Prerequisites and deployment
 
-Python 3.10+, Azure CLI/Bicep, `az login`, model access and quota. Resource creation
+.NET 10 SDK, Azure CLI/Bicep, `az login`, model access and quota. Resource creation
 plus role-assignment rights are needed (for example Contributor plus User Access
 Administrator). Inference uses noninteractive `DefaultAzureCredential` and
 **Cognitive Services OpenAI User** at the account scope. Service-principal users
 can pass `principalType=ServicePrincipal` and the **service principal object ID**
 (Enterprise application), not the app/client ID or app-registration object ID.
 Allow a few minutes for RBAC propagation.
+
+`demo.py`, `test_demo.py`, and `requirements.txt` remain unchanged as transitional
+compatibility files for the existing Python runner. Use the C# file-based apps below.
 
 From this directory, verify the subscription's region, model/version and
 GlobalStandard availability before deployment. This model must support **both
@@ -51,12 +54,13 @@ az deployment group create --name lab26 -g "$RG" --template-file infra/main.bice
   --query properties.outputs -o json > deployment.json
 export AZURE_OPENAI_ENDPOINT=$(az deployment group show -g "$RG" -n lab26 --query properties.outputs.endpoint.value -o tsv)
 export AZURE_OPENAI_DEPLOYMENT=$(az deployment group show -g "$RG" -n lab26 --query properties.outputs.deployment.value -o tsv)
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -r requirements.txt
-python demo.py --generate-only
-python demo.py
-python -m unittest discover -s . -p 'test_demo.py' -v
+dotnet restore demo.cs
+dotnet build demo.cs --no-restore
+dotnet run --file demo.cs --no-build -- --generate-only
+dotnet run --file demo.cs --no-build
+dotnet restore test_demo.cs
+dotnet build test_demo.cs --no-restore
+dotnet run --file test_demo.cs --no-build
 az bicep build --file infra/main.bicep --stdout >/dev/null
 ```
 
@@ -77,7 +81,10 @@ ordering is ignored, but missing or duplicate reasons fail exact matching.
 Refusals and non-`stop` finishes are reported explicitly before attempting JSON
 parsing. Request errors have no fabricated token usage or success result.
 
-The ink-covered amount has no knowable numeric answer. A schema-valid guessed
+The C# offline harness checks the supplied PNG dimensions/data payload, opaque
+mask, truth values, schema-valid-but-wrong guesses, refusals, truncation, invalid
+schema/JSON, timeouts and cost calculation without Azure access. `--help`, invalid
+rate validation, and `--generate-only` are safe local paths. The ink-covered amount has no knowable numeric answer. A schema-valid guessed
 total or currency is a **visual accuracy failure**, even if it matches the clear
 receipt. Tests explicitly demonstrate this distinction. Offline tests check
 the supplied PNG payloads, mask, truth, nullable fields, refusal/truncation,
